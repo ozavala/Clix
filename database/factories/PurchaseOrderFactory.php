@@ -22,7 +22,7 @@ class PurchaseOrderFactory extends Factory
         return [
             'supplier_id' => Supplier::factory(),
             'shipping_address_id' => $shippingAddress?->address_id,
-            'purchase_order_number' => $this->faker->unique()->bothify('PO-##########'),
+            'purchase_order_number' => $this->faker->unique()->bothify('PO-????-############'),
             'order_date' => $this -> faker->dateTimeBetween('-2 months', '-1 week'),
             'expected_delivery_date' => $this->faker->dateTimeBetween('now', '+1 month'),
             'type' => $this->faker->randomElement(array_keys(PurchaseOrder::$types)),

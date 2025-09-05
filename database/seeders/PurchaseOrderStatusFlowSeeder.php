@@ -14,11 +14,13 @@ use App\Models\CrmUser;
 use App\Models\Warehouse;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
+use Faker\Factory as Faker;
 
 class PurchaseOrderStatusFlowSeeder extends Seeder
 {
     public function run(): void
     {
+        $faker = Faker::create();
         // Create a user for the process
         $user = CrmUser::factory()->create();
         $warehouse = Warehouse::factory()->create();
@@ -68,6 +70,7 @@ class PurchaseOrderStatusFlowSeeder extends Seeder
 
     private function createCompleteFlow($user, $supplier, $product, $warehouse, $demoNumber)
     {
+        $faker = Faker::create();
         $this->command->info("Demo {$demoNumber}: Complete Flow with Payments and Inventory");
 
         // 1. Create draft purchase order with unique number
@@ -114,7 +117,7 @@ class PurchaseOrderStatusFlowSeeder extends Seeder
             'amount' => $purchaseOrder->total_amount * 0.5,
             'payment_date' => now(),
             'payment_method' => 'bank_transfer',
-            'reference_number' => "PAY-{$demoNumber}-001",
+            'reference_number' => $faker->unique()->numerify("PAY-{$demoNumber}-###"),
         ]);
 
         $purchaseOrder->updateStatusAfterPayment();
@@ -125,7 +128,7 @@ class PurchaseOrderStatusFlowSeeder extends Seeder
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'received_by_user_id' => $user->user_id,
             'warehouse_id' => $warehouse->warehouse_id,
-            'receipt_number' => "GR-{$demoNumber}-001",
+            'receipt_number' => $faker->unique()->numerify("GR-{$demoNumber}-###"),
             'status' => 'draft',
         ]);
 
@@ -150,7 +153,7 @@ class PurchaseOrderStatusFlowSeeder extends Seeder
             'amount' => $purchaseOrder->total_amount * 0.5,
             'payment_date' => now(),
             'payment_method' => 'bank_transfer',
-            'reference_number' => "PAY-{$demoNumber}-002",
+            'reference_number' => $faker->unique()->numerify("PAY-{$demoNumber}-###"),
         ]);
 
         $purchaseOrder->updateStatusAfterPayment();
@@ -162,10 +165,11 @@ class PurchaseOrderStatusFlowSeeder extends Seeder
 
     private function createPartialReceiptFlow($user, $supplier, $product, $warehouse, $demoNumber)
     {
+        $faker = Faker::create();
         $this->command->info("Demo {$demoNumber}: Partial Receipt Flow");
 
         // Create confirmed purchase order with unique number
-        $uniqueSuffix = strtoupper(Str::random(5));
+        $uniqueSuffix = strtoupper(Str::random(8));
         $purchaseOrder = PurchaseOrder::factory()->confirmed()->create([
             'supplier_id' => $supplier->supplier_id,
             'purchase_order_number' => "PO-DEMO-{$demoNumber}-002-{$uniqueSuffix}",
@@ -198,7 +202,7 @@ class PurchaseOrderStatusFlowSeeder extends Seeder
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'received_by_user_id' => $user->user_id,
             'warehouse_id' => $warehouse->warehouse_id,
-            'receipt_number' => "GR-{$demoNumber}-002",
+            'receipt_number' => $faker->unique()->numerify("GR-{$demoNumber}-###"),
             'status' => 'draft',
         ]);
 

@@ -81,7 +81,7 @@ class QuotationController extends Controller
 
             // Generar número de cotización correlativo
             $lastQuotation = Quotation::orderByDesc('id')->first();
-            $nextNumber = $lastQuotation ? ($lastQuotation->number ?? $lastQuotation->id) + 1 : $quotationStart;
+            $nextNumber = $lastQuotation ? ($lastQuotation->number ?? $lastQuotation->id) + 1 : (int)$quotationStart;
             $quotationData['number'] = $nextNumber;
             $quotationData['quotation_number'] = $quotationPrefix . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 

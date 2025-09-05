@@ -2,6 +2,7 @@
 
 namespace Tests\Unit;
 
+use App\Models\Account;
 use App\Models\Bill;
 use App\Models\CrmUser;
 use App\Models\JournalEntry;
@@ -243,6 +244,8 @@ class PaymentControllerTest extends TestCase
     public function it_creates_journal_entries_for_a_bill_payment()
     {
         // Arrange
+        Account::create(['code' => '2101', 'name' => 'Accounts Payable', 'type' => 'liability']);
+        Account::create(['code' => '1101', 'name' => 'Bank', 'type' => 'asset']);
         $bill = Bill::factory()->create();
         $paymentAmount = 150.00;
         $paymentData = [
@@ -283,6 +286,8 @@ class PaymentControllerTest extends TestCase
     public function it_creates_journal_entries_for_a_purchase_order_payment()
     {
         // Arrange
+        Account::create(['code' => '2101', 'name' => 'Accounts Payable', 'type' => 'liability']);
+        Account::create(['code' => '1101', 'name' => 'Bank', 'type' => 'asset']);
         $purchaseOrder = PurchaseOrder::factory()->create();
         $paymentAmount = 250.00;
         $paymentData = [
@@ -323,6 +328,8 @@ class PaymentControllerTest extends TestCase
     public function it_creates_journal_entries_with_description_and_legal_id_for_bill_payment()
     {
         // Arrange
+        Account::create(['code' => '2101', 'name' => 'Accounts Payable', 'type' => 'liability']);
+        Account::create(['code' => '1101', 'name' => 'Bank', 'type' => 'asset']);
         $bill = Bill::factory()->create();
         $paymentAmount = 150.00;
         $paymentData = [
@@ -368,6 +375,8 @@ class PaymentControllerTest extends TestCase
     public function it_creates_journal_entries_with_description_and_legal_id_for_invoice_payment()
     {
         // Arrange
+        Account::create(['code' => '2102', 'name' => 'Accounts Receivable', 'type' => 'asset']);
+        Account::create(['code' => '1101', 'name' => 'Bank', 'type' => 'asset']);
         $invoice = \App\Models\Invoice::factory()->create();
         $paymentAmount = 200.00;
         $paymentData = [

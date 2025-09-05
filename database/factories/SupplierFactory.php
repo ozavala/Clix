@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Supplier;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Str;
 
 class SupplierFactory extends Factory
 {
@@ -27,7 +28,7 @@ class SupplierFactory extends Factory
             'email' => $this->faker->unique()->safeEmail,
             'phone_number' => $this->faker->phoneNumber,
             'notes' => $this->faker->optional()->sentence(),
-            'legal_id' => $this->faker->unique()->bothify('SUP-####'),
+            'legal_id' => 'SUP-' . strtoupper(Str::random(10)),
         ];
     }
 }

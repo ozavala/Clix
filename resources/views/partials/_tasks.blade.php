@@ -72,7 +72,7 @@
                 <form action="{{ route('tasks.destroy', $task) }}" method="POST" onsubmit="return confirm(__('partials.Are you sure?'));" class="d-inline">
                     @csrf
                     @method('DELETE')
-                    <button type="submit" class="btn btn-link btn-sm text-danger p-0">{{ __('partials.Delete') }}</button>
+                    <button type="submit" class="btn btn-danger btn-sm ">{{ __('partials.Delete') }}</button>
                 </form>
             </div>
         @empty

@@ -26,8 +26,8 @@
             <p class="card-text"><strong>{{ __('messages.Updated At') }}:</strong> {{ $crmUser->updated_at->format('Y-m-d H:i:s') }}</p>
         </div>
         <div class="card-footer">
-            <a href="{{ route('crm-users.edit', $crmUser->crm_user_id) }}" class="btn btn-warning">{{ __('messages.Edit') }}</a>
-            <form action="{{ route('crm-users.destroy', $crmUser->crm_user_id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario?');">
+            <a href="{{ route('crm-users.edit', $crmUser->user_id) }}" class="btn btn-warning">{{ __('messages.Edit') }}</a>
+            <form action="{{ route('crm-users.destroy', $crmUser->user_id) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('¿Estás seguro de que deseas eliminar este usuario?');">
                 @csrf
                 @method('DELETE')
                 <button type="submit" class="btn btn-danger">{{ __('messages.Delete') }}</button>

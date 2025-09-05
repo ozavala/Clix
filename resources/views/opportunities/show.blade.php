@@ -4,10 +4,10 @@
 
 @section('content')
 <div class="container">
-    <h1>Opportunity: {{ $opportunity->name }}</h1>
+    <h3 class="text-center mb-4 mb-3 text-primary"><strong>Opportunity: </strong> <span class="text-capitalize">{{ $opportunity->name }}</span></h3>
 
     <div class="card">
-        <div class="card-header">Opportunity Details</div>
+        <div class="card-header"><strong>Opportunity Details</strong></div>
         <div class="card-body">
             <p><strong>Customer:</strong> <a href="{{ route('customers.show', $opportunity->customer) }}">{{ $opportunity->customer->company_name ?: $opportunity->customer->full_name }}</a></p>
             @if($opportunity->contact)
@@ -29,8 +29,8 @@
         </div>
         <div class="card-footer d-flex justify-content-between">
             <div>
-                <a href="{{ route('opportunities.edit', $opportunity) }}" class="btn btn-warning">Edit</a>
-                <a href="{{ route('quotations.create', ['opportunity_id' => $opportunity->opportunity_id]) }}" class="btn btn-primary">Create Quotation</a>
+                <a href="{{ route('opportunities.edit', $opportunity) }}" class="btn btn-warning text-dark">Edit</a>
+                <a href="{{ route('quotations.create', ['opportunity_id' => $opportunity->opportunity_id]) }}" class="btn btn-primary text-white">Create Quotation</a>
                 <form action="{{ route('opportunities.destroy', $opportunity) }}" method="POST" style="display:inline-block;" onsubmit="return confirm('Are you sure you want to delete this opportunity?');">
                     @csrf
                     @method('DELETE')

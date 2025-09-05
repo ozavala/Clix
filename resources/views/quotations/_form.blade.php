@@ -45,7 +45,7 @@
 </div>
 
 <hr>
-<h4>{{ __('quotations.line_items') }}</h4>
+<h4>{{ __('quotations.Line Items') }}</h4>
 <div id="quotation-items-container">
     @php
         $quotationItems = old('items', isset($quotation) ? $quotation->items->toArray() : [['product_id' => '', 'item_name' => '', 'item_description' => '', 'quantity' => 1, 'unit_price' => '']]);
@@ -89,8 +89,30 @@
         </div>
     @endforeach
 </div>
-<button type="button" id="add-item-btn" class="btn btn-success btn-sm mt-2">{{ __('quotations.add_item') }}</button>
+<button type="button" id="add-item-btn" class="btn btn-success btn-sm mt-2">{{ __('quotationsAdd Item') }}</button>
 @error('items') <div class="text-danger small mt-1">{{ $message }}</div> @enderror
+
+{{-- Hidden Template for New Items --}}
+<div id="quotation-item-template" style="display: none;">
+    <div class="row align-items-center mb-2 quotation-item-row border p-2 rounded">
+        <input type="hidden" name="items[__INDEX__][quotation_item_id]" value="">
+        <div class="col-md-3 mb-2">
+            <label class="form-label">{{ __('quotations.product_service') }}</label>
+            <select name="items[__INDEX__][product_id]" class="form-select product-select">
+                <option value="">{{ __('quotations.select_product') }}</option>
+                @foreach($products as $product)
+                    <option value="{{ $product->product_id }}" data-price="{{ $product->price }}" data-description="{{ $product->description }}">{{ $product->name }}</option>
+                @endforeach
+            </select>
+        </div>
+        <div class="col-md-3 mb-2"><label class="form-label">{{ __('quotations.item_name') }} <span class="text-danger">*</span></label><input type="text" name="items[__INDEX__][item_name]" class="form-control item-name" value="" required></div>
+        <div class="col-md-3 mb-2"><label class="form-label">{{ __('quotations.quantity') }} <span class="text-danger">*</span></label><input type="number" name="items[__INDEX__][quantity]" class="form-control item-quantity" value="1" min="1" required></div>
+        <div class="col-md-2 mb-2"><label class="form-label">{{ __('quotations.unit_price') }} <span class="text-danger">*</span></label><input type="number" step="0.01" name="items[__INDEX__][unit_price]" class="form-control item-unit-price" value="" min="0" required></div>
+        <div class="col-md-1 mb-2 d-flex align-items-end"><button type="button" class="btn btn-danger remove-item-btn">&times;</button></div>
+        <div class="col-md-12 mb-2"><label class="form-label">{{ __('quotations.item_description') }}</label><textarea name="items[__INDEX__][item_description]" class="form-control item-description" rows="1"></textarea></div>
+    </div>
+</div>
+
 @foreach ($errors->get('items.*') as $message)
     <div class="text-danger small mt-1">{{ $message[0] }}</div>
 @endforeach
@@ -151,23 +173,24 @@ document.addEventListener('DOMContentLoaded', function () {
     const addItemBtn = document.getElementById('add-item-btn'); // "Add Item" button
     const opportunitySelect = document.getElementById('opportunity_id'); // Opportunity dropdown
     const subjectInput = document.getElementById('subject'); // Subject input field
-    let itemRowIndex = {{ old('items') ? count(old('items')) : ($quotation->items->count() ?: 0) }};
+    const itemTemplate = document.getElementById('quotation-item-template').innerHTML;
+    let itemRowIndex = {{ old('items') ? count(old('items')) : ($quotation->items->count() ?: 1) }};
 
     // --- Reusable function to add a new item row ---
     function addItemRow(item = {}) {
         const index = itemRowIndex++;
-        const newRow = document.createElement('div');
-        newRow.classList.add('row', 'align-items-center', 'mb-2', 'quotation-item-row', 'border', 'p-2', 'rounded');
-        newRow.innerHTML = `
-            <input type="hidden" name="items[${index}][quotation_item_id]" value="${item.quotation_item_id || ''}">
-            <div class="col-md-3 mb-2"><label class="form-label">${__('quotations.product_service')}</label><select name="items[${index}][product_id]" class="form-select product-select"><option value="">${__('quotations.select_product')}</option>@foreach($products as $product)<option value="{{ $product->product_id }}" data-price="{{ $product->price }}" data-description="{{ $product->description }}">{{ $product->name }}</option>@endforeach</select></div>
-            <div class="col-md-3 mb-2"><label class="form-label">${__('quotations.item_name')} <span class="text-danger">*</span></label><input type="text" name="items[${index}][item_name]" class="form-control item-name" value="${item.item_name || ''}" required></div>
-            <div class="col-md-3 mb-2"><label class="form-label">${__('quotations.quantity')} <span class="text-danger">*</span></label><input type="number" name="items[${index}][quantity]" class="form-control item-quantity" value="${item.quantity || 1}" min="1" required></div>
-            <div class="col-md-2 mb-2"><label class="form-label">${__('quotations.unit_price')} <span class="text-danger">*</span></label><input type="number" step="0.01" name="items[${index}][unit_price]" class="form-control item-unit-price" value="${parseFloat(item.unit_price || 0).toFixed(2)}" min="0" required></div>
-            <div class="col-md-1 mb-2 d-flex align-items-end"><button type="button" class="btn btn-danger remove-item-btn">&times;</button></div>
-            <div class="col-md-12 mb-2"><label class="form-label">${__('quotations.item_description')}</label><textarea name="items[${index}][item_description]" class="form-control item-description" rows="1">${item.item_description || ''}</textarea></div>
-        `;
-        itemsContainer.appendChild(newRow);
+        const newRowHtml = itemTemplate.replace(/__INDEX__/g, index);
+        const newRowElement = document.createElement('div');
+        newRowElement.innerHTML = newRowHtml;
+        const row = newRowElement.firstElementChild;
+
+        // Pre-fill data if provided
+        if (item.item_name) row.querySelector('.item-name').value = item.item_name;
+        if (item.quantity) row.querySelector('.item-quantity').value = item.quantity;
+        if (item.unit_price) row.querySelector('.item-unit-price').value = parseFloat(item.unit_price).toFixed(2);
+        if (item.item_description) row.querySelector('.item-description').value = item.item_description;
+
+        itemsContainer.appendChild(row);
     }
 
     // --- Function to pre-populate form from a selected opportunity ---
@@ -178,15 +201,17 @@ document.addEventListener('DOMContentLoaded', function () {
         const amount = parseFloat(option.dataset.amount) || 0;
 
         subjectInput.value = name;
-        itemsContainer.innerHTML = ''; // Clear existing items
-
-        // Add a new line item based on the opportunity's details
-        addItemRow({
-            item_name: name,
-            quantity: 1,
-            unit_price: amount,
-            item_description: `Based on opportunity: ${name}`
-        });
+        // Only clear items and add a new one if we are creating a new quotation
+        const isCreatePage = {{ Route::currentRouteName() === 'quotations.create' ? 'true' : 'false' }};
+        if (isCreatePage) {
+            itemsContainer.innerHTML = ''; // Clear existing items
+            addItemRow({
+                item_name: name,
+                quantity: 1,
+                unit_price: amount,
+                item_description: `Based on opportunity: ${name}`
+            });
+        }
     }
 
     // --- Event Listeners ---
@@ -215,11 +240,11 @@ document.addEventListener('DOMContentLoaded', function () {
     });
 
     // --- Initial Page Load Logic ---
-    const isCreating = {{ !isset($quotation->quotation_id) ? 'true' : 'false' }};
+    const isCreatePage = {{ Route::currentRouteName() === 'quotations.create' ? 'true' : 'false' }};
     const hasOldItems = {{ count(old('items', [])) > 0 ? 'true' : 'false' }};
 
     // Only pre-fill if creating a new quote from an opportunity and there are no validation errors.
-    if (isCreating && !hasOldItems) {
+    if (isCreatePage && !hasOldItems) {
         const selectedOption = opportunitySelect.options[opportunitySelect.selectedIndex];
         if (selectedOption && selectedOption.value) {
             prefillFromOpportunity(selectedOption);

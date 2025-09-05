@@ -88,9 +88,18 @@
 
 <div id="addresses-container">
     @php
-        // Use old input if validation fails, otherwise use existing addresses or a single empty block for create form
-        $addresses = old('addresses', $customer->addresses->count() > 0 ? $customer->addresses->toArray() : [['street_address_line_1' => '']]);
+    // Only show address blocks if there is old input or editing an existing customer
+   
+        // Use old input if validation fails, otherwise use existing addresses.
+        $addresses = old('addresses', isset($customer) && $customer->addresses ? $customer->addresses->toArray() : []);
+
+        // Filter out empty address blocks that might be present due to old input
+        $addresses = array_filter($addresses, function($address) {
+            return !empty($address['street_address_line_1']);
+        });
     @endphp
+
+   
 
     @foreach($addresses as $index => $address)
         <div class="address-block border p-3 rounded mb-3 position-relative">

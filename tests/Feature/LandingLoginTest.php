@@ -20,7 +20,7 @@ class LandingLoginTest extends TestCase
         $response->assertStatus(200);
         $response->assertViewIs('landing');
         $response->assertSee('Welcome to');
-        $response->assertSee('Client Keeper');
+        $response->assertSee('Clix');
         $response->assertSee('Sign In');
     }
 

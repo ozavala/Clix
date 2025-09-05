@@ -29,15 +29,10 @@ class TaskController extends Controller
 
         $taskable = $modelClass::findOrFail($validated['taskable_id']);
 
-        $taskable->tasks()->create([
-            'title' => $validated['title'],
-            'description' => $validated['description'],
-            'due_date' => $validated['due_date'],
-            'priority' => $validated['priority'],
-            'assigned_to_user_id' => $validated['assigned_to_user_id'],
+        $taskable->tasks()->create(array_merge($validated, [
             'created_by_user_id' => Auth::id(),
             'status' => 'Pending', // Default status
-        ]);
+        ]));
 
         return back()->with('success', 'Task added successfully.');
     }

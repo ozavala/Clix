@@ -81,7 +81,8 @@ class CustomerController extends Controller
         // The getAllPayments method was added in a previous step to fetch payments from orders and invoices
         $payments = method_exists($customer, 'getAllPayments') ? $customer->getAllPayments() : collect();
         $invoices = $customer->invoices;
-        return view('customers.show', compact('customer', 'payments', 'invoices'));
+        $contacts=$customer->contacts;
+        return view('customers.show', compact('customer', 'contacts','payments', 'invoices'));
     }
 
     /**

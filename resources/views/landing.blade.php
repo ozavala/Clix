@@ -6,7 +6,7 @@
         <div class="col-lg-6 col-md-8 col-12">
             <div class="text-center mb-5">
                 <img src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png" alt="CRM Logo" width="80" class="mb-3">
-                <h1 class="display-4 fw-bold text-primary mb-3">Welcome to</h1> <h1 class= "display-4 fw-bold text-danger">Client Keeper</h1>
+                <h1 class="display-4 fw-bold text-primary mb-3">Welcome to</h1> <h1 class= "display-4 fw-bold text-danger">CLiX</h1>
                 <p class="lead">Manage your business, sales, and accounting in one place.<br>Simple. Powerful. Secure.</p>
             </div>
             <div class="card shadow border-0">

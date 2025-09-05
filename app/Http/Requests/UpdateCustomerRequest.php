@@ -37,12 +37,12 @@ class UpdateCustomerRequest extends FormRequest
             'addresses' => ['nullable', 'array'],
             'addresses.*.address_id' => ['nullable', 'integer', 'exists:addresses,address_id'],
             'addresses.*.address_type' => ['nullable', 'string', 'max:255'],
-            'addresses.*.street_address_line_1' => ['required', 'string', 'max:255'],
+            'addresses.*.street_address_line_1' => ['nullable', 'string', 'max:255'],
             'addresses.*.street_address_line_2' => ['nullable', 'string', 'max:255'],
-            'addresses.*.city' => ['required', 'string', 'max:255'],
-            'addresses.*.state_province' => ['required', 'string', 'max:255'],
-            'addresses.*.postal_code' => ['required', 'string', 'max:20'],
-            'addresses.*.country_code' => ['required', 'string', 'max:3'],
+            'addresses.*.city' => ['nullable', 'string', 'max:255'],
+            'addresses.*.state_province' => ['nullable', 'string', 'max:255'],
+            'addresses.*.postal_code' => ['nullable', 'string', 'max:20'],
+            'addresses.*.country_code' => ['nullable', 'string', 'max:3'],
             'addresses.*.is_primary' => ['nullable', 'boolean'],
         ];
     }

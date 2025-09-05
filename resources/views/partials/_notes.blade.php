@@ -33,9 +33,9 @@
                     <form action="{{ route('notes.destroy', $note) }}" method="POST" onsubmit="return confirm(__('partials.Are you sure you want to delete this note?'));" class="d-inline">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="btn btn-link btn-sm text-danger p-0">{{ __('partials.Delete') }}</button>
+                        <button type="submit" class="btn btn-danger btn-sm ">{{ __('partials.Delete') }}</button>
                     </form>
-                    <a href="{{ route('notes.show', $note) }}" class="btn btn-info btn-sm">{{ __('notes.View') }}</a>
+                    <a href="{{ route('notes.show', $note) }}" class="btn btn-primary btn-sm">{{ __('notes.View') }}</a>
                 </div>
             </div>
         @empty
