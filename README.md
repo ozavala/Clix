@@ -57,3 +57,35 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 *Built with ❤️ using Laravel and open-source principles.*
+    3.1 Copy .env.example to .env
+    3.2 '$ php artisan key:generate'
+    3.3 '$ php artisan config:cache'
+4. Run database migrations and seeders
+    4.1 '$ php artisan migrate'
+    4.2 '$ php artisan seed' (optional)
+ 5. Serve the application locally or deploy to your server 
+    5.1 '$ php artisan serve'
+
+
+For detailed steps, see the [Installation Guide](docs/INSTALLATION.md) (if applicable).
+
+## Documentation
+
+Comprehensive documentation is available to help you use and extend CRM-ERP effectively. Check the `docs/` folder or visit our project wiki. 
+
+
+## Contributing
+
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+Thanks for your interest in contributing! There are many ways to contribute to this project. Get started by reading our [CONTRIBUTING.md](CONTRIBUTING.md) guide.
+
+Whether you want to report bugs, suggest features, improve documentation, or submit code, your help is welcome.
+
+## License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+*Built with ❤️ using Laravel and open-source principles.*
