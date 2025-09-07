@@ -41,6 +41,15 @@ class TaxCollectionFactory extends Factory
         ];
     }
 
+    public function forTenant(Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'invoice_id' => Invoice::factory()->forTenant($tenant),
+            'tax_rate_id' => TaxRate::factory()->forTenant($tenant),
+            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+        ]);
+    }
+
     /**
      * Indicate that the tax collection is for sales.
      */

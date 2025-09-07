@@ -25,6 +25,13 @@ class LandedCostFactory extends Factory
         ];
     }
 
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'costable_id' => PurchaseOrder::factory()->forTenant($tenant),
+        ]);
+    }
+
     /**
      * Indicate that the landed cost is for freight.
      */

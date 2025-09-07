@@ -46,6 +46,7 @@ class ProductTaxTest extends TestCase
     public function producto_con_tasa_del_modelo_calcula_iva_correctamente()
     {
         $taxRate = TaxRate::create([
+            'tenant_id' => $this->tenant->id,
             'name' => 'IVA 22% - Especial',
             'rate' => 22.00,
             'description' => 'Tasa especial de IVA',
@@ -132,6 +133,7 @@ class ProductTaxTest extends TestCase
     public function prioriza_tasa_especifica_sobre_tasa_del_modelo()
     {
         $taxRate = TaxRate::create([
+            'tenant_id' => $this->tenant->id,
             'name' => 'IVA 22% - Especial',
             'rate' => 22.00,
             'description' => 'Tasa especial de IVA',

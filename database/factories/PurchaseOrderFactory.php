@@ -7,6 +7,7 @@ use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\Supplier;
 use App\Models\Warehouse;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
@@ -16,12 +17,10 @@ class PurchaseOrderFactory extends Factory
 
     public function definition(): array
     {
-        $warehouse = Warehouse::with('addresses')->inRandomOrder()->first() ?? Warehouse::factory()->hasAddresses()->create();
-        $shippingAddress = $warehouse->addresses()->where('is_primary', true)->first() ?? $warehouse->addresses()->first();
-
         return [
+            'tenant_id' => Tenant::factory(),
             'supplier_id' => Supplier::factory(),
-            'shipping_address_id' => $shippingAddress?->address_id,
+            'shipping_address_id' => null, // Will be set by afterCreating or explicitly
             'purchase_order_number' => $this->faker->unique()->bothify('PO-????-############'),
             'order_date' => $this -> faker->dateTimeBetween('-2 months', '-1 week'),
             'expected_delivery_date' => $this->faker->dateTimeBetween('now', '+1 month'),
@@ -41,11 +40,21 @@ class PurchaseOrderFactory extends Factory
         ];
     }
 
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenant->id,
+            'supplier_id' => Supplier::factory()->forTenant($tenant)->create()->supplier_id,
+            'created_by_user_id' => CrmUser::factory()->forTenant($tenant)->create()->user_id,
+            'shipping_address_id' => Warehouse::factory()->forTenant($tenant)->create()->addresses()->first()->address_id ?? null,
+        ]);
+    }
+
     public function configure()
     {
         return $this->afterCreating(function (PurchaseOrder $po) {
             if ($po->items->isEmpty()) {
-                PurchaseOrderItem::factory(rand(1, 5))->create(['purchase_order_id' => $po->purchase_order_id]);
+                PurchaseOrderItem::factory(rand(1, 5))->forTenant($po->tenant)->create(['purchase_order_id' => $po->purchase_order_id]);
                 $po->load('items');
             }
 

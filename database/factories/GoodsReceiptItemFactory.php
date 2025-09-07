@@ -28,4 +28,13 @@ class GoodsReceiptItemFactory extends Factory
             'notes' => $this->faker->optional()->sentence,
         ];
     }
+
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'goods_receipt_id' => GoodsReceipt::factory()->forTenant($tenant),
+            'purchase_order_item_id' => PurchaseOrderItem::factory()->forTenant($tenant),
+            'product_id' => Product::factory()->forTenant($tenant),
+        ]);
+    }
 } 

@@ -42,6 +42,15 @@ class TaxPaymentFactory extends Factory
         ];
     }
 
+    public function forTenant(Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'purchase_order_id' => PurchaseOrder::factory()->forTenant($tenant),
+            'tax_rate_id' => TaxRate::factory()->forTenant($tenant),
+            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+        ]);
+    }
+
     /**
      * Indicate that the tax payment is for imports.
      */

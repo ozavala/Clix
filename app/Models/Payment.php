@@ -15,6 +15,7 @@ class Payment extends Model
     protected $primaryKey = 'payment_id';
 
     protected $fillable = [
+        'tenant_id',
         'payable_id',
         'payable_type',
         'payment_date',
@@ -33,6 +34,11 @@ class Payment extends Model
     public function payable(): MorphTo
     {
         return $this->morphTo();
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     public function createdBy(): BelongsTo

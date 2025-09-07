@@ -24,12 +24,20 @@ class InvoiceItemFactory extends Factory
 
         return [
             'invoice_id' => Invoice::factory(),
-            'product_id' => Product::factory(),
+            'product_id' => Product::factory()->create()->product_id,
             'item_name' => fake()->words(2, true),
             'item_description' => fake()->optional()->sentence(),
             'quantity' => $quantity,
             'unit_price' => $unit_price,
             'item_total' => $total,
         ];
+    }
+
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'invoice_id' => Invoice::factory()->forTenant($tenant),
+            'product_id' => Product::factory()->forTenant($tenant),
+        ]);
     }
 } 

@@ -4,12 +4,13 @@ namespace Tests\Feature\Auth;
 
 use App\Models\CrmUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Auth;
 
 class AuthenticationTest extends TestCase
 {
-    use RefreshDatabase;
+    use RefreshDatabase, WithoutMiddleware;
 
     protected function setUp(): void
     {
@@ -60,3 +61,4 @@ class AuthenticationTest extends TestCase
         $response->assertRedirect('/');
     }
 }
+

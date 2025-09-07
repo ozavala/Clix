@@ -20,6 +20,7 @@ class Customer extends Model
     protected $primaryKey = 'customer_id';
 
     protected $fillable = [
+        'tenant_id',
         'type',
         'first_name',
         'last_name',
@@ -53,6 +54,11 @@ class Customer extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(CrmUser::class, 'created_by_user_id', 'user_id');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
      public function addresses(): MorphMany
     {

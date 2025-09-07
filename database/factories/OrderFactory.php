@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Customer;
 use App\Models\CrmUser;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,6 +20,7 @@ class OrderFactory extends Factory
     public function definition(): array
     {
         return [
+            'tenant_id' => Tenant::factory(),
             'order_number' => 'ORD-' . fake()->unique()->numberBetween(1000, 9999),
             'customer_id' => Customer::factory(),
             'created_by_user_id' => CrmUser::factory(),
@@ -31,6 +33,15 @@ class OrderFactory extends Factory
             'status' => fake()->randomElement(['pending', 'confirmed', 'processing', 'shipped', 'delivered', 'cancelled']),
             'notes' => fake()->optional()->paragraph(),
         ];
+    }
+
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenant->id,
+            'customer_id' => Customer::factory()->forTenant($tenant),
+            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+        ]);
     }
 
     /**

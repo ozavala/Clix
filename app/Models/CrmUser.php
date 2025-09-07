@@ -8,6 +8,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use App\Models\UserRole; // Ensure you have the correct namespace for UserRole
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
  
 class CrmUser extends Authenticatable implements MustVerifyEmail
@@ -22,6 +23,7 @@ class CrmUser extends Authenticatable implements MustVerifyEmail
      * @var array<int, string>
      */
     protected $fillable = [
+        'tenant_id',
         'username',
         'full_name',
         'email',
@@ -111,6 +113,11 @@ class CrmUser extends Authenticatable implements MustVerifyEmail
     public function getNameAttribute(): string
     {
         return $this->full_name;
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     public function leads() 

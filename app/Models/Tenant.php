@@ -5,7 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class OwnerCompany extends Model
+class Tenant extends Model
 {
     use HasFactory;
 
@@ -20,6 +20,6 @@ class OwnerCompany extends Model
 
     public function transactions()
     {
-        return $this->hasMany(Transaction::class, 'owner_company_id');
+        return $this->hasMany(Transaction::class, 'tenant_id');
     }
 }

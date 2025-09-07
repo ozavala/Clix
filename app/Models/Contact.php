@@ -15,6 +15,7 @@ class Contact extends Model
     protected $primaryKey = 'contact_id';
 
     protected $fillable = [
+        'tenant_id',
         'contactable_id',
         'contactable_type',
         'first_name',
@@ -39,6 +40,11 @@ class Contact extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(CrmUser::class, 'created_by_user_id', 'user_id');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     public function getFullNameAttribute(): string

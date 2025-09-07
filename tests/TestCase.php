@@ -4,15 +4,27 @@ namespace Tests;
 
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use App\Models\Tenant;
 
 abstract class TestCase extends BaseTestCase
 {
-    use RefreshDatabase;
+    use CreatesApplication, RefreshDatabase;
+
+    protected $tenant;
 
     protected function setUp(): void
     {
         parent::setUp();
-        // El seeder de settings solo debe ejecutarse en tests funcionales que lo requieran
+
+        // Create a default tenant for all tests
+        $this->tenant = Tenant::factory()->create();
+
+        // Disable CSRF protection for feature tests
+        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
+
+        // Set the default tenant for factories that don't explicitly define one
+        // This might require modifying factories to accept a tenant or setting a global tenant context
+        // For now, we'll assume factories will be updated to use this tenant.
     }
 
     /**

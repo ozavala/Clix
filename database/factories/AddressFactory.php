@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Customer;
 use App\Models\Supplier;
 use App\Models\Warehouse;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -20,6 +21,7 @@ class AddressFactory extends Factory
     public function definition(): array
     {
         return [
+            'tenant_id' => Tenant::factory(),
             'addressable_type' => Customer::class,
             'addressable_id' => Customer::factory(),
             'address_type' => fake()->randomElement(['billing', 'shipping', 'main']),
@@ -33,6 +35,13 @@ class AddressFactory extends Factory
         ];
     }
 
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenant->id,
+        ]);
+    }
+
     /**
      * Indicate that the address is for a customer.
      */
@@ -40,7 +49,7 @@ class AddressFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'addressable_type' => Customer::class,
-            'addressable_id' => Customer::factory(),
+            'addressable_id' => Customer::factory()->forTenant($attributes['tenant_id']),
         ]);
     }
 
@@ -51,7 +60,7 @@ class AddressFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'addressable_type' => Supplier::class,
-            'addressable_id' => Supplier::factory(),
+            'addressable_id' => Supplier::factory()->forTenant($attributes['tenant_id']),
         ]);
     }
 
@@ -62,7 +71,7 @@ class AddressFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'addressable_type' => Warehouse::class,
-            'addressable_id' => Warehouse::factory(),
+            'addressable_id' => Warehouse::factory()->forTenant($attributes['tenant_id']),
         ]);
     }
 
@@ -95,4 +104,5 @@ class AddressFactory extends Factory
             'is_primary' => true,
         ]);
     }
-} 
+}
+ 

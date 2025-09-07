@@ -25,7 +25,7 @@ class ImportIntegrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = CrmUser::factory()->create();
+        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
         $this->actingAs($this->user);
     }
 
@@ -33,14 +33,14 @@ class ImportIntegrationTest extends TestCase
     public function complete_import_flow_with_landed_costs()
     {
         // Step 1: Create a supplier for import
-        $supplier = Supplier::factory()->create([
+        $supplier = Supplier::factory()->forTenant($this->tenant)->create([
             'name' => 'Import Supplier Co.',
             'email' => 'import@supplier.com',
             'phone_number' => '+1-555-IMPORT',
         ]);
 
         // Step 2: Create products that will be imported
-        $product1 = Product::factory()->create([
+        $product1 = Product::factory()->forTenant($this->tenant)->create([
             'name' => 'Imported Electronics',
             'sku' => 'IMP-ELEC-001',
             'price' => 500.00,
@@ -48,7 +48,7 @@ class ImportIntegrationTest extends TestCase
             'quantity_on_hand' => 0,
         ]);
 
-        $product2 = Product::factory()->create([
+        $product2 = Product::factory()->forTenant($this->tenant)->create([
             'name' => 'Imported Components',
             'sku' => 'IMP-COMP-001',
             'price' => 300.00,
@@ -58,6 +58,7 @@ class ImportIntegrationTest extends TestCase
 
         // Step 3: Create a purchase order for import
         $purchaseOrder = PurchaseOrder::create([
+            'tenant_id' => $this->tenant->id,
             'supplier_id' => $supplier->supplier_id,
             'purchase_order_number' => 'PO-IMPORT-001',
             'order_date' => Carbon::now(),
@@ -73,6 +74,7 @@ class ImportIntegrationTest extends TestCase
 
         // Step 4: Add items to the purchase order
         $item1 = PurchaseOrderItem::create([
+            'tenant_id' => $this->tenant->id,
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'product_id' => $product1->product_id,
             'item_name' => $product1->name,
@@ -83,6 +85,7 @@ class ImportIntegrationTest extends TestCase
         ]);
 
         $item2 = PurchaseOrderItem::create([
+            'tenant_id' => $this->tenant->id,
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'product_id' => $product2->product_id,
             'item_name' => $product2->name,
@@ -122,6 +125,7 @@ class ImportIntegrationTest extends TestCase
 
         foreach ($landedCosts as $cost) {
             LandedCost::create([
+                'tenant_id' => $this->tenant->id,
                 'costable_type' => PurchaseOrder::class,
                 'costable_id' => $purchaseOrder->purchase_order_id,
                 'description' => $cost['description'],
@@ -164,6 +168,7 @@ class ImportIntegrationTest extends TestCase
 
         // Step 10: Create a bill for the purchase order
         $bill = Bill::create([
+            'tenant_id' => $this->tenant->id,
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'supplier_id' => $supplier->supplier_id,
             'bill_number' => 'BILL-IMPORT-001',
@@ -179,6 +184,7 @@ class ImportIntegrationTest extends TestCase
 
         // Step 11: Create partial payments for the bill
         $payment1 = Payment::create([
+            'tenant_id' => $this->tenant->id,
             'payable_type' => Bill::class,
             'payable_id' => $bill->bill_id,
             'payment_date' => Carbon::now(),
@@ -189,6 +195,7 @@ class ImportIntegrationTest extends TestCase
         ]);
 
         $payment2 = Payment::create([
+            'tenant_id' => $this->tenant->id,
             'payable_type' => Bill::class,
             'payable_id' => $bill->bill_id,
             'payment_date' => Carbon::now()->addDays(15),
@@ -239,14 +246,15 @@ class ImportIntegrationTest extends TestCase
     public function import_with_multiple_landed_cost_types()
     {
         // Create supplier and products
-        $supplier = Supplier::factory()->create();
-        $product = Product::factory()->create([
+        $supplier = Supplier::factory()->forTenant($this->tenant)->create();
+        $product = Product::factory()->forTenant($this->tenant)->create([
             'cost' => 100.00,
             'quantity_on_hand' => 0,
         ]);
 
         // Create purchase order
         $purchaseOrder = PurchaseOrder::create([
+            'tenant_id' => $this->tenant->id,
             'supplier_id' => $supplier->supplier_id,
             'purchase_order_number' => 'PO-MULTI-001',
             'order_date' => Carbon::now(),
@@ -260,6 +268,7 @@ class ImportIntegrationTest extends TestCase
 
         // Create item
         $item = PurchaseOrderItem::create([
+            'tenant_id' => $this->tenant->id,
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'product_id' => $product->product_id,
             'item_name' => $product->name,
@@ -282,6 +291,7 @@ class ImportIntegrationTest extends TestCase
 
         foreach ($costTypes as $description => $amount) {
             LandedCost::create([
+                'tenant_id' => $this->tenant->id,
                 'costable_type' => PurchaseOrder::class,
                 'costable_id' => $purchaseOrder->purchase_order_id,
                 'description' => $description,

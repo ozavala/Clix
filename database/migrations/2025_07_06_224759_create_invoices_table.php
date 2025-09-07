@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id('invoice_id');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('order_id')->nullable()->constrained('orders', 'order_id')->onDelete('cascade');
             $table->foreignId('quotation_id')->nullable()->constrained('quotations', 'quotation_id')->onDelete('set null');
             $table->foreignId('customer_id')->constrained('customers', 'customer_id')->onDelete('cascade');

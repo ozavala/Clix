@@ -16,6 +16,7 @@ class PurchaseOrder extends Model
     protected $primaryKey = 'purchase_order_id';
 
     protected $fillable = [
+        'tenant_id',
         'supplier_id',
         'shipping_address_id',
         'purchase_order_number',
@@ -78,6 +79,11 @@ class PurchaseOrder extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(CrmUser::class, 'created_by_user_id', 'user_id');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     public function items(): HasMany

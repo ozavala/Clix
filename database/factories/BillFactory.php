@@ -6,6 +6,7 @@ use App\Models\Bill;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
 use App\Models\CrmUser;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class BillFactory extends Factory
@@ -19,6 +20,7 @@ class BillFactory extends Factory
         $totalAmount = $subtotal + $taxAmount;
 
         return [
+            'tenant_id' => Tenant::factory(),
             'purchase_order_id' => PurchaseOrder::factory(),
             'supplier_id' => Supplier::factory(),
             'bill_number' => 'BILL-' . $this->faker->unique()->numerify('######'),
@@ -32,5 +34,12 @@ class BillFactory extends Factory
             'notes' => $this->faker->optional()->sentence,
             'created_by_user_id' => CrmUser::factory(),
         ];
+    }
+
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenant->id,
+        ]);
     }
 }

@@ -16,6 +16,7 @@ class Quotation extends Model
     protected $primaryKey = 'quotation_id';
 
     protected $fillable = [
+        'tenant_id',
         'opportunity_id',
         'subject',
         'quotation_date',
@@ -59,6 +60,11 @@ class Quotation extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(CrmUser::class, 'created_by_user_id', 'user_id');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     /**

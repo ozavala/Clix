@@ -25,7 +25,7 @@ class PaymentControllerTest extends TestCase
     {
         parent::setUp();
         // Create a user and act as that user for all tests in this class
-        $this->user = CrmUser::factory()->create();
+        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
         $this->actingAs($this->user);
     }
 
@@ -33,7 +33,7 @@ class PaymentControllerTest extends TestCase
     public function it_can_store_a_payment_for_a_bill_and_update_status()
     {
         // Arrange
-        $bill = Bill::factory()->create(['total_amount' => 500.00, 'amount_paid' => 100.00]);
+        $bill = Bill::factory()->forTenant($this->tenant)->create(['total_amount' => 500.00, 'amount_paid' => 100.00]);
         $paymentAmount = 200.00;
 
         $paymentData = [
@@ -74,7 +74,8 @@ class PaymentControllerTest extends TestCase
     {
         // Arrange
         $purchaseOrder = new PurchaseOrder([
-            'supplier_id' => Supplier::factory()->create()->supplier_id,
+            'tenant_id' => $this->tenant->id,
+            'supplier_id' => Supplier::factory()->forTenant($this->tenant)->create()->supplier_id,
             'purchase_order_number' => 'PO-TEST-001',
             'order_date' => now(),
             'expected_delivery_date' => now()->addDays(30),
@@ -131,7 +132,7 @@ class PaymentControllerTest extends TestCase
     public function it_returns_an_error_if_payment_exceeds_bill_amount_due()
     {
         // Arrange
-        $bill = Bill::factory()->create(['total_amount' => 500, 'amount_paid' => 400]); // 100 due
+        $bill = Bill::factory()->forTenant($this->tenant)->create(['total_amount' => 500, 'amount_paid' => 400]); // 100 due
         $paymentAmount = 100.01;
 
         $paymentData = [
@@ -156,7 +157,8 @@ class PaymentControllerTest extends TestCase
     {
         // Arrange
         $purchaseOrder = new PurchaseOrder([
-            'supplier_id' => Supplier::factory()->create()->supplier_id,
+            'tenant_id' => $this->tenant->id,
+            'supplier_id' => Supplier::factory()->forTenant($this->tenant)->create()->supplier_id,
             'purchase_order_number' => 'PO-TEST-002',
             'order_date' => now(),
             'expected_delivery_date' => now()->addDays(30),
@@ -197,8 +199,8 @@ class PaymentControllerTest extends TestCase
     public function it_can_delete_a_payment_for_a_bill()
     {
         // Arrange
-        $bill = Bill::factory()->create(['total_amount' => 1000, 'amount_paid' => 0]);
-        $payment = Payment::factory()->create([
+        $bill = Bill::factory()->forTenant($this->tenant)->create(['total_amount' => 1000, 'amount_paid' => 0]);
+        $payment = Payment::factory()->forTenant($this->tenant)->create([
             'payable_id' => $bill->bill_id,
             'payable_type' => Bill::class,
             'amount' => 300,
@@ -220,8 +222,8 @@ class PaymentControllerTest extends TestCase
     public function it_can_delete_a_payment_for_a_purchase_order()
     {
         // Arrange
-        $purchaseOrder = PurchaseOrder::factory()->create(['total_amount' => 1000, 'amount_paid' => 0, 'status' => 'Confirmed']);
-        $payment = Payment::factory()->create([
+        $purchaseOrder = PurchaseOrder::factory()->forTenant($this->tenant)->create(['total_amount' => 1000, 'amount_paid' => 0, 'status' => 'Confirmed']);
+        $payment = Payment::factory()->forTenant($this->tenant)->create([
             'payable_id' => $purchaseOrder->purchase_order_id,
             'payable_type' => PurchaseOrder::class,
             'amount' => 300,
@@ -244,9 +246,9 @@ class PaymentControllerTest extends TestCase
     public function it_creates_journal_entries_for_a_bill_payment()
     {
         // Arrange
-        Account::create(['code' => '2101', 'name' => 'Accounts Payable', 'type' => 'liability']);
-        Account::create(['code' => '1101', 'name' => 'Bank', 'type' => 'asset']);
-        $bill = Bill::factory()->create();
+        Account::create(['tenant_id' => $this->tenant->id, 'code' => '2101', 'name' => 'Accounts Payable', 'type' => 'liability']);
+        Account::create(['tenant_id' => $this->tenant->id, 'code' => '1101', 'name' => 'Bank', 'type' => 'asset']);
+        $bill = Bill::factory()->forTenant($this->tenant)->create();
         $paymentAmount = 150.00;
         $paymentData = [
             'payable_id' => $bill->bill_id,
@@ -286,9 +288,9 @@ class PaymentControllerTest extends TestCase
     public function it_creates_journal_entries_for_a_purchase_order_payment()
     {
         // Arrange
-        Account::create(['code' => '2101', 'name' => 'Accounts Payable', 'type' => 'liability']);
-        Account::create(['code' => '1101', 'name' => 'Bank', 'type' => 'asset']);
-        $purchaseOrder = PurchaseOrder::factory()->create();
+        Account::create(['tenant_id' => $this->tenant->id, 'code' => '2101', 'name' => 'Accounts Payable', 'type' => 'liability']);
+        Account::create(['tenant_id' => $this->tenant->id, 'code' => '1101', 'name' => 'Bank', 'type' => 'asset']);
+        $purchaseOrder = PurchaseOrder::factory()->forTenant($this->tenant)->create();
         $paymentAmount = 250.00;
         $paymentData = [
             'payable_id' => $purchaseOrder->purchase_order_id,
@@ -328,9 +330,9 @@ class PaymentControllerTest extends TestCase
     public function it_creates_journal_entries_with_description_and_legal_id_for_bill_payment()
     {
         // Arrange
-        Account::create(['code' => '2101', 'name' => 'Accounts Payable', 'type' => 'liability']);
-        Account::create(['code' => '1101', 'name' => 'Bank', 'type' => 'asset']);
-        $bill = Bill::factory()->create();
+        Account::create(['tenant_id' => $this->tenant->id, 'code' => '2101', 'name' => 'Accounts Payable', 'type' => 'liability']);
+        Account::create(['tenant_id' => $this->tenant->id, 'code' => '1101', 'name' => 'Bank', 'type' => 'asset']);
+        $bill = Bill::factory()->forTenant($this->tenant)->create();
         $paymentAmount = 150.00;
         $paymentData = [
             'payable_id' => $bill->bill_id,
@@ -375,9 +377,9 @@ class PaymentControllerTest extends TestCase
     public function it_creates_journal_entries_with_description_and_legal_id_for_invoice_payment()
     {
         // Arrange
-        Account::create(['code' => '2102', 'name' => 'Accounts Receivable', 'type' => 'asset']);
-        Account::create(['code' => '1101', 'name' => 'Bank', 'type' => 'asset']);
-        $invoice = \App\Models\Invoice::factory()->create();
+        Account::create(['tenant_id' => $this->tenant->id, 'code' => '2102', 'name' => 'Accounts Receivable', 'type' => 'asset']);
+        Account::create(['tenant_id' => $this->tenant->id, 'code' => '1101', 'name' => 'Bank', 'type' => 'asset']);
+        $invoice = \App\Models\Invoice::factory()->forTenant($this->tenant)->create();
         $paymentAmount = 200.00;
         $paymentData = [
             'payable_id' => $invoice->invoice_id,

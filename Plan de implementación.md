@@ -2,29 +2,29 @@ Sugerencias para el plan de implementación
 
 ##### 1\. Diseño de las nuevas entidades y relaciones
 
-OwnerCompany: id, name, legal\_id, address, etc.
+Tenant: id, name, legal\_id, address, etc.
 
 Relacionada con usuarios, almacenes, productos, transacciones, etc.
 
-Transaction: id, owner\_company\_id (FK), type (venta, compra, pago, etc.), amount, date, supplier\_id, customer\_id, invoice\_id, bill\_id, etc.
+Transaction: id, tenant\_id (FK), type (venta, compra, pago, etc.), amount, date, supplier\_id, customer\_id, invoice\_id, bill\_id, etc.
 
 Relacionada con JournalEntry (asiento contable), Supplier, Customer, Invoice, Bill, etc.
 
-JournalEntry: id, transaction\_id (FK), owner\_company\_id (FK), date, description, etc.
+JournalEntry: id, transaction\_id (FK), tenant\_id (FK), date, description, etc.
 
-Relacionada con Transaction y OwnerCompany.
+Relacionada con Transaction y Tenant.
 
 ###### 2\. Plan de implementación paso a paso
 
 ###### Fase 1: Preparación y migraciones
 
-Crear la migración y modelo para OwnerCompany.
+Crear la migración y modelo para Tenant.
 
 Crear la migración y modelo para Transaction.
 
-Agregar el campo owner\_company\_id a las tablas relevantes (invoices, bills, payments, products, warehouses, etc.).
+Agregar el campo tenant\_id a las tablas relevantes (invoices, bills, payments, products, warehouses, etc.).
 
-Actualizar la tabla journal\_entries para relacionarla con transaction\_id y owner\_company\_id.
+Actualizar la tabla journal\_entries para relacionarla con transaction\_id y tenant\_id.
 
 ###### Fase 2: Refactorización de modelos y relaciones
 
@@ -32,11 +32,11 @@ Actualizar los modelos Eloquent para reflejar las nuevas relaciones.
 
 Refactorizar factories y seeders para poblar los nuevos campos y relaciones.
 
-Actualizar controladores y servicios para que todas las operaciones se realicen en el contexto de una OwnerCompany.
+Actualizar controladores y servicios para que todas las operaciones se realicen en el contexto de un Tenant
 
 ###### Fase 3: Adaptación de la lógica de negocio
 
-Modificar la lógica de creación de transacciones para que siempre se cree una Transaction asociada a la OwnerCompany y a la entidad correspondiente (Supplier, Customer, etc.).
+Modificar la lógica de creación de transacciones para que siempre se cree una Transaction asociada al Tenant correspondiente y a la entidad correspondiente (Supplier, Customer, etc.).
 
 Asegurar que los asientos contables (JournalEntry) se generen a partir de las transacciones y estén correctamente relacionados.
 
@@ -50,7 +50,7 @@ Añadir selección de empresa para usuarios que pertenezcan a varias compañías
 
 Crear tests para asegurar la integridad de las nuevas relaciones.
 
-Migrar los datos existentes para asignar correctamente las transacciones y movimientos a una OwnerCompany (puedes asignar todos a una empresa por defecto si es necesario).
+Migrar los datos existentes para asignar correctamente las transacciones y movimientos a un Tenant (puedes asignar todos a una empresa por defecto si es necesario).
 
 ###### Fase 6: Documentación y capacitación
 
@@ -70,7 +70,7 @@ Pruebas: Hacer pruebas exhaustivas de migración y de la lógica de negocio para
 
 Resumen visual del flujo
 
-OWNER\_COMPANY
+TENANT
 
 USER
 

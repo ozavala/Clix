@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('journal_entry_lines', function (Blueprint $table) {
             $table->id('journal_entry_line_id');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('journal_entry_id')->constrained('journal_entries', 'journal_entry_id')->onDelete('cascade');
             $table->string('account_code')->index();
             $table->string('account_name')->nullable();

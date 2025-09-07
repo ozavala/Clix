@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('bills', function (Blueprint $table) {
             $table->id('bill_id');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('purchase_order_id')->nullable()->constrained('purchase_orders', 'purchase_order_id')->onDelete('set null');
             $table->foreignId('supplier_id')->constrained('suppliers', 'supplier_id')->onDelete('cascade');
             $table->string('bill_number')->comment('Supplier\'s invoice/bill number');

@@ -2,12 +2,12 @@
 
 namespace Database\Factories;
 
-use App\Models\OwnerCompany;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-class OwnerCompanyFactory extends Factory
+class TenantFactory extends Factory
 {
-    protected $model = OwnerCompany::class;
+    protected $model = Tenant::class;
 
     public function definition(): array
     {

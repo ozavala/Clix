@@ -14,6 +14,7 @@ class ProductCategory extends Model
     protected $primaryKey = 'category_id';
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'description',
         'parent_category_id',
@@ -41,6 +42,11 @@ class ProductCategory extends Model
     public function products(): HasMany
     {
         return $this->hasMany(Product::class, 'product_category_id', 'category_id');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
     /**
      * Check if the current category is a descendant of the given category.

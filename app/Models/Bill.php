@@ -16,6 +16,7 @@ class Bill extends Model
     protected $primaryKey = 'bill_id';
 
     protected $fillable = [
+        'tenant_id',
         'purchase_order_id',
         'supplier_id',
         'bill_number',
@@ -55,6 +56,11 @@ class Bill extends Model
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class, 'supplier_id', 'supplier_id');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     public function items(): HasMany

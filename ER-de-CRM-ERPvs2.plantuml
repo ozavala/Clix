@@ -1,7 +1,7 @@
 @startuml
 !define entity(x) class x << (E,#FFAAAA) >>
 
-entity(OwnerCompanies) {
+entity(Tenant) {
   +id : int <<PK>>
   name : string
   legal_id : string
@@ -15,7 +15,7 @@ entity(OwnerCompanies) {
 
 entity(Warehouses) {
   +id : int <<PK>>
-  owner_company_id : int <<FK>>
+  tenant_id : int <<FK>>
   name : string
   location : string
   capacity : int
@@ -25,7 +25,7 @@ entity(Warehouses) {
 
 entity(Users) {
   +id : int <<PK>>
-  owner_company_id : int <<FK>>
+  tenant_id : int <<FK>>
   username : string
   email : string
   password : string
@@ -37,6 +37,7 @@ entity(Users) {
 
 entity(Roles) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   name : string
   description : string
   permissions : json
@@ -46,6 +47,7 @@ entity(Roles) {
 
 entity(Customers) {
   +id : int <<PK>>
+  tenant_id : int <<FK>> 
   name : string
   legal_id : string
   address : string
@@ -58,6 +60,7 @@ entity(Customers) {
 
 entity(Suppliers) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   name : string
   legal_id : string
   address : string
@@ -71,6 +74,7 @@ entity(Suppliers) {
 entity(Contacts) {
   +id : int <<PK>>
   customer_id : int <<FK>>
+  tenant_id : int <<FK>>
   name : string
   email : string
   phone : string
@@ -92,7 +96,6 @@ entity(ProductCategories) {
 
 entity(Products) {
   +id : int <<PK>>
-  category_id : int <<FK>>
   supplier_id : int <<FK>>
   sku : string
   name : string
@@ -125,6 +128,7 @@ entity(Inventory) {
 
 entity(Leads) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   contact_id : int <<FK>>
   status : string
   priority : string
@@ -139,6 +143,7 @@ entity(Leads) {
 
 entity(SalesStages) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   name : string
   order : int
   description : string
@@ -148,8 +153,9 @@ entity(SalesStages) {
 
 entity(Opportunities) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   lead_id : int <<FK>>
-  title : string
+  subject : string
   amount : decimal
   stage_id : int <<FK>>
   probability : decimal
@@ -163,6 +169,7 @@ entity(Opportunities) {
 
 entity(Quotes) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   opportunity_id : int <<FK>>
   quote_number : string
   date : date
@@ -175,6 +182,7 @@ entity(Quotes) {
 
 entity(SalesOrders) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   company_id : int <<FK>>
   quote_id : int <<FK>>
   order_number : string
@@ -198,6 +206,7 @@ entity(SalesOrderLines) {
 
 entity(PurchaseOrders) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   supplier_id : int <<FK>>
   order_number : string
   date : date
@@ -220,6 +229,7 @@ entity(PurchaseOrderLines) {
 
 entity(Invoices) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   sales_order_id : int <<FK>>
   invoice_number : string
   date : date
@@ -245,6 +255,7 @@ entity(InvoiceLines) {
 
 entity(Bills) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   purchase_order_id : int <<FK>>
   bill_number : string
   date : date
@@ -270,6 +281,7 @@ entity(BillLines) {
 
 entity(Payments) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   invoice_id : int <<FK>>  ' Puede ser null si es pago a bill
   bill_id : int <<FK>>     ' Puede ser null si es pago a invoice
   amount : decimal
@@ -283,6 +295,7 @@ entity(Payments) {
 
 entity(ExpenseAccounts) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   name : string
   description : string
   created_at : datetime
@@ -291,6 +304,7 @@ entity(ExpenseAccounts) {
 
 entity(IncomeAccounts) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   name : string
   description : string
   created_at : datetime
@@ -299,6 +313,7 @@ entity(IncomeAccounts) {
 
 entity(SalesExpenseAccounts) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   name : string
   description : string
   created_at : datetime
@@ -307,6 +322,7 @@ entity(SalesExpenseAccounts) {
 
 entity(Transactions) {
   +id : int <<PK>>
+  tenant_id : int <<FK
   payment_id : int <<FK>>
   journal_entry_id : int <<FK>>
   type : string
@@ -325,17 +341,20 @@ entity(Transactions) {
 
 entity(IVAReports) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   period_start : date
   period_end : date
   iva_paid : decimal        ' IVA soportado
   iva_collected : decimal   ' IVA repercutido
   iva_balance : decimal     ' Saldo a pagar o devolver
-  created_at : datetime
+  created_at : datetime     ' Fecha de generación
   updated_at : datetime
 }
 
 entity(JournalEntries) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
+  period_start : 
   date : date
   description : string
   reference : string
@@ -345,6 +364,7 @@ entity(JournalEntries) {
 
 entity(JournalLines) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   journal_entry_id : int <<FK>>
   account : string
   debit : decimal
@@ -352,8 +372,9 @@ entity(JournalLines) {
   description : string
 }
 
-entity(Configurations) {
+entity(Settings) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   key : string
   value : string
   description : string
@@ -363,6 +384,7 @@ entity(Configurations) {
 
 entity(Tasks) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
   title : string
   description : text
   due_date : date
@@ -381,6 +403,8 @@ entity(Tasks) {
 
 entity(Notes) {
   +id : int <<PK>>
+  tenant_id : int <<FK>>
+  title : string
   content : text
   created_by : int <<FK>>
   related_type : string

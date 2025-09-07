@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\CrmUser;
 use App\Models\Customer;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -28,6 +29,7 @@ class CustomerFactory extends Factory
         $type = $this->faker->randomElement(['Person', 'Company']);
 
         $data = [
+            'tenant_id' => Tenant::factory(),
             'type' => $type,
             'legal_id' => $this->faker->unique()->bothify('??-#######-#'), // e.g., AB-1234567-8
             'email' => $this->faker->unique()->safeEmail,
@@ -40,5 +42,36 @@ class CustomerFactory extends Factory
         ];
 
         return $data;
+    }
+
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenant->id,
+            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+        ]);
+    }
+
+    /**
+     * Configure the model factory.
+     *
+     * @return $this
+     */
+    public function configure()
+    {
+        return $this->afterCreating(function (Customer $customer) {
+            $customer->contacts()->create([
+                'tenant_id' => $customer->tenant_id,
+                'contactable_id' => $customer->customer_id,
+                'contactable_type' => 'customer',
+                'first_name' => $this->faker->firstName(),
+                'last_name' => $this->faker->lastName(),
+                'email' => $this->faker->unique()->safeEmail(),
+                'phone' => $this->faker->phoneNumber(),
+                'title' => $this->faker->jobTitle(),
+                
+                'created_by_user_id' => $customer->created_by_user_id,
+            ]);
+        });
     }
 }

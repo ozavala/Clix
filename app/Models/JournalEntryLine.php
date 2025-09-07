@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+
 class JournalEntryLine extends Model
 {
     use HasFactory;
@@ -14,6 +15,7 @@ class JournalEntryLine extends Model
     protected $primaryKey = 'journal_entry_line_id';
 
     protected $fillable = [
+        'tenant_id',
         'journal_entry_id',
         'account_code',
         'account_name',
@@ -42,5 +44,10 @@ class JournalEntryLine extends Model
     public function account()
     {
         return $this->belongsTo(Account::class, 'account_code', 'code');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 }

@@ -23,24 +23,27 @@ class PaymentObserver
         $tipo = $payable ? class_basename($payable) : null;
         $desc = 'Pago de ' . ($tipo === 'Invoice' ? 'factura' : ($tipo === 'Bill' ? 'compra' : 'documento'));
         $entry = JournalEntry::create([
+            'tenant_id' => $payment->tenant_id,
             'entry_date' => $payment->payment_date ?? now(),
             'transaction_type' => 'payment',
             'description' => $desc . ' (ID: ' . $payment->payment_id . ')',
             'referenceable_id' => $payment->payment_id,
             'referenceable_type' => Payment::class,
-            'created_by_user_id' => $payment->created_by_user_id ?? 1,
+            'created_by_user_id' => $payment->created_by_user_id,
         ]);
 
         if ($tipo === 'Invoice') {
             // Pago de factura (cliente)
             // Debe: Bancos/Caja, Haber: Cuentas por cobrar
             JournalEntryLine::create([
+                'tenant_id' => $payment->tenant_id,
                 'journal_entry_id' => $entry->journal_entry_id,
                 'account_code' => '1101',
                 'debit_amount' => $payment->amount,
                 'credit_amount' => 0,
             ]);
             JournalEntryLine::create([
+                'tenant_id' => $payment->tenant_id,
                 'journal_entry_id' => $entry->journal_entry_id,
                 'account_code' => '2102',
                 'debit_amount' => 0,
@@ -50,12 +53,14 @@ class PaymentObserver
             // Pago de compra (proveedor)
             // Debe: Cuentas por pagar, Haber: Bancos/Caja
             JournalEntryLine::create([
+                'tenant_id' => $payment->tenant_id,
                 'journal_entry_id' => $entry->journal_entry_id,
                 'account_code' => '2101',
                 'debit_amount' => $payment->amount,
                 'credit_amount' => 0,
             ]);
             JournalEntryLine::create([
+                'tenant_id' => $payment->tenant_id,
                 'journal_entry_id' => $entry->journal_entry_id,
                 'account_code' => '1101',
                 'debit_amount' => 0,

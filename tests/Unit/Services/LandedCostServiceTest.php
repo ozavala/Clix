@@ -27,8 +27,8 @@ class LandedCostServiceTest extends TestCase
     public function test_apportions_costs_correctly_across_items()
     {
         // Create a purchase order with items
-        $purchaseOrder = PurchaseOrder::create([
-            'supplier_id' => Supplier::factory()->create()->supplier_id,
+        $purchaseOrder = PurchaseOrder::factory()->forTenant($this->tenant)->create([
+            'supplier_id' => Supplier::factory()->forTenant($this->tenant)->create()->supplier_id,
             'purchase_order_number' => 'PO-002',
             'order_date' => now(),
             'expected_delivery_date' => now()->addDays(7),
@@ -36,10 +36,10 @@ class LandedCostServiceTest extends TestCase
             'status' => 'Draft',
             'subtotal' => 1000.00,
             'total_amount' => 1000.00,
-            'created_by_user_id' => CrmUser::factory()->create()->user_id,
+            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
-        $product1 = Product::create([
+        $product1 = Product::factory()->forTenant($this->tenant)->create([
             'name' => 'Test Product 1',
             'description' => 'Test Description 1',
             'sku' => 'TEST-002',
@@ -48,10 +48,10 @@ class LandedCostServiceTest extends TestCase
             'quantity_on_hand' => 10,
             'is_service' => false,
             'is_active' => true,
-            'created_by_user_id' => CrmUser::factory()->create()->user_id,
+            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
-        $product2 = Product::create([
+        $product2 = Product::factory()->forTenant($this->tenant)->create([
             'name' => 'Test Product 2',
             'description' => 'Test Description 2',
             'sku' => 'TEST-003',
@@ -60,11 +60,11 @@ class LandedCostServiceTest extends TestCase
             'quantity_on_hand' => 10,
             'is_service' => false,
             'is_active' => true,
-            'created_by_user_id' => CrmUser::factory()->create()->user_id,
+            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         // Create items with specific values
-        $item1 = PurchaseOrderItem::create([
+        $item1 = PurchaseOrderItem::factory()->forTenant($this->tenant)->create([
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'product_id' => $product1->product_id,
             'item_name' => 'Test Item 1',
@@ -74,7 +74,7 @@ class LandedCostServiceTest extends TestCase
             'item_total' => 600.00,
         ]);
 
-        $item2 = PurchaseOrderItem::create([
+        $item2 = PurchaseOrderItem::factory()->forTenant($this->tenant)->create([
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'product_id' => $product2->product_id,
             'item_name' => 'Test Item 2',
@@ -85,14 +85,14 @@ class LandedCostServiceTest extends TestCase
         ]);
 
         // Create landed costs
-        LandedCost::create([
+        LandedCost::factory()->forTenant($this->tenant)->create([
             'costable_type' => 'App\\Models\\PurchaseOrder',
             'costable_id' => $purchaseOrder->purchase_order_id,
             'description' => 'Test landed cost 1',
             'amount' => 100.00,
         ]);
 
-        LandedCost::create([
+        LandedCost::factory()->forTenant($this->tenant)->create([
             'costable_type' => 'App\\Models\\PurchaseOrder',
             'costable_id' => $purchaseOrder->purchase_order_id,
             'description' => 'Test landed cost 2',
@@ -136,8 +136,8 @@ class LandedCostServiceTest extends TestCase
         \Log::info("Starting simple landed cost calculation test");
         
         // Create a simple test with one item and one landed cost
-        $purchaseOrder = PurchaseOrder::create([
-            'supplier_id' => Supplier::factory()->create()->supplier_id,
+        $purchaseOrder = PurchaseOrder::factory()->forTenant($this->tenant)->create([
+            'supplier_id' => Supplier::factory()->forTenant($this->tenant)->create()->supplier_id,
             'purchase_order_number' => 'PO-001',
             'order_date' => now(),
             'expected_delivery_date' => now()->addDays(7),
@@ -145,10 +145,10 @@ class LandedCostServiceTest extends TestCase
             'status' => 'Draft',
             'subtotal' => 100.00,
             'total_amount' => 100.00,
-            'created_by_user_id' => CrmUser::factory()->create()->user_id,
+            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
-        $product = Product::create([
+        $product = Product::factory()->forTenant($this->tenant)->create([
             'name' => 'Test Product',
             'description' => 'Test Description',
             'sku' => 'TEST-001',
@@ -157,10 +157,10 @@ class LandedCostServiceTest extends TestCase
             'quantity_on_hand' => 10,
             'is_service' => false,
             'is_active' => true,
-            'created_by_user_id' => CrmUser::factory()->create()->user_id,
+            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
-        $item = PurchaseOrderItem::create([
+        $item = PurchaseOrderItem::factory()->forTenant($this->tenant)->create([
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'product_id' => $product->product_id,
             'item_name' => 'Test Item',
@@ -170,7 +170,7 @@ class LandedCostServiceTest extends TestCase
             'item_total' => 100.00,
         ]);
 
-        LandedCost::create([
+        LandedCost::factory()->forTenant($this->tenant)->create([
             'costable_type' => 'App\\Models\\PurchaseOrder',
             'costable_id' => $purchaseOrder->purchase_order_id,
             'description' => 'Test landed cost',
@@ -200,15 +200,15 @@ class LandedCostServiceTest extends TestCase
     public function test_handles_zero_subtotal_gracefully()
     {
         // Create a purchase order with zero subtotal
-        $purchaseOrder = PurchaseOrder::factory()->create([
+        $purchaseOrder = PurchaseOrder::factory()->forTenant($this->tenant)->create([
             'subtotal' => 0.00,
             'total_amount' => 0.00,
         ]);
 
         // Create an item with zero value
-        PurchaseOrderItem::create([
+        PurchaseOrderItem::factory()->forTenant($this->tenant)->create([
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
-            'product_id' => Product::factory()->create()->product_id,
+            'product_id' => Product::factory()->forTenant($this->tenant)->create()->product_id,
             'item_name' => 'Test Item',
             'item_description' => 'Test Description',
             'quantity' => 1,
@@ -217,7 +217,7 @@ class LandedCostServiceTest extends TestCase
         ]);
 
         // Create landed costs
-        LandedCost::factory()->create([
+        LandedCost::factory()->forTenant($this->tenant)->create([
             'costable_type' => 'App\\Models\\PurchaseOrder',
             'costable_id' => $purchaseOrder->purchase_order_id,
             'amount' => 100.00,
@@ -235,8 +235,8 @@ class LandedCostServiceTest extends TestCase
         \Log::info("Starting zero quantity test");
         
         // Create a purchase order
-        $purchaseOrder = PurchaseOrder::create([
-            'supplier_id' => Supplier::factory()->create()->supplier_id,
+        $purchaseOrder = PurchaseOrder::factory()->forTenant($this->tenant)->create([
+            'supplier_id' => Supplier::factory()->forTenant($this->tenant)->create()->supplier_id,
             'purchase_order_number' => 'PO-003',
             'order_date' => now(),
             'expected_delivery_date' => now()->addDays(7),
@@ -244,12 +244,12 @@ class LandedCostServiceTest extends TestCase
             'status' => 'Draft',
             'subtotal' => 1000.00,
             'total_amount' => 1000.00,
-            'created_by_user_id' => CrmUser::factory()->create()->user_id,
+            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         \Log::info("Created PO with ID: " . $purchaseOrder->purchase_order_id);
 
-        $product = Product::create([
+        $product = Product::factory()->forTenant($this->tenant)->create([
             'name' => 'Test Product Zero',
             'description' => 'Test Description Zero',
             'sku' => 'TEST-004',
@@ -258,13 +258,13 @@ class LandedCostServiceTest extends TestCase
             'quantity_on_hand' => 10,
             'is_service' => false,
             'is_active' => true,
-            'created_by_user_id' => CrmUser::factory()->create()->user_id,
+            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         \Log::info("Created product with ID: " . $product->product_id);
 
         // Create an item with zero quantity
-        $item = PurchaseOrderItem::create([
+        $item = PurchaseOrderItem::factory()->forTenant($this->tenant)->create([
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'product_id' => $product->product_id,
             'item_name' => 'Test Item',
@@ -277,7 +277,7 @@ class LandedCostServiceTest extends TestCase
         \Log::info("Created item with ID: " . $item->purchase_order_item_id);
 
         // Create landed costs
-        LandedCost::create([
+        LandedCost::factory()->forTenant($this->tenant)->create([
             'costable_type' => 'App\\Models\\PurchaseOrder',
             'costable_id' => $purchaseOrder->purchase_order_id,
             'description' => 'Test landed cost zero',
@@ -308,8 +308,8 @@ class LandedCostServiceTest extends TestCase
     public function test_handles_multiple_landed_costs()
     {
         // Create a purchase order
-        $purchaseOrder = PurchaseOrder::create([
-            'supplier_id' => Supplier::factory()->create()->supplier_id,
+        $purchaseOrder = PurchaseOrder::factory()->forTenant($this->tenant)->create([
+            'supplier_id' => Supplier::factory()->forTenant($this->tenant)->create()->supplier_id,
             'purchase_order_number' => 'PO-004',
             'order_date' => now(),
             'expected_delivery_date' => now()->addDays(7),
@@ -317,10 +317,10 @@ class LandedCostServiceTest extends TestCase
             'status' => 'Draft',
             'subtotal' => 1000.00,
             'total_amount' => 1000.00,
-            'created_by_user_id' => CrmUser::factory()->create()->user_id,
+            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
-        $product = Product::create([
+        $product = Product::factory()->forTenant($this->tenant)->create([
             'name' => 'Test Product Multiple',
             'description' => 'Test Description Multiple',
             'sku' => 'TEST-005',
@@ -329,11 +329,11 @@ class LandedCostServiceTest extends TestCase
             'quantity_on_hand' => 10,
             'is_service' => false,
             'is_active' => true,
-            'created_by_user_id' => CrmUser::factory()->create()->user_id,
+            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         // Create a single item
-        $item = PurchaseOrderItem::create([
+        $item = PurchaseOrderItem::factory()->forTenant($this->tenant)->create([
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'product_id' => $product->product_id,
             'item_name' => 'Test Item',
@@ -344,21 +344,21 @@ class LandedCostServiceTest extends TestCase
         ]);
 
         // Create multiple landed costs
-        LandedCost::create([
+        LandedCost::factory()->forTenant($this->tenant)->create([
             'costable_type' => 'App\\Models\\PurchaseOrder',
             'costable_id' => $purchaseOrder->purchase_order_id,
             'description' => 'Test landed cost 1',
             'amount' => 100.00,
         ]);
 
-        LandedCost::create([
+        LandedCost::factory()->forTenant($this->tenant)->create([
             'costable_type' => 'App\\Models\\PurchaseOrder',
             'costable_id' => $purchaseOrder->purchase_order_id,
             'description' => 'Test landed cost 2',
             'amount' => 50.00,
         ]);
 
-        LandedCost::create([
+        LandedCost::factory()->forTenant($this->tenant)->create([
             'costable_type' => 'App\\Models\\PurchaseOrder',
             'costable_id' => $purchaseOrder->purchase_order_id,
             'description' => 'Test landed cost 3',
@@ -374,4 +374,4 @@ class LandedCostServiceTest extends TestCase
         // 175 / 10 units = 17.5 per unit
         $this->assertEquals('17.5000', $item->landed_cost_per_unit);
     }
-} 
+}

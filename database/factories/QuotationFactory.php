@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Tenant;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Quotation>
@@ -17,6 +18,7 @@ class QuotationFactory extends Factory
     public function definition(): array
     {
         return [
+            'tenant_id' => Tenant::factory(),
             'opportunity_id' => null, // Will be set in the seeder
             'subject' => $this->faker->sentence(3),
             'quotation_date' => now(),
@@ -39,5 +41,14 @@ class QuotationFactory extends Factory
             'notes' => $this->faker->paragraph,
             'created_by_user_id' => null, // Will be set in the seeder
         ];
+    }
+
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenant->id,
+            'opportunity_id' => Opportunity::factory()->forTenant($tenant),
+            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+        ]);
     }
 }

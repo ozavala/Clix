@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\JournalEntry;
 use App\Models\JournalEntryLine;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -22,6 +23,7 @@ class JournalEntryLineFactory extends Factory
         $isDebit = $this->faker->boolean();
         
         return [
+            'tenant_id' => Tenant::factory(),
             'journal_entry_id' => JournalEntry::factory(),
             'account_code' => $this->faker->randomElement(['1101', '2101', '2102', '3101', '4101']),
             'account_name' => $this->faker->randomElement([
@@ -44,25 +46,31 @@ class JournalEntryLineFactory extends Factory
         ];
     }
 
-    /**
-     * Indicate that this is a debit line.
-     */
-    public function debit(): static
+    public function forTenant(\App\Models\Tenant $tenant): static
     {
         return $this->state(fn (array $attributes) => [
-            'debit_amount' => $this->faker->randomFloat(2, 100, 5000),
-            'credit_amount' => 0,
+            'tenant_id' => $tenant->id,
+            'journal_entry_id' => JournalEntry::factory()->forTenant($tenant),
         ]);
     }
 
     /**
-     * Indicate that this is a credit line.
+     * Indicate that the journal entry is posted.
      */
-    public function credit(): static
+    public function posted(): static
     {
         return $this->state(fn (array $attributes) => [
-            'debit_amount' => 0,
-            'credit_amount' => $this->faker->randomFloat(2, 100, 5000),
+            'status' => 'posted',
         ]);
     }
-} 
+
+    /**
+     * Indicate that the journal entry is a draft.
+     */
+    public function draft(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'status' => 'draft',
+        ]);
+    }
+}

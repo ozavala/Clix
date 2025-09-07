@@ -33,4 +33,12 @@ class OrderItemFactory extends Factory
             'item_description' => fake()->optional()->sentence(),
         ];
     }
+
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'order_id' => Order::factory()->forTenant($tenant)->create()->order_id,
+            'product_id' => Product::factory()->forTenant($tenant)->create()->product_id,
+        ]);
+    }
 }

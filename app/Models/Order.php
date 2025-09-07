@@ -17,6 +17,7 @@ class Order extends Model
     protected $primaryKey = 'order_id';
 
     protected $fillable = [
+        'tenant_id',
         'customer_id',
         'quotation_id',
         'opportunity_id',
@@ -77,6 +78,11 @@ class Order extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(CrmUser::class, 'created_by_user_id', 'user_id');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     public function items(): HasMany

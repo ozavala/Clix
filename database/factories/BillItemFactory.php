@@ -26,4 +26,12 @@ class BillItemFactory extends Factory
             'item_total' => $quantity * $unitPrice,
         ];
     }
+
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'bill_id' => Bill::factory()->forTenant($tenant),
+            'product_id' => Product::factory()->forTenant($tenant),
+        ]);
+    }
 }

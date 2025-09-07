@@ -10,7 +10,7 @@ class Transaction extends Model
     use HasFactory;
 
     protected $fillable = [
-        'owner_company_id',
+        'tenant_id',
         'type',
         'date',
         'amount',
@@ -26,9 +26,9 @@ class Transaction extends Model
         'created_by_user_id',
     ];
 
-    public function ownerCompany()
+    public function tenant()
     {
-        return $this->belongsTo(OwnerCompany::class, 'owner_company_id');
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     public function supplier()

@@ -11,7 +11,7 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('owner_companies', function (Blueprint $table) {
+        Schema::create('tenants', function (Blueprint $table) {
             $table->bigIncrements('id');
             $table->string('name');
             $table->string('legal_id')->unique();
@@ -28,6 +28,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('owner_companies');
+        Schema::dropIfExists('tenants');
     }
 };

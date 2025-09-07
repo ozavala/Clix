@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('opportunities', function (Blueprint $table) {
             $table->id('opportunity_id');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
             $table->foreignId('lead_id')->nullable()->constrained('leads', 'lead_id')->onDelete('set null');

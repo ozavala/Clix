@@ -20,7 +20,7 @@ class NoteFeatureTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = CrmUser::factory()->create();
+        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
         $this->actingAs($this->user, 'web');
         // Asignar permiso necesario para ver clientes y asociar notas
         // Esto es requerido por la lógica de autorización en notas y clientes

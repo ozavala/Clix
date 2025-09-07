@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Warehouse extends Model
 {
@@ -14,6 +15,7 @@ class Warehouse extends Model
     protected $primaryKey = 'warehouse_id';
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'location',
         // 'address', // This field should be removed if using polymorphic addresses
@@ -38,5 +40,10 @@ class Warehouse extends Model
     public function addresses(): MorphMany
     {
         return $this->morphMany(Address::class, 'addressable');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 }

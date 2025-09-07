@@ -24,4 +24,12 @@ class PurchaseOrderItemFactory extends Factory
             'landed_cost_per_unit' => $this->faker->optional()->randomFloat(4, 0, 100),
         ];
     }
+
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'purchase_order_id' => PurchaseOrder::factory()->forTenant($tenant),
+            'product_id' => Product::factory()->forTenant($tenant),
+        ]);
+    }
 }

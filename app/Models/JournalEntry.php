@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
 
+
 class JournalEntry extends Model
 {
     use HasFactory;
@@ -15,6 +16,7 @@ class JournalEntry extends Model
     protected $primaryKey = 'journal_entry_id';
 
     protected $fillable = [
+        'tenant_id',
         'entry_date',
         'transaction_type',
         'description',
@@ -40,5 +42,10 @@ class JournalEntry extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(CrmUser::class, 'created_by_user_id', 'user_id');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 }

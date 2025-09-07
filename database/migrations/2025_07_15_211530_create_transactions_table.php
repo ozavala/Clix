@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->unsignedBigInteger('owner_company_id');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('type');
             $table->date('date');
             $table->decimal('amount', 15, 2);
@@ -29,7 +29,7 @@ return new class extends Migration
             $table->unsignedBigInteger('created_by_user_id');
             $table->timestamps();
 
-            $table->foreign('owner_company_id')->references('id')->on('owner_companies');
+            
             $table->foreign('supplier_id')->references('supplier_id')->on('suppliers');
             $table->foreign('customer_id')->references('customer_id')->on('customers');
             $table->foreign('invoice_id')->references('invoice_id')->on('invoices');

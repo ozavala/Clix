@@ -16,6 +16,7 @@ class Lead extends Model
     protected $primaryKey = 'lead_id';
 
     protected $fillable = [
+        'tenant_id',
         'title',
         'description',
         'value',
@@ -57,6 +58,11 @@ class Lead extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(CrmUser::class, 'created_by_user_id', 'user_id');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     /**

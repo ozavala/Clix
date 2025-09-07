@@ -26,6 +26,15 @@ class GoodsReceiptFactory extends Factory
         ];
     }
 
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'purchase_order_id' => PurchaseOrder::factory()->forTenant($tenant),
+            'received_by_user_id' => CrmUser::factory()->forTenant($tenant),
+            'warehouse_id' => Warehouse::factory()->forTenant($tenant),
+        ]);
+    }
+
     /**
      * Create a received goods receipt.
      */

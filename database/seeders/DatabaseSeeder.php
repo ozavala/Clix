@@ -23,7 +23,7 @@ use Database\Seeders\SupplierSeeder;
 use App\Models\Supplier;
 use Database\Seeders\TaxRateSeeder;
 use Database\Seeders\AccountSeeder;
-use Database\Seeders\OwnerCompanySeeder;
+use Database\Seeders\TenantSeeder;
 use Database\Seeders\TransactionSeeder;
 
 class DatabaseSeeder extends Seeder
@@ -54,7 +54,7 @@ class DatabaseSeeder extends Seeder
             OrderSeeder::class,
             PaymentSeeder::class,
             AccountSeeder::class,
-            OwnerCompanySeeder::class, // <-- Agregado
+            TenantSeeder::class, // <-- Agregado
             TransactionSeeder::class,  // <-- Agregado
         ]);
 

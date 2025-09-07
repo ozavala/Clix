@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Contact;
 use App\Models\CrmUser;
+use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -19,12 +20,21 @@ class ContactFactory extends Factory
     public function definition(): array
     {
         return [
+            'tenant_id' => Tenant::factory(),
             'first_name' => $this->faker->firstName(),
             'last_name' => $this->faker->lastName(),
             'email' => $this->faker->unique()->safeEmail(),
             'phone' => $this->faker->phoneNumber(),
             'title' => $this->faker->jobTitle(),
-            'created_by_user_id' => CrmUser::inRandomOrder()->first()->user_id ?? CrmUser::factory(),
+            'created_by_user_id' => CrmUser::factory(),
         ];
+    }
+
+    public function forTenant(\App\Models\Tenant $tenant): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenant->id,
+            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+        ]);
     }
 }

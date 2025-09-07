@@ -16,6 +16,7 @@ class Invoice extends Model
     protected $primaryKey = 'invoice_id';
 
     protected $fillable = [
+        'tenant_id',
         'order_id',
         'quotation_id',
         'customer_id',
@@ -67,6 +68,11 @@ class Invoice extends Model
     public function customer(): BelongsTo
     {
         return $this->belongsTo(Customer::class, 'customer_id', 'customer_id');
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
     public function createdBy(): BelongsTo

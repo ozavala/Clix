@@ -15,6 +15,7 @@ return new class extends Migration
     {
         Schema::create('accounts', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('code')->unique();
             $table->string('name');
             $table->string('type'); // Activo, Pasivo, Ingreso, Gasto, Impuesto, Patrimonio
