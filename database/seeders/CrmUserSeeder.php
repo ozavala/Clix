@@ -18,6 +18,7 @@ class CrmUserSeeder extends Seeder
         // For example, you might want to create a few users with different roles.
 
         $adminUser = CrmUser::create([
+            'tenant_id' => 1,
             'username' => 'admin',
             'full_name' => 'Admin User',
             'email' => 'admin@example.com',
@@ -26,6 +27,7 @@ class CrmUserSeeder extends Seeder
         ]);
 
         $salesUser = CrmUser::create([
+            'tenant_id' => 1,
             'username' => 'sales',
             'full_name' => 'Sales User',
             'email' => 'sales@example.com',
@@ -34,6 +36,7 @@ class CrmUserSeeder extends Seeder
         ]);
 
         $supportUser = CrmUser::create([
+            'tenant_id' => 1,
             'username' => 'support',
             'full_name' => 'Support User',
             'email' => 'support@example.com',
@@ -42,6 +45,7 @@ class CrmUserSeeder extends Seeder
         ]);
 
         $marketingUser = CrmUser::create([
+            'tenant_id' => 1,
             'username' => 'marketing',
             'full_name' => 'Marketing User',
             'email' => 'marketing@example.com',

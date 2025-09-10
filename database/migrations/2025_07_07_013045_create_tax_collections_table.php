@@ -16,14 +16,14 @@ return new class extends Migration
             $table->foreignId('invoice_id')->nullable()->constrained('invoices', 'invoice_id')->onDelete('cascade');
             $table->foreignId('quotation_id')->nullable()->constrained('quotations', 'quotation_id')->onDelete('cascade');
             $table->foreignId('tax_rate_id')->constrained('tax_rates', 'tax_rate_id')->onDelete('cascade');
-            $table->decimal('taxable_amount', 15, 2); // Monto sobre el cual se calcula el IVA
-            $table->decimal('tax_amount', 15, 2); // Monto del IVA cobrado
+            $table->decimal('taxable_amount', 15, 2); // Amount before tax
+            $table->decimal('tax_amount', 15, 2); // Amount IVA received
             $table->string('collection_type')->default('sale'); // 'sale', 'service'
             $table->date('collection_date');
             $table->string('customer_name')->nullable();
             $table->text('description')->nullable();
             $table->string('status')->default('collected'); // 'collected', 'pending', 'refunded'
-            $table->date('remittance_date')->nullable(); // Fecha cuando se remitió el IVA
+            $table->date('remittance_date')->nullable(); // Date of IVA remittance
             $table->foreignId('created_by_user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();

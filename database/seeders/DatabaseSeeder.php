@@ -11,20 +11,8 @@ use App\Models\Opportunity;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Quotation;
-use Illuminate\Database\Seeder;
-use Database\Seeders\CrmUserSeeder;
-use Database\Seeders\ProductCategorySeeder;
-use Database\Seeders\ProductFeatureSeeder;
-use Database\Seeders\ProductSeeder;
-use Database\Seeders\PermissionSeeder;
-use Database\Seeders\UserRoleSeeder;
-use Database\Seeders\WarehouseSeeder;
-use Database\Seeders\SupplierSeeder;
 use App\Models\Supplier;
-use Database\Seeders\TaxRateSeeder;
-use Database\Seeders\AccountSeeder;
-use Database\Seeders\TenantSeeder;
-use Database\Seeders\TransactionSeeder;
+use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -40,22 +28,26 @@ class DatabaseSeeder extends Seeder
 
         // 1. Seed foundational data that is mostly static
         $this->call([
+            // Core system seeders
+            TenantSeeder::class,
             PermissionSeeder::class,
             TaxRateSeeder::class,
-            SettingsTableSeeder::class,
             UserRoleSeeder::class,
-            CrmUserSeeder::class, // Creates specific users like 'Admin', 'Sales'
+            
+            // Basic data seeders
+            CrmUserSeeder::class,
             ProductCategorySeeder::class,
             ProductFeatureSeeder::class,
             WarehouseSeeder::class,
             SupplierSeeder::class,
-            ProductSeeder::class, // This seeder creates specific products, which is fine
-            QuotationSeeder::class,
+            ProductSeeder::class,
+            
+            // Transactional data seeders
             OrderSeeder::class,
+            QuotationSeeder::class,
             PaymentSeeder::class,
             AccountSeeder::class,
-            TenantSeeder::class, // <-- Agregado
-            TransactionSeeder::class,  // <-- Agregado
+            TransactionSeeder::class,
         ]);
 
         // 2. Use factories to create a rich, dynamic dataset for testing
@@ -96,32 +88,43 @@ class DatabaseSeeder extends Seeder
         }
 
         // Create some standalone leads that haven't been converted yet
-        Lead::factory(15)->create([
-            'customer_id' => Customer::all()->random()->customer_id,
-            'assigned_to_user_id' => $users->random()->user_id,
-            'created_by_user_id' => $users->random()->user_id,
-        ]);
-        $this->command->info('Leads created.');
+        $customers = Customer::all();
+        if ($customers->isNotEmpty()) {
+            Lead::factory(15)->create([
+                'customer_id' => $customers->random()->customer_id,
+                'assigned_to_user_id' => $users->random()->user_id,
+                'created_by_user_id' => $users->random()->user_id,
+            ]);
+            $this->command->info('Leads created.');
+        }
 
         // Create integration data (lead -> customer -> opportunity -> invoice -> payments)
-        $this->call(LeadToClientIntegrationSeeder::class);
-        $this->command->info('Integration data created.');
+        if (class_exists(LeadToClientIntegrationSeeder::class)) {
+            $this->call(LeadToClientIntegrationSeeder::class);
+            $this->command->info('Integration data created.');
+        }
 
-        // Call the newly refactored seeders
-        $this->call(PurchaseOrderSeeder::class);
-        $this->call(QuotationSeeder::class);
-       
-        // Create unit price calculation data
-        $this->call(UnitPriceCalculationSeeder::class);
-        $this->command->info('Unit price calculation data created.');
+        // Call the refactored seeders with proper error handling
+        $seeders = [
+            PurchaseOrderSeeder::class,
+            UnitPriceCalculationSeeder::class => 'Unit price calculation data created.',
+            PurchaseOrderStatusFlowSeeder::class => 'Purchase order status flow demo created.',
+            ReportDataSeeder::class => 'Report data created.'
+        ];
 
-        // Create purchase order status flow demo
-        $this->call(PurchaseOrderStatusFlowSeeder::class);
-        $this->command->info('Purchase order status flow demo created.');
-        
-        // Create comprehensive report data
-        $this->call(ReportDataSeeder::class);
-        $this->command->info('Report data created.');
+        foreach ($seeders as $seeder => $message) {
+            if (is_int($seeder)) {
+                $seeder = $message;
+                $message = null;
+            }
+            
+            if (class_exists($seeder)) {
+                $this->call($seeder);
+                if ($message) {
+                    $this->command->info($message);
+                }
+            }
+        }
        
         // The OrderSeeder and InvoiceSeeder depend on the above, so they should be called after.
         // We will refactor them next.

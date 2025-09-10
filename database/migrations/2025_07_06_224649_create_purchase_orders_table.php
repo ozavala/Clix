@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id('purchase_order_id');
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('supplier_id')->constrained('suppliers', 'supplier_id')->onDelete('cascade');
-            // $table->foreignId('shipping_address_id')->nullable()->constrained('addresses', 'address_id')->onDelete('set null');
+            $table->foreignId('shipping_address_id')->nullable()->constrained('addresses', 'address_id')->onDelete('set null');
             $table->string('purchase_order_number')->nullable()->unique();
             $table->date('order_date');
             $table->date('expected_delivery_date')->nullable();
@@ -27,6 +27,7 @@ return new class extends Migration
             $table->decimal('discount_amount', 15, 2)->default(0.00);
             $table->decimal('tax_percentage', 5, 2)->nullable();
             $table->decimal('tax_amount', 15, 2)->default(0.00);
+            $table->foreignId('tax_rate_id')->nullable()->constrained('tax_rates', 'tax_rate_id')->onDelete('set null');
             $table->decimal('amount_paid', 15, 2)->default(0.00);
             $table->decimal('shipping_cost', 15, 2)->default(0.00);
             $table->decimal('other_charges', 15, 2)->default(0.00);

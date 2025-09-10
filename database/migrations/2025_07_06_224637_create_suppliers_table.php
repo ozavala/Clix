@@ -15,10 +15,11 @@ return new class extends Migration
             $table->id('supplier_id');
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('name');
+            $table->string('legal_id')->nullable()->unique();
             $table->string('contact_person')->nullable();
             $table->string('email')->nullable()->unique();
             $table->string('phone_number')->nullable();
-            $table->text('notes')->nullable();
+            $table->morphs('noteable');
             $table->timestamps();
             $table->softDeletes();
         });

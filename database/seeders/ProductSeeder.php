@@ -14,6 +14,7 @@ class ProductSeeder extends Seeder
     public function run(): void
     {
         Product::create([
+            'tenant_id' => 1,
             'name' => 'Laptop',
             'description' => 'High-performance laptop with 16GB RAM and 512GB SSD.',
             'sku' => 'LAPTOP-001',
@@ -28,6 +29,7 @@ class ProductSeeder extends Seeder
             2 => ['value' => '512GB SSD'],
         ]);
         Product::create([
+            'tenant_id' => 1,
             'name' => 'Smartphone',
             'description' => 'Latest smartphone with 128GB storage and 6GB RAM.',
             'sku' => 'SMARTPHONE-001',
@@ -42,6 +44,7 @@ class ProductSeeder extends Seeder
             4 => ['value' => '6GB RAM'],
         ]);
         Product::create([
+            'tenant_id' => 1,
             'name' => 'Office Chair',
             'description' => 'Ergonomic office chair with adjustable height and lumbar support.',
             'sku' => 'CHAIR-001',
@@ -56,6 +59,7 @@ class ProductSeeder extends Seeder
             6 => ['value' => 'Lumbar Support'],
         ]);
         Product::create([
+            'tenant_id' => 1,
             'name' => 'Consulting Service',
             'description' => 'Professional consulting service for business strategy.',
             'sku' => 'CONSULT-001',
@@ -67,6 +71,7 @@ class ProductSeeder extends Seeder
             'product_category_id' => 3, // Assuming category ID 4 exists for services
         ]);
         Product::create([
+            'tenant_id' => 1,
             'name' => 'Web Development Service',
             'description' => 'Custom web development service for businesses.',
             'sku' => 'WEBDEV-001',
@@ -78,6 +83,7 @@ class ProductSeeder extends Seeder
             'product_category_id' => 3, // Assuming category ID 4 exists for services
         ]);
         Product::create([
+            'tenant_id' => 1,
             'name' => 'Graphic Design Service',
             'description' => 'Professional graphic design service for branding and marketing.',
             'sku' => 'GRAPHIC-001',

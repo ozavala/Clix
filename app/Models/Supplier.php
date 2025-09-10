@@ -22,7 +22,9 @@ class Supplier extends Model
         'contact_person',
         'email',
         'phone_number',
-        'notes',
+        'noteable_id',
+        'noteable_type',
+        
     ];
 
     /**

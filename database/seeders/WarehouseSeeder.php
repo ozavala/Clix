@@ -14,13 +14,17 @@ class WarehouseSeeder extends Seeder
     public function run(): void
     {
         $warehouse1 = Warehouse::create([
+            'tenant_id' => 1,
             'name' => 'Main Warehouse',
-            'location' => '123 Main St, City, Country',
-            // 'address' => '123 Main St, City, Country', // Remove this line
+            'location' => 'Main Warehouse',
+             'addressable_id' => 1,
+            'addressable_type' => 'App\Models\Warehouse',    
             'is_active' => true,
         ]);
         $warehouse1->addresses()->create([
             'address_type' => 'Primary',
+            'addressable_id' => 1,
+            'addressable_type' => 'App\Models\Warehouse',
             'street_address_line_1' => '123 Main St',
             'city' => 'Anytown',
             'state_province' => 'CA',
@@ -30,13 +34,17 @@ class WarehouseSeeder extends Seeder
         ]);
 
         $warehouse2 = Warehouse::create([
+            'tenant_id' => 1,
             'name' => 'Secondary Warehouse',
-            'location' => '456 Secondary St, City, Country',
-            // 'address' => '456 Secondary St, City, Country', // Remove this line
+            'location' => 'Secondary Warehouse',
+            'addressable_id' => 2,
+            'addressable_type' => 'App\Models\Warehouse',    
             'is_active' => true,
         ]);
         $warehouse2->addresses()->create([
             'address_type' => 'Primary',
+            'addressable_id' => 2,
+            'addressable_type' => 'App\Models\Warehouse',
             'street_address_line_1' => '456 Oak Ave',
             'city' => 'Otherville',
             'state_province' => 'NY',

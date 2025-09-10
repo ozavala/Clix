@@ -18,6 +18,7 @@ use App\Models\Supplier;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\Quotation;
+use App\Models\Tenant;
 use App\Models\QuotationItem;
 use App\Models\Lead;
 use App\Models\Opportunity;
@@ -34,7 +35,7 @@ class ReportDataSeeder extends Seeder
         $this->createRoles();
         
         // Crear usuarios
-        $this->createUsers();
+        $this->createCrmUsers();
         
         // Crear categorías de productos
         $this->createProductCategories();
@@ -89,42 +90,62 @@ class ReportDataSeeder extends Seeder
         }
     }
 
-    private function createUsers(): void
+    private function createCrmUsers(): void
     {
         $users = [
             [
-                'name' => 'John Smith',
+                'tenant_id' => 1,
+                'username' => 'john.smith',
+                'full_name' => 'John Smith',
                 'email' => 'john.smith@company.com',
                 'role' => 'admin'
             ],
             [
-                'name' => 'Maria Garcia',
+                'tenant_id' => 1,
+                'username' => 'maria.garcia',
+                'full_name' => 'Maria Garcia',
                 'email' => 'maria.garcia@company.com',
                 'role' => 'sales'
             ],
             [
-                'name' => 'David Johnson',
+                'tenant_id' => 1,
+                'username' => 'david.johnson',
+                'full_name' => 'David Johnson',
                 'email' => 'david.johnson@company.com',
                 'role' => 'sales'
             ],
             [
-                'name' => 'Sarah Wilson',
+                'tenant_id' => 1,
+                'username' => 'sarah.wilson',
+                'full_name' => 'Sarah Wilson',
                 'email' => 'sarah.wilson@company.com',
                 'role' => 'manager'
             ],
             [
-                'name' => 'Michael Brown',
+                'tenant_id' => 1,
+                'username' => 'michael.brown',
+                'full_name' => 'Michael Brown',
                 'email' => 'michael.brown@company.com',
                 'role' => 'accountant'
             ],
         ];
 
         foreach ($users as $userData) {
+            // Create or get a tenant first
+            $tenant = Tenant::firstOrCreate(
+                ['name' => $userData['full_name'] . ' Tenant'],
+                [
+                    'legal_id' => 'TENANT-' . strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $userData['username']), 0, 8)) . '-' . rand(1000, 9999),
+                    'is_active' => true
+                ]
+            );
+
             $user = CrmUser::firstOrCreate(
                 ['email' => $userData['email']],
                 [
-                    'username' => strtolower(str_replace(' ', '.', $userData['name'])),
-                    'full_name' => $userData['name'],
+                    'tenant_id' => $tenant->id,
+                    'username' => $userData['username'],
+                    'full_name' => $userData['full_name'],
                     'email' => $userData['email'],
                     'password' => bcrypt('password123'),
                 ]
@@ -156,14 +177,34 @@ class ReportDataSeeder extends Seeder
             ['name' => 'Toys & Games', 'description' => 'Toys and entertainment products'],
         ];
 
+        // Get the first tenant or create one if none exists
+        $tenant = Tenant::first();
+        if (!$tenant) {
+            $tenant = Tenant::create([
+                'name' => 'Default Tenant',
+                'legal_id' => 'TENANT-DEFAULT-' . rand(1000, 9999),
+                'is_active' => true
+            ]);
+        }
+
         foreach ($categories as $category) {
-            ProductCategory::firstOrCreate(['name' => $category['name']], $category);
+            ProductCategory::firstOrCreate(
+                ['name' => $category['name'], 'tenant_id' => $tenant->id],
+                array_merge($category, ['tenant_id' => $tenant->id])
+            );
         }
     }
 
     private function createProducts(): void
     {
-        $categories = ProductCategory::all();
+        $tenant = Tenant::first();
+        if (!$tenant) {
+            $tenant = Tenant::create([
+                'name' => 'Default Tenant',
+                'legal_id' => 'TENANT-DEFAULT-' . rand(1000, 9999),
+                'is_active' => true
+            ]);
+        }
         
         $products = [
             // Electronics
@@ -202,26 +243,37 @@ class ReportDataSeeder extends Seeder
             ['name' => 'Board Game Collection', 'sku' => 'BOARDGAMES', 'price' => 49.99, 'cost' => 25.00, 'category' => 'Books & Media'],
         ];
 
-        foreach ($products as $productData) {
-            $category = ProductCategory::where('name', $productData['category'])->first();
+        foreach ($products as $product) {
+            $category = ProductCategory::where('name', $product['category'])
+                                    ->where('tenant_id', $tenant->id)
+                                    ->first();
             
-            Product::firstOrCreate(
-                ['sku' => $productData['sku']],
-                [
-                    'name' => $productData['name'],
-                    'sku' => $productData['sku'],
-                    'price' => $productData['price'],
-                    'cost' => $productData['cost'],
-                    'product_category_id' => $category->id,
-                    'description' => 'High quality ' . strtolower($productData['name']),
-                    'reorder_point' => rand(5, 20),
-                ]
-            );
+            if ($category) {
+                Product::firstOrCreate(
+                    ['sku' => $product['sku'], 'tenant_id' => $tenant->id],
+                    [
+                        'name' => $product['name'],
+                        'price' => $product['price'],
+                        'cost' => $product['cost'],
+                        'category_id' => $category->id,
+                        'tenant_id' => $tenant->id,
+                    ]
+                );
+            }
         }
     }
 
     private function createWarehouses(): void
     {
+        $tenant = Tenant::first();
+        if (!$tenant) {
+            $tenant = Tenant::create([
+                'name' => 'Default Tenant',
+                'legal_id' => 'TENANT-DEFAULT-' . rand(1000, 9999),
+                'is_active' => true
+            ]);
+        }
+
         $warehouses = [
             ['name' => 'Main Warehouse'],
             ['name' => 'East Coast Distribution'],
@@ -229,12 +281,24 @@ class ReportDataSeeder extends Seeder
         ];
 
         foreach ($warehouses as $warehouse) {
-            Warehouse::firstOrCreate(['name' => $warehouse['name']], $warehouse);
+            Warehouse::firstOrCreate(
+                ['name' => $warehouse['name'], 'tenant_id' => $tenant->id],
+                array_merge($warehouse, ['tenant_id' => $tenant->id])
+            );
         }
     }
 
     private function createCustomers(): void
     {
+        $tenant = Tenant::first();
+        if (!$tenant) {
+            $tenant = Tenant::create([
+                'name' => 'Default Tenant',
+                'legal_id' => 'TENANT-DEFAULT-' . rand(1000, 9999),
+                'is_active' => true
+            ]);
+        }
+
         $customers = [
             // Empresas
             [
@@ -245,6 +309,7 @@ class ReportDataSeeder extends Seeder
                 'legal_id' => 'TECH001',
                 'address_street' => '123 Tech Street',
                 'address_city' => 'San Francisco',
+                'tenant_id' => $tenant->id,
                 'address_state' => 'CA',
                 'address_postal_code' => '94105',
                 'address_country' => 'USA'
@@ -255,6 +320,7 @@ class ReportDataSeeder extends Seeder
                 'email' => 'info@fashionforward.com',
                 'phone_number' => '+1-555-0102',
                 'legal_id' => 'FASH002',
+                'tenant_id' => $tenant->id,
                 'address_street' => '456 Fashion Ave',
                 'address_city' => 'New York',
                 'address_state' => 'NY',
@@ -366,13 +432,27 @@ class ReportDataSeeder extends Seeder
             ],
         ];
 
-        foreach ($customers as $customer) {
-            Customer::firstOrCreate(['email' => $customer['email']], $customer);
+        foreach ($customers as $customerData) {
+            // Ensure tenant_id is set for all customers
+            $customerData['tenant_id'] = $tenant->id;
+            $customer = Customer::firstOrCreate(
+                ['email' => $customerData['email'], 'tenant_id' => $tenant->id],
+                $customerData
+            );
         }
     }
 
     private function createSuppliers(): void
     {
+        $tenant = Tenant::first();
+        if (!$tenant) {
+            $tenant = Tenant::create([
+                'name' => 'Default Tenant',
+                'legal_id' => 'TENANT-DEFAULT-' . rand(1000, 9999),
+                'is_active' => true
+            ]);
+        }
+
         $suppliers = [
             ['name' => 'Apple Inc', 'legal_id' => 'SUP-3001', 'email' => 'supplier@apple.com', 'phone_number' => '+1-555-0201'],
             ['name' => 'Samsung Electronics', 'legal_id' => 'SUP-3002', 'email' => 'orders@samsung.com', 'phone_number' => '+1-555-0202'],
@@ -385,12 +465,25 @@ class ReportDataSeeder extends Seeder
         ];
 
         foreach ($suppliers as $supplier) {
-            Supplier::firstOrCreate(['email' => $supplier['email']], $supplier);
+            // Ensure tenant_id is set for all suppliers
+            $supplier['tenant_id'] = $tenant->id;
+            Supplier::firstOrCreate(
+                ['email' => $supplier['email'], 'tenant_id' => $tenant->id],
+                $supplier
+            );
         }
-    }
 
     private function createLeadsAndOpportunities(): void
     {
+        $tenant = Tenant::first();
+        if (!$tenant) {
+            $tenant = Tenant::create([
+                'name' => 'Default Tenant',
+                'legal_id' => 'TENANT-DEFAULT-' . rand(1000, 9999),
+                'is_active' => true
+            ]);
+        }
+
         $leads = [
             [
                 'title' => 'New Tech Startup',
@@ -398,6 +491,7 @@ class ReportDataSeeder extends Seeder
                 'contact_email' => 'contact@newtechstartup.com',
                 'contact_phone' => '+1-555-0301',
                 'description' => 'New technology startup looking for software solutions',
+                'tenant_id' => $tenant->id,
                 'value' => 50000,
                 'status' => 'New',
                 'source' => 'Website'
@@ -408,6 +502,7 @@ class ReportDataSeeder extends Seeder
                 'contact_email' => 'info@fashionboutique.com',
                 'contact_phone' => '+1-555-0302',
                 'description' => 'Fashion boutique expanding their online presence',
+                'tenant_id' => $tenant->id,
                 'value' => 25000,
                 'status' => 'New',
                 'source' => 'Referral'
@@ -445,6 +540,8 @@ class ReportDataSeeder extends Seeder
         ];
 
         foreach ($leads as $leadData) {
+            // Ensure tenant_id is set for all leads
+            $leadData['tenant_id'] = $tenant->id;
             $lead = Lead::firstOrCreate(
                 ['contact_email' => $leadData['contact_email']],
                 $leadData
@@ -452,15 +549,21 @@ class ReportDataSeeder extends Seeder
 
             // Crear oportunidad para algunos leads
             if (rand(1, 3) === 1) {
+                $opportunityData = [
+                    'title' => $lead->title . ' - Opportunity',
+                    'description' => 'Opportunity created from lead: ' . $lead->description,
+                    'value' => $lead->value * (rand(90, 120) / 100), // Random value ±10%
+                    'expected_close_date' => now()->addDays(rand(30, 90)),
+                    'stage' => 'Proposal',
+                    'probability' => rand(30, 70),
+                    'source' => $lead->source,
+                    'lead_id' => $lead->lead_id,
+                    'tenant_id' => $tenant->id
+                ];
+
                 Opportunity::firstOrCreate(
-                    ['lead_id' => $lead->lead_id],
-                    [
-                        'lead_id' => $lead->lead_id,
-                        'name' => 'Potential ' . $lead->title . ' Deal',
-                        'amount' => $lead->value,
-                        'stage' => 'prospecting',
-                        'probability' => rand(10, 90),
-                    ]
+                    ['lead_id' => $lead->lead_id, 'tenant_id' => $tenant->id],
+                    $opportunityData
                 );
             }
         }
@@ -468,9 +571,19 @@ class ReportDataSeeder extends Seeder
 
     private function createQuotations(): void
     {
-        $opportunities = Opportunity::all();
-        $products = Product::all();
-        $users = CrmUser::whereHas('roles', function ($query) {
+        $tenant = Tenant::first();
+        if (!$tenant) {
+            $tenant = Tenant::create([
+                'name' => 'Default Tenant',
+                'legal_id' => 'TENANT-DEFAULT-' . rand(1000, 9999),
+                'is_active' => true
+            ]);
+        }
+
+        $opportunities = Opportunity::where('tenant_id', $tenant->id)->get();
+        $products = Product::where('tenant_id', $tenant->id)->get();
+        $users = CrmUser::where('tenant_id', $tenant->id)
+                      ->whereHas('roles', function ($query) {
             $query->whereIn('name', ['sales', 'manager']);
         })->get();
 
@@ -481,6 +594,7 @@ class ReportDataSeeder extends Seeder
             $quotation = Quotation::create([
                 'opportunity_id' => $opportunity->opportunity_id,
                 'subject' => 'Quotation for ' . $opportunity->name,
+                'tenant_id' => $tenant->id,
                 'quotation_date' => now()->subDays(rand(1, 30)),
                 'expiry_date' => now()->addDays(rand(7, 30)),
                 'status' => ['Draft', 'Sent', 'Accepted', 'Rejected'][rand(0, 3)],
@@ -608,36 +722,26 @@ class ReportDataSeeder extends Seeder
                 'subtotal' => 0,
                 'tax_percentage' => 8.5,
                 'tax_amount' => 0,
-                'total_amount' => 0,
-                'created_by_user_id' => $user->user_id,
-            ]);
 
-            // Crear items de orden
-            $numItems = rand(1, 5);
-            $subtotal = 0;
-            
-            for ($j = 0; $j < $numItems; $j++) {
-                $product = $products->random();
-                $quantity = rand(1, 10);
-                $unitPrice = $product->price;
-                $itemTotal = $quantity * $unitPrice;
-                $subtotal += $itemTotal;
+        // Crear items de orden de compra
+        $numItems = rand(2, 8);
+        $subtotal = 0;
+        
+        for ($j = 0; $j < $numItems; $j++) {
+            $product = $products->random();
+            $quantity = rand(10, 100);
+            $unitPrice = $product->cost * (1 + rand(5, 25) / 100); // Margen del 5-25%
+            $itemTotal = $quantity * $unitPrice;
+            $subtotal += $itemTotal;
 
-                OrderItem::create([
-                    'order_id' => $order->order_id,
-                    'product_id' => $product->product_id,
-                    'item_name' => $product->name,
-                    'item_description' => $product->description ?? 'Product description',
-                    'quantity' => $quantity,
-                    'unit_price' => $unitPrice,
-                    'item_total' => $itemTotal,
-                ]);
-            }
-
-            // Actualizar totales
-            $taxAmount = $subtotal * ($order->tax_percentage / 100);
-            $totalAmount = $subtotal + $taxAmount;
-
+            PurchaseOrderItem::create([
+                'purchase_order_id' => $purchaseOrder->purchase_order_id,
+                'product_id' => $product->product_id,
+                'item_name' => $product->name,
+                'item_description' => $product->description ?? 'Product description',
+                'quantity' => $quantity,
+                'unit_price' => $unitPrice,
+                'item_total' => $itemTotal,
             $order->update([
                 'subtotal' => $subtotal,
                 'tax_amount' => $taxAmount,

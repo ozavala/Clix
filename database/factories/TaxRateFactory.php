@@ -22,7 +22,7 @@ class TaxRateFactory extends Factory
     public function definition(): array
     {
         $rates = [
-            ['name' => 'IVA General', 'rate' => 21.00, 'description' => 'Tasa general de IVA'],
+            ['name' => 'IVA General', 'rate' => 15.00, 'description' => 'Tasa general de IVA'],
             ['name' => 'IVA Reducido', 'rate' => 10.00, 'description' => 'Tasa reducida para productos básicos'],
             ['name' => 'IVA Superreducido', 'rate' => 4.00, 'description' => 'Tasa superreducida para productos de primera necesidad'],
             ['name' => 'IVA Cero', 'rate' => 0.00, 'description' => 'Productos exentos de IVA'],

@@ -6,6 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use App\Models\Setting;
+use App\Models\Tenant;
 
 class SettingsTableSeeder extends Seeder
 {
@@ -14,20 +15,28 @@ class SettingsTableSeeder extends Seeder
      */
     public function run(): void
     {
+        /*global $nTenants;
+        $nTenants = DB::table('tenants')->count();
+        $ntenant = $nTenants + 1;*/
+                   
         // Core settings
         $coreSettings = [
-            ['key' => 'company_name', 'value' => 'Ingeconsersa SA', 'type' => 'core', 'is_editable' => false],
-            ['key' => 'company_legal_id', 'value' => '0992793747-001', 'type' => 'core', 'is_editable' => false],
-            ['key' => 'company_address_line_1', 'value' => '123 Innovation Drive', 'type' => 'core', 'is_editable' => false],
-            ['key' => 'company_address_line_2', 'value' => 'Suite 456, Tech Park, CA 90210', 'type' => 'core', 'is_editable' => false],
-            ['key' => 'company_email', 'value' => 'contact@crm-erp.example.com', 'type' => 'core', 'is_editable' => false],
-            ['key' => 'company_phone', 'value' => '+1 (555) 123-4567', 'type' => 'core', 'is_editable' => false],
-            ['key' => 'company_logo', 'value' => null, 'type' => 'core', 'is_editable' => false],
-            ['key' => 'default_locale', 'value' => 'es', 'type' => 'core', 'is_editable' => false],
-            ['key' => 'default_currency', 'value' => 'USD', 'type' => 'core', 'is_editable' => false],
-            ['key' => 'tax_includes_services', 'value' => 'true', 'type' => 'core', 'is_editable' => false],
-            ['key' => 'tax_includes_transport', 'value' => 'false', 'type' => 'core', 'is_editable' => false],
+            
+            ['key' => 'name', 'value' =>'La Empresa S.A:', 'type' => 'core', 'is_editable' => false],
+            ['key' => 'legal_id', 'value' =>'0992793747-001', 'type' => 'core', 'is_editable' => false],
+            ['key' => 'isActive', 'value' => 1, 'type' => 'core', 'is_editable' => false],
+            ['key' => 'address', 'value' =>'Av. 24 de Julio 123', 'type' => 'core', 'is_editable' => false],
+            ['key' => 'phone', 'value' => '12345678', 'type' => 'core', 'is_editable' => false],
+            ['key' => 'website', 'value' => 'https://empresa.com', 'type' => 'core', 'is_editable' => false],
+            ['key' => 'logo', 'value' => 'logo.png', 'type' => 'core', 'is_editable' => false],
+            ['key' => 'email', 'value' => 'info@empresa.com', 'type' => 'core', 'is_editable' => false],
+            ['key' => 'industry', 'value' => 'Industria', 'type' => 'core', 'is_editable' => false],
+            ['key' => 'default_locale', 'value' => 'es', 'type' => 'core', 'is_editable' => true],
+            ['key' => 'default_currency', 'value' => 'USD', 'type' => 'core', 'is_editable' => true],
+            ['key' => 'tax_includes_services', 'value' => 'true', 'type' => 'core', 'is_editable' => true],
+            ['key' => 'tax_includes_transport', 'value' => 'false', 'type' => 'core', 'is_editable' => true],
         ];
+               
         foreach ($coreSettings as $setting) {
             \App\Models\Setting::updateOrCreate(
                 ['key' => $setting['key']],
@@ -40,7 +49,7 @@ class SettingsTableSeeder extends Seeder
             ['key' => 'custom_message'],
             [
                 'key' => 'custom_message',
-                'value' => 'Bienvenido al sistema',
+                'value' => 'Bienvenido a Clix',
                 'type' => 'custom',
                 'is_editable' => true,
             ]

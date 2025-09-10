@@ -29,7 +29,8 @@ class SupplierFactory extends Factory
             'contact_person' => $this->faker->name,
             'email' => $this->faker->unique()->safeEmail,
             'phone_number' => $this->faker->phoneNumber,
-            'notes' => $this->faker->optional()->sentence(),
+            'noteable_id' => $this->faker->numberBetween(1, 10),
+            'noteable_type' => 'App\Models\Supplier',
             'legal_id' => 'SUP-' . strtoupper(Str::random(10)),
         ];
     }

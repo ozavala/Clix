@@ -11,8 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('tenants', function (Blueprint $table) {
-            $table->bigIncrements('id');
+        Schema::create('settings', function (Blueprint $table) {
+            $table->id();
             $table->string('name');
             /*$table->string('domain')->unique();
             $table->string('database')->unique();*/
@@ -24,7 +24,10 @@ return new class extends Migration
             $table->string('logo')->nullable();
             $table->string('email')->nullable();
             $table->string('industry')->nullable();
-            
+            $table->string('key')->unique();
+            $table->text('value')->nullable();
+            $table->enum('type', ['core', 'custom'])->default('custom');
+            $table->boolean('is_editable')->default(true);
             $table->timestamps();
         });
     }
@@ -34,6 +37,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('tenants');
+        Schema::dropIfExists('settings');
     }
 };

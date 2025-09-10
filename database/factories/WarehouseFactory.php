@@ -21,6 +21,8 @@ class WarehouseFactory extends Factory
             'tenant_id' => Tenant::factory(),
             'name' => fake()->company() . ' Warehouse',
             'location' => fake()->city() . ', ' . fake()->state(),
+            'addressable_id' => fake()->randomNumber(),
+            'addressable_type' => 'App\Models\Warehouse',
             'is_active' => true,
         ];
     }

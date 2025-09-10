@@ -17,22 +17,26 @@ class ProductCategorySeeder extends Seeder
 
         \App\Models\ProductCategory::create([
             'name' => 'Electronics',
+            'tenant_id' => 1,
             'description' => 'Devices and gadgets',
         ]);
 
         \App\Models\ProductCategory::create([
             'name' => 'Furniture',
+            'tenant_id' => 1,
             'description' => 'Home and office furniture',
         ]);
 
         \App\Models\ProductCategory::create([
             'name' => 'Clothing',
+            'tenant_id' => 1,
             'description' => 'Apparel and accessories',
         ]);
         
         // Add more categories as needed
         \App\Models\ProductCategory::create([
             'name' => 'TShirts',
+            'tenant_id' => 1,
             'description' => 'Printed and digital books',
             'parent_category_id' => 3, // Assuming this is a top-level category
         ]);

@@ -18,7 +18,8 @@ class Warehouse extends Model
         'tenant_id',
         'name',
         'location',
-        // 'address', // This field should be removed if using polymorphic addresses
+        'addressable_id',
+        'addressable_type',
         'is_active',
     ];
 

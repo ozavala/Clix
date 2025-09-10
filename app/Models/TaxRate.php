@@ -15,6 +15,7 @@ class TaxRate extends Model
     protected $primaryKey = 'tax_rate_id';
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'rate',
         'country_code',

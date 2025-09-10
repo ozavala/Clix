@@ -14,6 +14,8 @@ return new class extends Migration
         Schema::create('quotation_items', function (Blueprint $table) {
             $table->id('quotation_item_id');
             $table->foreignId('quotation_id')->constrained('quotations', 'quotation_id')->onDelete('cascade');
+            $table->unsignedBigInteger('tenant_id')->nullable();
+            $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
             $table->foreignId('product_id')->nullable()->constrained('products', 'product_id')->onDelete('set null');
             $table->string('item_name');
             $table->text('item_description')->nullable();

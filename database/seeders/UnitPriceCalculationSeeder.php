@@ -23,25 +23,34 @@ class UnitPriceCalculationSeeder extends Seeder
         // Create suppliers with different characteristics
         $suppliers = [
             [
+                'tenant_id' => 1,
                 'name' => 'Electronics Import Co.',
                 'legal_id' => 'SUP-2001',
                 'email' => 'import.electronics@example.com',
                 'phone_number' => '+1-555-ELECTRONICS',
                 'contact_person' => 'John Electronics',
+                'noteable_id' => 1,
+                'noteable_type' => 'App\Models\Supplier',
             ],
             [
+                'tenant_id' => 1,
                 'name' => 'Raw Materials Supplier',
                 'legal_id' => 'SUP-2002',
                 'email' => 'supply.rawmaterials@example.com',
                 'phone_number' => '+1-555-RAWMATERIALS',
                 'contact_person' => 'Sarah Materials',
+                'noteable_id' => 2,
+                'noteable_type' => 'App\Models\Supplier',
             ],
             [
+                'tenant_id' => 1,
                 'name' => 'Machinery Parts Inc.',
                 'legal_id' => 'SUP-2003',
                 'email' => 'parts.machinery@example.com',
                 'phone_number' => '+1-555-MACHINERY',
                 'contact_person' => 'Mike Machinery',
+                'noteable_id' => 3,
+                'noteable_type' => 'App\Models\Supplier',
             ],
         ];
 
@@ -55,6 +64,7 @@ class UnitPriceCalculationSeeder extends Seeder
             // Create products for each supplier
             $products = [
                 [
+                    'tenant_id' => 1,
                     'name' => 'High-end Microprocessor',
                     'sku' => 'CPU-' . strtoupper(substr($supplier->name, 0, 3)) . '-001',
                     'price' => 1200.00,
@@ -62,6 +72,7 @@ class UnitPriceCalculationSeeder extends Seeder
                     'description' => 'Advanced microprocessor for computing applications',
                 ],
                 [
+                    'tenant_id' => 1,
                     'name' => 'Industrial Sensor',
                     'sku' => 'SENSOR-' . strtoupper(substr($supplier->name, 0, 3)) . '-001',
                     'price' => 450.00,
@@ -69,6 +80,7 @@ class UnitPriceCalculationSeeder extends Seeder
                     'description' => 'Precision industrial sensor for automation',
                 ],
                 [
+                    'tenant_id' => 1,
                     'name' => 'Power Supply Unit',
                     'sku' => 'PSU-' . strtoupper(substr($supplier->name, 0, 3)) . '-001',
                     'price' => 350.00,
@@ -95,6 +107,7 @@ class UnitPriceCalculationSeeder extends Seeder
 
                 // Create purchase order for this product
                 $purchaseOrder = PurchaseOrder::create([
+                    'tenant_id' => 1,
                     'supplier_id' => $supplier->supplier_id,
                     'purchase_order_number' => $purchaseOrderNumber,
                     'order_date' => Carbon::now()->subDays(rand(30, 90)),

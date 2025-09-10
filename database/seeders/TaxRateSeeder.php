@@ -19,6 +19,7 @@ class TaxRateSeeder extends Seeder
 
         // Tasas de IVA para Ecuador
         TaxRate::create([
+            'tenant_id' => 1,
             'name' => 'IVA 0% - Exento',
             'rate' => 0.00,
             'description' => 'Productos y servicios exentos de IVA en Ecuador',
@@ -27,6 +28,7 @@ class TaxRateSeeder extends Seeder
         ]);
 
         TaxRate::create([
+            'tenant_id' => 1,
             'name' => 'IVA 15% - General',
             'rate' => 15.00,
             'description' => 'Tasa general de IVA en Ecuador',
@@ -35,6 +37,7 @@ class TaxRateSeeder extends Seeder
         ]);
 
         TaxRate::create([
+            'tenant_id' => 1,
             'name' => 'IVA 22% - Especial',
             'rate' => 22.00,
             'description' => 'Tasa especial de IVA en Ecuador (bebidas alcohólicas, cigarrillos, etc.)',
@@ -44,6 +47,7 @@ class TaxRateSeeder extends Seeder
 
         // Tasas de IVA para España
         TaxRate::create([
+            'tenant_id' => 1,
             'name' => 'IVA 0% - Exento',
             'rate' => 0.00,
             'description' => 'Productos y servicios exentos de IVA en España',
@@ -52,6 +56,7 @@ class TaxRateSeeder extends Seeder
         ]);
 
         TaxRate::create([
+            'tenant_id' => 1,
             'name' => 'IVA 4% - Superreducido',
             'rate' => 4.00,
             'description' => 'Tasa superreducida de IVA en España',
@@ -60,6 +65,7 @@ class TaxRateSeeder extends Seeder
         ]);
 
         TaxRate::create([
+            'tenant_id' => 1,
             'name' => 'IVA 10% - Reducido',
             'rate' => 10.00,
             'description' => 'Tasa reducida de IVA en España',
@@ -68,6 +74,7 @@ class TaxRateSeeder extends Seeder
         ]);
 
         TaxRate::create([
+            'tenant_id' => 1,
             'name' => 'IVA 21% - General',
             'rate' => 21.00,
             'description' => 'Tasa general de IVA en España',
@@ -77,6 +84,7 @@ class TaxRateSeeder extends Seeder
 
         // Tasas de IVA para México
         TaxRate::create([
+            'tenant_id' => 1,
             'name' => 'IVA 0% - Exento',
             'rate' => 0.00,
             'description' => 'Productos y servicios exentos de IVA en México',
@@ -85,6 +93,7 @@ class TaxRateSeeder extends Seeder
         ]);
 
         TaxRate::create([
+            'tenant_id' => 1,
             'name' => 'IVA 16% - General',
             'rate' => 16.00,
             'description' => 'Tasa general de IVA en México',
@@ -111,6 +120,7 @@ class TaxRateSeeder extends Seeder
 
         foreach ($taxRates as $taxRate) {
             TaxRate::create([
+                'tenant_id' => 1,
                 'name' => $taxRate['name'],
                 'rate' => $taxRate['rate'],
                 'country_code' => $countryCode,
@@ -128,6 +138,7 @@ class TaxRateSeeder extends Seeder
         return match ($countryCode) {
             'ES' => [
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA General',
                     'rate' => 21.00,
                     'description' => 'Tasa general de IVA en España',
@@ -135,18 +146,21 @@ class TaxRateSeeder extends Seeder
                     'is_default' => true,
                 ],
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA Reducido',
                     'rate' => 10.00,
                     'description' => 'Tasa reducida para productos básicos',
                     'product_type' => 'goods',
                 ],
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA Superreducido',
                     'rate' => 4.00,
                     'description' => 'Tasa superreducida para productos de primera necesidad',
                     'product_type' => 'goods',
                 ],
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA Cero',
                     'rate' => 0.00,
                     'description' => 'Productos exentos de IVA',
@@ -155,6 +169,7 @@ class TaxRateSeeder extends Seeder
             ],
             'MX' => [
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA General',
                     'rate' => 16.00,
                     'description' => 'Tasa general de IVA en México',
@@ -162,6 +177,7 @@ class TaxRateSeeder extends Seeder
                     'is_default' => true,
                 ],
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA Cero',
                     'rate' => 0.00,
                     'description' => 'Productos exentos de IVA',
@@ -170,6 +186,7 @@ class TaxRateSeeder extends Seeder
             ],
             'AR' => [
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA General',
                     'rate' => 21.00,
                     'description' => 'Tasa general de IVA en Argentina',
@@ -177,12 +194,14 @@ class TaxRateSeeder extends Seeder
                     'is_default' => true,
                 ],
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA Reducido',
                     'rate' => 10.50,
                     'description' => 'Tasa reducida para productos básicos',
                     'product_type' => 'goods',
                 ],
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA Cero',
                     'rate' => 0.00,
                     'description' => 'Productos exentos de IVA',
@@ -191,6 +210,7 @@ class TaxRateSeeder extends Seeder
             ],
             'CO' => [
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA General',
                     'rate' => 19.00,
                     'description' => 'Tasa general de IVA en Colombia',
@@ -198,12 +218,14 @@ class TaxRateSeeder extends Seeder
                     'is_default' => true,
                 ],
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA Reducido',
                     'rate' => 5.00,
                     'description' => 'Tasa reducida para productos básicos',
                     'product_type' => 'goods',
                 ],
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA Cero',
                     'rate' => 0.00,
                     'description' => 'Productos exentos de IVA',
@@ -212,6 +234,7 @@ class TaxRateSeeder extends Seeder
             ],
             default => [
                 [
+                    'tenant_id' => 1,
                     'name' => 'IVA General',
                     'rate' => 21.00,
                     'description' => 'Tasa general de IVA',

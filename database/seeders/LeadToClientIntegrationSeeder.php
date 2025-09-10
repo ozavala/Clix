@@ -22,6 +22,7 @@ class LeadToClientIntegrationSeeder extends Seeder
 
         // 2. Crear un lead
         $lead = Lead::factory()->create([
+            'tenant_id' => 1,
             'title' => 'Empresa Ejemplo - Proyecto ERP',
             'contact_name' => 'Juan Pérez',
             'contact_email' => 'juan.perez@ejemplo.com',
@@ -30,6 +31,7 @@ class LeadToClientIntegrationSeeder extends Seeder
 
         // 3. Convertir el lead en cliente
         $customer = Customer::factory()->create([
+            'tenant_id' => 1,
             'first_name' => 'Juan',
             'last_name' => 'Pérez',
             'company_name' => 'Empresa Ejemplo',
@@ -39,6 +41,7 @@ class LeadToClientIntegrationSeeder extends Seeder
 
         // 4. Crear una oportunidad para el cliente
         $opportunity = Opportunity::create([
+            'tenant_id' => 1,
             'name' => 'Implementación ERP',
             'description' => 'Proyecto de implementación de ERP',
             'customer_id' => $customer->customer_id,
@@ -52,11 +55,13 @@ class LeadToClientIntegrationSeeder extends Seeder
 
         // 5. Crear productos
         $product1 = Product::factory()->create([
+            'tenant_id' => 1,
             'name' => 'Licencia ERP',
             'sku' => 'ERP-001',
             'price' => 15000.00,
         ]);
         $product2 = Product::factory()->create([
+            'tenant_id' => 1,
             'name' => 'Soporte Anual',
             'sku' => 'SUP-001',
             'price' => 10000.00,
@@ -64,6 +69,7 @@ class LeadToClientIntegrationSeeder extends Seeder
 
         // 6. Crear una factura para el cliente
         $invoice = Invoice::factory()->create([
+            'tenant_id' => 1,
             'customer_id' => $customer->customer_id,
             'invoice_number' => 'INV-INT-001',
             'invoice_date' => Carbon::now(),
@@ -78,6 +84,7 @@ class LeadToClientIntegrationSeeder extends Seeder
 
         // 7. Asociar productos a la factura
         InvoiceItem::create([
+            
             'invoice_id' => $invoice->invoice_id,
             'product_id' => $product1->product_id,
             'item_name' => $product1->name,
@@ -87,6 +94,7 @@ class LeadToClientIntegrationSeeder extends Seeder
             'item_total' => $product1->price,
         ]);
         InvoiceItem::create([
+            
             'invoice_id' => $invoice->invoice_id,
             'product_id' => $product2->product_id,
             'item_name' => $product2->name,
@@ -98,6 +106,7 @@ class LeadToClientIntegrationSeeder extends Seeder
 
         // 8. Crear pagos parciales para la factura
         Payment::create([
+            'tenant_id' => 1,
             'payable_type' => Invoice::class,
             'payable_id' => $invoice->invoice_id,
             'payment_date' => Carbon::now(),
@@ -107,6 +116,7 @@ class LeadToClientIntegrationSeeder extends Seeder
             'created_by_user_id' => $user->user_id,
         ]);
         Payment::create([
+            'tenant_id' => 1,
             'payable_type' => Invoice::class,
             'payable_id' => $invoice->invoice_id,
             'payment_date' => Carbon::now()->addDays(10),

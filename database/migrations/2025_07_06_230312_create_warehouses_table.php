@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('name');
             $table->string('location')->nullable();
+            $table->morphs('addressable');
             $table->boolean('is_active')->default(true);
             $table->timestamps();
         });

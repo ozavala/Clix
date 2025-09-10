@@ -13,10 +13,12 @@ return new class extends Migration
     {
         Schema::create('settings', function (Blueprint $table) {
             $table->id();
-            $table->string('key')->unique();
-            $table->text('value')->nullable();
+            //$table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->string('key');
+            $table->string('value');
             $table->enum('type', ['core', 'custom'])->default('custom');
-            $table->boolean('is_editable')->default(true);
+            $table->boolean('is_editable')->default(false);
+            $table->json('settings')->nullable();
             $table->timestamps();
         });
     }

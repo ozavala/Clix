@@ -21,6 +21,7 @@ return new class extends Migration
             $table->decimal('credit_amount', 15, 2)->default(0.00);
             $table->string('entity_type')->nullable();
             $table->unsignedBigInteger('entity_id')->nullable();
+            $table->text('description')->nullable();
             $table->timestamps();
             
             $table->index(['entity_type', 'entity_id']);
