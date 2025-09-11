@@ -161,6 +161,42 @@
 
             <!-- Right Side Of Navbar -->
             <ul class="navbar-nav ms-auto">
+                <!-- Tenant Switcher -->
+                @auth
+                    @if(isset($hasMultipleTenants) && $hasMultipleTenants)
+                    <li class="nav-item dropdown">
+                        <a id="navbarDropdownTenant" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            @if($currentTenant)
+                                <span class="badge bg-primary">{{ $currentTenant->name }}</span>
+                            @else
+                                {{ __('Select Tenant') }}
+                            @endif
+                        </a>
+                        <div class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdownTenant">
+                            @foreach($userTenants as $tenant)
+                                <a class="dropdown-item {{ $currentTenant && $currentTenant->id === $tenant->id ? 'active' : '' }}" 
+                                   href="{{ route('tenants.switch', $tenant) }}">
+                                    {{ $tenant->name }}
+                                    @if($currentTenant && $currentTenant->id === $tenant->id)
+                                        <i class="fas fa-check ms-2"></i>
+                                    @endif
+                                </a>
+                            @endforeach
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="{{ route('tenants.select') }}">
+                                <i class="fas fa-cog me-1"></i> {{ __('Manage Tenants') }}
+                            </a>
+                        </div>
+                    </li>
+                    @elseif($currentTenant)
+                    <li class="nav-item">
+                        <span class="nav-link">
+                            <span class="badge bg-secondary">{{ $currentTenant->name }}</span>
+                        </span>
+                    </li>
+                    @endif
+                @endauth
+                
                 <!-- Authentication Links -->
                 <li class="nav-item dropdown">
                     <a id="navbarDropdown" class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" v-pre="">

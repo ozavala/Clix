@@ -14,49 +14,62 @@ class CrmUserSeeder extends Seeder
      */
     public function run(): void
     {
-        // You can seed the crm_users table with some initial data here.
-        // For example, you might want to create a few users with different roles.
+        // Only create users if they don't already exist
+        if (!CrmUser::where('username', 'admin')->exists()) {
+            $adminUser = CrmUser::create([
+                'tenant_id' => 1,
+                'username' => 'admin',
+                'full_name' => 'Admin User',
+                'email' => 'admin@example.com',
+                'password' => bcrypt('password'), // Use a secure password in production
+                'email_verified_at' => app()->environment('local', 'development') ? now() : null,
+            ]);
+        }
 
-        $adminUser = CrmUser::create([
-            'tenant_id' => 1,
-            'username' => 'admin',
-            'full_name' => 'Admin User',
-            'email' => 'admin@example.com',
-            'password' => bcrypt('password'), // Use a secure password in production
-            'email_verified_at' => app()->environment('local', 'development') ? now() : null,
-        ]);
+        if (!CrmUser::where('username', 'sales')->exists()) {
+            $salesUser = CrmUser::create([
+                'tenant_id' => 1,
+                'username' => 'sales',
+                'full_name' => 'Sales User',
+                'email' => 'sales@example.com',
+                'password' => bcrypt('password'),
+                'email_verified_at' => app()->environment('local', 'development') ? now() : null,
+            ]);
+        }
 
-        $salesUser = CrmUser::create([
-            'tenant_id' => 1,
-            'username' => 'sales',
-            'full_name' => 'Sales User',
-            'email' => 'sales@example.com',
-            'password' => bcrypt('password'),
-            'email_verified_at' => app()->environment('local', 'development') ? now() : null,
-        ]);
+        if (!CrmUser::where('username', 'support')->exists()) {
+            $supportUser = CrmUser::create([
+                'tenant_id' => 1,
+                'username' => 'support',
+                'full_name' => 'Support User',
+                'email' => 'support@example.com',
+                'password' => bcrypt('password'),
+                'email_verified_at' => app()->environment('local', 'development') ? now() : null,
+            ]);
+        }
 
-        $supportUser = CrmUser::create([
-            'tenant_id' => 1,
-            'username' => 'support',
-            'full_name' => 'Support User',
-            'email' => 'support@example.com',
-            'password' => bcrypt('password'),
-            'email_verified_at' => app()->environment('local', 'development') ? now() : null,
-        ]);
+        if (!CrmUser::where('username', 'marketing')->exists()) {
+            $marketingUser = CrmUser::create([
+                'tenant_id' => 1,
+                'username' => 'marketing',
+                'full_name' => 'Marketing User',
+                'email' => 'marketing@example.com',
+                'password' => bcrypt('password'),
+                'email_verified_at' => app()->environment('local', 'development') ? now() : null,
+            ]);
+        }
 
-        $marketingUser = CrmUser::create([
-            'tenant_id' => 1,
-            'username' => 'marketing',
-            'full_name' => 'Marketing User',
-            'email' => 'marketing@example.com',
-            'password' => bcrypt('password'),
-            'email_verified_at' => app()->environment('local', 'development') ? now() : null,
-        ]);
-
-        // Assign Roles
+        // Get users to assign roles
+        $adminUser = CrmUser::where('username', 'admin')->first();
+        $salesUser = CrmUser::where('username', 'sales')->first();
+        $supportUser = CrmUser::where('username', 'support')->first();
+        $marketingUser = CrmUser::where('username', 'marketing')->first();
+        
+        // Get roles
         $adminRole = UserRole::where('name', 'Admin')->first();
         $salesRole = UserRole::where('name', 'Sales')->first();
         $supportRole = UserRole::where('name', 'Support')->first();
+        $marketingRole = UserRole::where('name', 'Marketing')->first();
 
         if ($adminUser && $adminRole) {
             $adminUser->roles()->attach($adminRole->role_id);

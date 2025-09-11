@@ -13,6 +13,7 @@ use App\Models\Product;
 use App\Models\Quotation;
 use App\Models\Supplier;
 use Illuminate\Database\Seeder;
+use Database\Seeders\AdminUserAndTenantSeeder;
 
 class DatabaseSeeder extends Seeder
 {
@@ -29,7 +30,7 @@ class DatabaseSeeder extends Seeder
         // 1. Seed foundational data that is mostly static
         $this->call([
             // Core system seeders
-            TenantSeeder::class,
+            AdminUserAndTenantSeeder::class,
             PermissionSeeder::class,
             TaxRateSeeder::class,
             UserRoleSeeder::class,

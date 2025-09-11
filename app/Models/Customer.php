@@ -12,10 +12,11 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 use App\Models\Payment;
 use App\Models\Invoice;
 use App\Models\Order;
+use App\Models\Traits\HasTenantScope;
 
 class Customer extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, HasTenantScope;
 
     protected $primaryKey = 'customer_id';
 
@@ -56,10 +57,6 @@ class Customer extends Model
         return $this->belongsTo(CrmUser::class, 'created_by_user_id', 'user_id');
     }
 
-    public function tenant(): BelongsTo
-    {
-        return $this->belongsTo(Tenant::class, 'tenant_id');
-    }
      public function addresses(): MorphMany
     {
         return $this->morphMany(Address::class, 'addressable');

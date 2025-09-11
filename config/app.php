@@ -136,6 +136,7 @@ return [
         App\Providers\EventServiceProvider::class,
         App\Providers\SettingsServiceProvider::class,
         App\Providers\MailConfigServiceProvider::class,
+        App\Providers\TenantServiceProvider::class,
 
     ])->toArray(),
 

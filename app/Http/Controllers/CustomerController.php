@@ -3,15 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Customer;
-use App\Models\Address; // Add this
+use App\Models\Address;
+use App\Models\Tenant;
 use App\Http\Requests\StoreCustomerRequest;
 use App\Http\Requests\UpdateCustomerRequest;
 use Illuminate\Support\Facades\Gate;
-use Illuminate\Http\Request; // Corrected import
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-
-class CustomerController extends Controller
+class CustomerController extends TenantAwareController
 {
     
     protected $customerStatuses = [
@@ -26,9 +26,27 @@ class CustomerController extends Controller
      */
     public function index(Request $request)
     {
-       Gate::authorize('view-customers');
-       $query = Customer::with('createdBy')->latest();
-
+        Gate::authorize('view-customers');
+        
+        $query = Customer::with(['createdBy', 'tenant']);
+        
+        // Apply tenant scope
+        if ($this->getTenantId()) {
+            $query->where('tenant_id', $this->getTenantId());
+        } elseif (Auth::user()->can('view-all-tenants')) {
+            // If user has permission to view all tenants, show tenant selector
+            $tenants = Tenant::orderBy('name')->pluck('name', 'id');
+            view()->share('tenants', $tenants);
+            
+            if ($request->filled('tenant_id')) {
+                $query->where('tenant_id', $request->input('tenant_id'));
+            }
+        } else {
+            // If no tenant ID and no permission, return empty result
+            $query->where('id', -1);
+        }
+        
+        // Apply search filter
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
             $query->where(function ($q) use ($searchTerm) {
@@ -37,9 +55,22 @@ class CustomerController extends Controller
                   ->orWhere('email', 'like', "%{$searchTerm}%")
                   ->orWhere('company_name', 'like', "%{$searchTerm}%");
             });
-        } // Consider adding status to search: ->orWhere('status', 'like', "%{$searchTerm}%")
-        $customers = $query->paginate(10)->withQueryString(); // withQueryString to keep search params on pagination
-        return view('customers.index', compact('customers'));
+        }
+        
+        // Apply status filter if provided
+        if ($request->filled('status')) {
+            $query->where('status', $request->input('status'));
+        }
+        
+        $customers = $query->latest()->paginate(10)->withQueryString();
+        
+        return view('customers.index', [
+            'customers' => $customers,
+            'statuses' => $this->customerStatuses,
+            'currentStatus' => $request->input('status'),
+            'currentSearch' => $request->input('search'),
+            'currentTenantId' => $request->input('tenant_id')
+        ]);
     }
 
     /**
@@ -48,6 +79,12 @@ class CustomerController extends Controller
     public function create()
     {
         Gate::authorize('create-customers');
+        
+        // If user has permission to create for any tenant, show tenant selector
+        if (Auth::user()->can('create-any-tenant')) {
+            $tenants = Tenant::orderBy('name')->pluck('name', 'id');
+            view()->share('tenants', $tenants);
+        }
         $statuses = $this->customerStatuses;
         return view('customers.create', compact('statuses'));
     }
@@ -58,13 +95,19 @@ class CustomerController extends Controller
     public function store(StoreCustomerRequest $request)
     {
         Gate::authorize('create-customers');
-        $validatedData = $request->validated();
-        $validatedData['created_by_user_id'] = Auth::id();
         
-        $customerData = collect($validatedData)->except(['addresses'])->all();
+        $validated = $request->validated();
+        
+        // Set tenant_id if not provided
+        if (!isset($validated['tenant_id'])) {
+            $validated['tenant_id'] = $this->getTenantId();
+        }
+        $validated['created_by_user_id'] = Auth::id();
+        
+        $customerData = collect($validated)->except(['addresses'])->all();
         $customer = Customer::create($customerData);
 
-        $this->syncAddresses($customer, $validatedData['addresses'] ?? []);
+        $this->syncAddresses($customer, $validated['addresses'] ?? []);
         
         return redirect()->route('customers.index')
                          ->with('success', 'Customer created successfully.');
@@ -90,7 +133,13 @@ class CustomerController extends Controller
      */
     public function edit(Customer $customer)
     {
-        Gate::authorize('edit-customers');
+        Gate::authorize('update-customers');
+        
+        // If user has permission to edit any tenant, show tenant selector
+        if (Auth::user()->can('edit-any-tenant')) {
+            $tenants = Tenant::orderBy('name')->pluck('name', 'id');
+            view()->share('tenants', $tenants);
+        }
         $statuses = $this->customerStatuses;
         $customer->load('addresses'); // Load addresses for the form
         return view('customers.edit', compact('customer', 'statuses'));

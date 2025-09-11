@@ -20,7 +20,8 @@ return new class extends Migration
             $table->enum('status', ['draft', 'scheduled', 'sending', 'sent', 'paused', 'cancelled'])->default('draft');
             $table->enum('type', ['email', 'newsletter', 'promotional', 'announcement'])->default('email');
             $table->foreignId('email_template_id')->nullable()->constrained('email_templates')->onDelete('set null');
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('created_by');
+            $table->foreign('created_by')->references('user_id')->on('crm_users')->onDelete('cascade');
             $table->timestamp('scheduled_at')->nullable();
             $table->timestamp('sent_at')->nullable();
             $table->integer('total_recipients')->default(0);

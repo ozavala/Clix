@@ -247,7 +247,7 @@ class ReportDataSeeder extends Seeder
             $category = ProductCategory::where('name', $product['category'])
                                     ->where('tenant_id', $tenant->id)
                                     ->first();
-            dd($category);
+           // dd($category);
             if ($category) {
                 Product::firstOrCreate(
                     ['sku' => $product['sku'], 'tenant_id' => $tenant->id],
@@ -275,16 +275,50 @@ class ReportDataSeeder extends Seeder
         }
 
         $warehouses = [
-            ['name' => 'Main Warehouse'],
-            ['name' => 'East Coast Distribution'],
-            ['name' => 'West Coast Distribution'],
+            [
+                'name' => 'Main Warehouse',
+                'addressable_type' => 'App\\Models\\Warehouse',
+                'addressable_id' => 1,
+                'is_active' => true
+            ],
+            [
+                'name' => 'East Coast Distribution',
+                'addressable_type' => 'App\\Models\\Warehouse',
+                'addressable_id' => 2,
+                'is_active' => true
+            ],
+            [
+                'name' => 'West Coast Distribution',
+                'addressable_type' => 'App\\Models\\Warehouse',
+                'addressable_id' => 3,
+                'is_active' => true
+            ],
         ];
 
         foreach ($warehouses as $warehouse) {
-            Warehouse::firstOrCreate(
+            // First create the warehouse
+            $warehouseModel = Warehouse::firstOrCreate(
                 ['name' => $warehouse['name'], 'tenant_id' => $tenant->id],
-                array_merge($warehouse, ['tenant_id' => $tenant->id])
+                [
+                    'tenant_id' => $tenant->id,
+                    'name' => $warehouse['name'],
+                    'is_active' => $warehouse['is_active'],
+                    'addressable_type' => 'App\\Models\\Warehouse',
+                    'addressable_id' => $warehouse['addressable_id']
+                ]
             );
+
+            // Then create the address
+            $warehouseModel->addresses()->create([
+                'street_address_line_1' => '123 ' . $warehouse['name'] . ' St',
+                'city' => 'Some City',
+                'state_province' => 'CA',
+                'postal_code' => '12345',
+                'country_code' => 'US',
+                'address_type' => 'warehouse',
+                'is_primary' => true,
+                'tenant_id' => $tenant->id
+            ]);
         }
     }
 
@@ -454,14 +488,70 @@ class ReportDataSeeder extends Seeder
         }
 
         $suppliers = [
-            ['name' => 'Apple Inc', 'legal_id' => 'SUP-3001', 'email' => 'supplier@apple.com', 'phone_number' => '+1-555-0201'],
-            ['name' => 'Samsung Electronics', 'legal_id' => 'SUP-3002', 'email' => 'orders@samsung.com', 'phone_number' => '+1-555-0202'],
-            ['name' => 'Nike Inc', 'legal_id' => 'SUP-3003', 'email' => 'supplier@nike.com', 'phone_number' => '+1-555-0203'],
-            ['name' => 'Adidas AG', 'legal_id' => 'SUP-3004', 'email' => 'orders@adidas.com', 'phone_number' => '+1-555-0204'],
-            ['name' => 'IKEA Group', 'legal_id' => 'SUP-3005', 'email' => 'supplier@ikea.com', 'phone_number' => '+1-555-0205'],
-            ['name' => 'Dell Technologies', 'legal_id' => 'SUP-3006', 'email' => 'orders@dell.com', 'phone_number' => '+1-555-0206'],
-            ['name' => 'Sony Corporation', 'legal_id' => 'SUP-3007', 'email' => 'supplier@sony.com', 'phone_number' => '+1-555-0207'],
-            ['name' => 'LG Electronics', 'legal_id' => 'SUP-3008', 'email' => 'orders@lg.com', 'phone_number' => '+1-555-0208'],
+            [
+                'name' => 'Apple Inc', 
+                'legal_id' => 'SUP-3001', 
+                'email' => 'supplier@apple.com', 
+                'phone_number' => '+1-555-0201',
+                'noteable_type' => 'App\\Models\\Supplier',
+                'noteable_id' => 1
+            ],
+            [
+                'name' => 'Samsung Electronics', 
+                'legal_id' => 'SUP-3002', 
+                'email' => 'orders@samsung.com', 
+                'phone_number' => '+1-555-0202',
+                'noteable_type' => 'App\\Models\\Supplier',
+                'noteable_id' => 2
+            ],
+            [
+                'name' => 'Nike Inc', 
+                'legal_id' => 'SUP-3003', 
+                'email' => 'supplier@nike.com', 
+                'phone_number' => '+1-555-0203',
+                'noteable_type' => 'App\\Models\\Supplier',
+                'noteable_id' => 3
+            ],
+            [
+                'name' => 'Adidas AG', 
+                'legal_id' => 'SUP-3004', 
+                'email' => 'orders@adidas.com', 
+                'phone_number' => '+1-555-0204',
+                'noteable_type' => 'App\\Models\\Supplier',
+                'noteable_id' => 4
+            ],
+            [
+                'name' => 'IKEA Group', 
+                'legal_id' => 'SUP-3005', 
+                'email' => 'supplier@ikea.com', 
+                'phone_number' => '+1-555-0205',
+                'noteable_type' => 'App\\Models\\Supplier',
+                'noteable_id' => 5
+            ],
+            [
+                'name' => 'Dell Technologies', 
+                'legal_id' => 'SUP-3006', 
+                'email' => 'orders@dell.com', 
+                'phone_number' => '+1-555-0206',
+                'noteable_type' => 'App\\Models\\Supplier',
+                'noteable_id' => 6
+            ],
+            [
+                'name' => 'Sony Corporation', 
+                'legal_id' => 'SUP-3007', 
+                'email' => 'supplier@sony.com', 
+                'phone_number' => '+1-555-0207',
+                'noteable_type' => 'App\\Models\\Supplier',
+                'noteable_id' => 7
+            ],
+            [
+                'name' => 'LG Electronics', 
+                'legal_id' => 'SUP-3008', 
+                'email' => 'orders@lg.com', 
+                'phone_number' => '+1-555-0208',
+                'noteable_type' => 'App\\Models\\Supplier',
+                'noteable_id' => 8
+            ],
         ];
 
         foreach ($suppliers as $supplier) {
@@ -551,15 +641,15 @@ class ReportDataSeeder extends Seeder
             // Crear oportunidad para algunos leads
             if (rand(1, 3) === 1) {
                 $opportunityData = [
-                    'title' => $lead->title . ' - Opportunity',
+                    'name' => $lead->title . ' - Opportunity',
                     'description' => 'Opportunity created from lead: ' . $lead->description,
-                    'value' => $lead->value * (rand(90, 120) / 100), // Random value ±10%
+                    'amount' => $lead->value * (rand(90, 120) / 100), // Random value ±10%
                     'expected_close_date' => now()->addDays(rand(30, 90)),
                     'stage' => 'Proposal',
                     'probability' => rand(30, 70),
-                    'source' => $lead->source,
                     'lead_id' => $lead->lead_id,
-                    'tenant_id' => $tenant->id
+                    'tenant_id' => $tenant->id,
+                    'created_by_user_id' => CrmUser::where('tenant_id', $tenant->id)->first()->user_id ?? null
                 ];
 
                 Opportunity::firstOrCreate(
@@ -667,6 +757,7 @@ class ReportDataSeeder extends Seeder
                 'shipping_cost' => rand(50, 200),
                 'total_amount' => 0,
                 'created_by_user_id' => $user->user_id,
+                'tenant_id' => $user->tenant_id, // Add tenant_id from the user
             ]);
 
             // Crear items de orden de compra
@@ -726,6 +817,7 @@ class ReportDataSeeder extends Seeder
                 'shipping_cost' => rand(20, 100),
                 'total_amount' => 0,
                 'created_by_user_id' => $user->user_id,
+                'tenant_id' => $user->tenant_id, // Add tenant_id from the user
             ]);
 
             // Crear items de orden
@@ -784,6 +876,7 @@ class ReportDataSeeder extends Seeder
                 'tax_amount' => $order->tax_amount,
                 'total_amount' => $order->total_amount,
                 'created_by_user_id' => $user->user_id,
+                'tenant_id' => $user->tenant_id, // Add tenant_id from the user
             ]);
 
             // Crear items de factura basados en items de orden
@@ -807,6 +900,7 @@ class ReportDataSeeder extends Seeder
             
             $invoice = Invoice::create([
                 'customer_id' => $customer->customer_id,
+                'tenant_id' => $user->tenant_id, // Add tenant_id from the user
                 'invoice_number' => 'INV-DIRECT-' . str_pad($i + 1, 4, '0', STR_PAD_LEFT),
                 'invoice_date' => now()->subDays(rand(1, 60)),
                 'due_date' => now()->addDays(rand(15, 30)),
@@ -873,6 +967,8 @@ class ReportDataSeeder extends Seeder
                     'payment_method' => ['credit_card', 'bank_transfer', 'cash', 'check'][rand(0, 3)],
                     'reference_number' => 'PAY-' . str_pad($invoice->invoice_id, 4, '0', STR_PAD_LEFT),
                     'notes' => 'Payment for invoice ' . $invoice->invoice_number,
+                    'tenant_id' => $invoice->tenant_id,
+                    'created_by_user_id' => $invoice->created_by_user_id, // Add created_by_user_id from the invoice
                 ]);
             }
         }
@@ -881,7 +977,7 @@ class ReportDataSeeder extends Seeder
         foreach ($purchaseOrders as $po) {
             $paymentAmount = $po->total_amount - $po->amount_paid;
             if ($paymentAmount > 0) {
-                Payment::create([
+Payment::create([
                     'payable_type' => PurchaseOrder::class,
                     'payable_id' => $po->purchase_order_id,
                     'amount' => $paymentAmount,
@@ -889,6 +985,8 @@ class ReportDataSeeder extends Seeder
                     'payment_method' => ['bank_transfer', 'check', 'credit_card'][rand(0, 2)],
                     'reference_number' => 'PAY-PO-' . str_pad($po->purchase_order_id, 4, '0', STR_PAD_LEFT),
                     'notes' => 'Payment for purchase order ' . $po->purchase_order_number,
+                    'tenant_id' => $po->tenant_id,
+                    'created_by_user_id' => $po->created_by_user_id, // Add created_by_user_id from the purchase order
                 ]);
             }
         }

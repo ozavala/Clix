@@ -1,6 +1,28 @@
+@if(isset($tenants) && count($tenants) > 1)
+<div class="row mb-3">
+    <div class="col-md-12">
+        <label for="tenant_id" class="form-label">{{ __('Tenant') }} <span class="text-danger">*</span></label>
+        <select class="form-select @error('tenant_id') is-invalid @enderror" id="tenant_id" name="tenant_id" required>
+            <option value="">{{ __('Select Tenant') }}</option>
+            @foreach($tenants as $id => $name)
+                <option value="{{ $id }}" {{ old('tenant_id', $customer->tenant_id ?? '') == $id ? 'selected' : '' }}>{{ $name }}</option>
+            @endforeach
+        </select>
+        @error('tenant_id')
+            <div class="invalid-feedback">{{ $message }}</div>
+        @enderror
+    </div>
+</div>
+@elseif(isset($customer->tenant_id))
+    <input type="hidden" name="tenant_id" value="{{ $customer->tenant_id }}">
+@elseif(isset($currentTenant))
+    <input type="hidden" name="tenant_id" value="{{ $currentTenant->id }}">
+@endif
+
 <div class="row">
     <div class="col-md-12 mb-3">
         <label class="form-label">{{ __('Customer Type') }}</label>
+        
         <div>
             <div class="form-check form-check-inline">
                 <input class="form-check-input" type="radio" name="type" id="typePerson" value="Person" {{ old('type', $customer->type ?? 'Person') == 'Person' ? 'checked' : '' }}>

@@ -39,6 +39,7 @@ use App\Http\Controllers\ProfitAndLossController;
 use App\Http\Controllers\MarketingCampaignController; // Add MarketingCampaignController
 use App\Http\Controllers\EmailTemplateController; // Add EmailTemplateController
 use App\Http\Controllers\EmailServiceController; // Add EmailServiceController
+use App\Http\Controllers\TenantController; // Add TenantController
 
 
 // In routes/web.php
@@ -59,6 +60,12 @@ Route::middleware('auth')->group(function () {
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
+});
+
+// Tenant switching routes - must be outside auth middleware to allow switching
+Route::prefix('tenants')->name('tenants.')->group(function () {
+    Route::get('/select', [TenantController::class, 'select'])->name('select');
+    Route::get('/switch/{tenant}', [TenantController::class, 'switch'])->name('switch');
 });
 
 Route::middleware(['setlocale', 'auth'])->group(function () {

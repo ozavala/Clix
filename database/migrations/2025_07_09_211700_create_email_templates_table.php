@@ -21,7 +21,8 @@ return new class extends Migration
             $table->json('variables')->nullable(); // Variables disponibles en la plantilla
             $table->json('settings')->nullable(); // Configuraciones de la plantilla
             $table->boolean('is_active')->default(true);
-            $table->foreignId('created_by')->constrained('users')->onDelete('cascade');
+            $table->unsignedBigInteger('created_by');
+            $table->foreign('created_by')->references('user_id')->on('crm_users')->onDelete('cascade');
             $table->timestamps();
             
             $table->index(['type', 'is_active']);
