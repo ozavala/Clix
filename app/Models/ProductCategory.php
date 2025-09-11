@@ -41,7 +41,7 @@ class ProductCategory extends Model
      */
     public function products(): HasMany
     {
-        return $this->hasMany(Product::class, 'product_category_id', 'category_id');
+        return $this->hasMany(Product::class, 'category_id', 'category_id');
     }
 
     public function tenant(): BelongsTo

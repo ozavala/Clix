@@ -84,7 +84,7 @@ class ProductControllerTest extends TestCase
             'is_service' => false,
             'is_active' => true,
             'quantity_on_hand' => 100,
-            'product_category_id' => $category->category_id,
+            'category_id' => $category->category_id,
             'features' => [
                 ['feature_id' => $colorFeature->feature_id, 'value' => 'Red'],
                 ['feature_id' => $sizeFeature->feature_id, 'value' => 'Large']
@@ -101,7 +101,7 @@ class ProductControllerTest extends TestCase
             'sku' => 'TEST-001',
             'price' => 99.99,
             'cost' => 50.00,
-            'product_category_id' => $category->category_id,
+            'category_id' => $category->category_id,
         ]);
 
         $product = Product::where('sku', 'TEST-001')->first();
@@ -152,7 +152,7 @@ class ProductControllerTest extends TestCase
             'is_service' => false,
             'is_active' => true,
             'quantity_on_hand' => 150,
-            'product_category_id' => $category->category_id,
+            'category_id' => $category->category_id,
             'features' => [
                 ['feature_id' => $colorFeature->feature_id, 'value' => 'Blue'],
                 ['feature_id' => $weightFeature->feature_id, 'value' => '2kg']
@@ -244,7 +244,7 @@ class ProductControllerTest extends TestCase
             'is_service' => false,
             'is_active' => true,
             'quantity_on_hand' => 100,
-            'product_category_id' => $category->category_id,
+            'category_id' => $category->category_id,
             'features' => [
                 ['feature_id' => $colorFeature->feature_id, 'value' => 'Red'],
                 ['feature_id' => $sizeFeature->feature_id, 'value' => 'Large'],

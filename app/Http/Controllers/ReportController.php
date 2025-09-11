@@ -68,7 +68,7 @@ class ReportController extends Controller
         $categorySalesData = DB::table('order_items')
             ->join('orders', 'order_items.order_id', '=', 'orders.order_id')
             ->join('products', 'order_items.product_id', '=', 'products.product_id')
-            ->join('product_categories', 'products.product_category_id', '=', 'product_categories.category_id')
+            ->join('product_categories', 'products.category_id', '=', 'product_categories.category_id')
             ->whereBetween('orders.created_at', [$startDate, $endDate])
             ->select('product_categories.name as category_name', DB::raw('SUM(order_items.quantity * order_items.unit_price) as total_sales'))
             ->groupBy('product_categories.name')

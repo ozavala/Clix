@@ -247,7 +247,7 @@ class ReportDataSeeder extends Seeder
             $category = ProductCategory::where('name', $product['category'])
                                     ->where('tenant_id', $tenant->id)
                                     ->first();
-            
+            dd($category);
             if ($category) {
                 Product::firstOrCreate(
                     ['sku' => $product['sku'], 'tenant_id' => $tenant->id],
@@ -471,6 +471,7 @@ class ReportDataSeeder extends Seeder
                 ['email' => $supplier['email'], 'tenant_id' => $tenant->id],
                 $supplier
             );
+            }
         }
 
     private function createLeadsAndOpportunities(): void
@@ -722,26 +723,37 @@ class ReportDataSeeder extends Seeder
                 'subtotal' => 0,
                 'tax_percentage' => 8.5,
                 'tax_amount' => 0,
+                'shipping_cost' => rand(20, 100),
+                'total_amount' => 0,
+                'created_by_user_id' => $user->user_id,
+            ]);
 
-        // Crear items de orden de compra
-        $numItems = rand(2, 8);
-        $subtotal = 0;
-        
-        for ($j = 0; $j < $numItems; $j++) {
-            $product = $products->random();
-            $quantity = rand(10, 100);
-            $unitPrice = $product->cost * (1 + rand(5, 25) / 100); // Margen del 5-25%
-            $itemTotal = $quantity * $unitPrice;
-            $subtotal += $itemTotal;
+            // Crear items de orden
+            $numItems = rand(1, 5);
+            $subtotal = 0;
 
-            PurchaseOrderItem::create([
-                'purchase_order_id' => $purchaseOrder->purchase_order_id,
-                'product_id' => $product->product_id,
-                'item_name' => $product->name,
-                'item_description' => $product->description ?? 'Product description',
-                'quantity' => $quantity,
-                'unit_price' => $unitPrice,
-                'item_total' => $itemTotal,
+            for ($j = 0; $j < $numItems; $j++) {
+                $product = $products->random();
+                $quantity = rand(1, 10);
+                $unitPrice = $product->price;
+                $itemTotal = $quantity * $unitPrice;
+                $subtotal += $itemTotal;
+
+                OrderItem::create([
+                    'order_id' => $order->order_id,
+                    'product_id' => $product->product_id,
+                    'item_name' => $product->name,
+                    'item_description' => $product->description ?? 'Product description',
+                    'quantity' => $quantity,
+                    'unit_price' => $unitPrice,
+                    'item_total' => $itemTotal,
+                ]);
+            }
+
+            // Actualizar totales
+            $taxAmount = $subtotal * ($order->tax_percentage / 100);
+            $totalAmount = $subtotal + $taxAmount + $order->shipping_cost;
+
             $order->update([
                 'subtotal' => $subtotal,
                 'tax_amount' => $taxAmount,

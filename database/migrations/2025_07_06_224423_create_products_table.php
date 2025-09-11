@@ -29,7 +29,7 @@ return new class extends Migration
             $table->string('tax_category')->nullable(); // 'goods', 'services', 'transport', 'insurance', 'storage'
             $table->string('tax_country_code', 3)->default('EC'); // Código de país para IVA
             $table->foreignId('created_by_user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
-            $table->foreignId('product_category_id')->nullable()->constrained('product_categories', 'category_id')->onDelete('set null');
+            $table->foreignId('category_id')->nullable()->constrained('product_categories', 'category_id')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
         });

@@ -26,7 +26,7 @@ class Product extends Model
         'is_service',
         'is_active',
         'created_by_user_id',
-        'product_category_id',
+        'category_id',
         'tax_rate_id',
         'is_taxable',
         'tax_rate_percentage',
@@ -83,7 +83,7 @@ class Product extends Model
      */
     public function category(): BelongsTo
     {
-        return $this->belongsTo(ProductCategory::class, 'product_category_id', 'category_id');
+        return $this->belongsTo(ProductCategory::class, 'category_id', 'category_id');
     }
 
     /**

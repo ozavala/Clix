@@ -23,7 +23,7 @@ class ProductSeeder extends Seeder
             'is_service' => false,
             'is_active' => true, // 
             'created_by_user_id' => 1, // Assuming user with ID 1 exists
-            'product_category_id' => 1, // Assuming category ID 1 exists for electronics
+            'category_id' => 1, // Assuming category ID 1 exists for electronics
             ]) ->features()->attach([
             1 => ['value' => '16GB RAM'],
             2 => ['value' => '512GB SSD'],
@@ -38,7 +38,7 @@ class ProductSeeder extends Seeder
             'is_service' => false,  
             'is_active' => true, 
             'created_by_user_id' => 1, // Assuming user with ID 1 exists
-            'product_category_id' => 1, // Assuming category ID 2 exists for computers
+            'category_id' => 1, // Assuming category ID 2 exists for computers
             ]) ->features()->attach([
             3 => ['value' => '128GB Storage'],
             4 => ['value' => '6GB RAM'],
@@ -53,7 +53,7 @@ class ProductSeeder extends Seeder
             'is_service' => false,  
             'is_active' => true, 
             'created_by_user_id' => 1, // Assuming user with ID 1 exists
-            'product_category_id' => 2, // Assuming category ID 3 exists for furniture
+            'category_id' => 2, // Assuming category ID 3 exists for furniture
             ]) ->features()->attach([
             5 => ['value' => 'Adjustable Height'],
             6 => ['value' => 'Lumbar Support'],
@@ -68,7 +68,7 @@ class ProductSeeder extends Seeder
             'is_service' => true,  
             'is_active' => true, 
             'created_by_user_id' => 1, // Assuming user with ID 1 exists
-            'product_category_id' => 3, // Assuming category ID 4 exists for services
+            'category_id' => 3, // Assuming category ID 4 exists for services
         ]);
         Product::create([
             'tenant_id' => 1,
@@ -80,7 +80,7 @@ class ProductSeeder extends Seeder
             'is_service' => true,  
             'is_active' => true, 
             'created_by_user_id' => 1, // Assuming user with ID 1 exists
-            'product_category_id' => 3, // Assuming category ID 4 exists for services
+            'category_id' => 3, // Assuming category ID 4 exists for services
         ]);
         Product::create([
             'tenant_id' => 1,
@@ -92,7 +92,7 @@ class ProductSeeder extends Seeder
             'is_service' => true,  
             'is_active' => true, 
             'created_by_user_id' => 1, // Assuming user with ID 1 exists
-            'product_category_id' => 3, // Assuming category ID 4 exists for services
+            'category_id' => 3, // Assuming category ID 4 exists for services
         ]);
     }
 }

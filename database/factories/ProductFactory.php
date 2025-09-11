@@ -34,7 +34,7 @@ class ProductFactory extends Factory
             'is_service' => $isService,
             'is_active' => true,
             'created_by_user_id' => CrmUser::factory()->forTenant($tenant)->create()->user_id, // Pass tenant to CrmUser
-            'product_category_id' => ProductCategory::factory()->forTenant($tenant)->create()->category_id, // Pass tenant to ProductCategory
+            'category_id' => ProductCategory::factory()->forTenant($tenant)->create()->category_id, // Pass tenant to ProductCategory
             'tax_rate_id' => TaxRate::factory()->forTenant($tenant)->create()->tax_rate_id, // Pass tenant to TaxRate
             'is_taxable' => fake()->boolean(80), // 80% de productos pagan IVA
             'tax_rate_percentage' => fake()->randomElement($taxRates),
@@ -48,7 +48,7 @@ class ProductFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $tenant->id,
             'created_by_user_id' => CrmUser::factory()->forTenant($tenant)->create()->user_id,
-            'product_category_id' => ProductCategory::factory()->forTenant($tenant)->create()->category_id,
+            'category_id' => ProductCategory::factory()->forTenant($tenant)->create()->category_id,
             'tax_rate_id' => TaxRate::factory()->forTenant($tenant)->create()->tax_rate_id,
         ]);
     }

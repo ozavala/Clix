@@ -709,16 +709,16 @@ CREATE TABLE `products` (
   `is_service` tinyint(1) NOT NULL DEFAULT 0,
   `is_active` tinyint(1) NOT NULL DEFAULT 1,
   `created_by_user_id` bigint(20) unsigned DEFAULT NULL,
-  `product_category_id` bigint(20) unsigned DEFAULT NULL,
+  `category_id` bigint(20) unsigned DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT NULL,
   `updated_at` timestamp NULL DEFAULT NULL,
   `deleted_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`product_id`),
   UNIQUE KEY `products_sku_unique` (`sku`),
   KEY `products_created_by_user_id_foreign` (`created_by_user_id`),
-  KEY `products_product_category_id_foreign` (`product_category_id`),
+  KEY `products_category_id_foreign` (`category_id`),
   CONSTRAINT `products_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL,
-  CONSTRAINT `products_product_category_id_foreign` FOREIGN KEY (`product_category_id`) REFERENCES `product_categories` (`category_id`) ON DELETE SET NULL
+  CONSTRAINT `products_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `product_categories` (`category_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `purchase_order_items`;
@@ -964,7 +964,7 @@ INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (15,'2025_06_11_213
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (16,'2025_06_11_214111_create_product_warehouse_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (17,'2025_06_12_151332_create_addresses_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (18,'2025_06_12_173644_create_product_categories_table',1);
-INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (19,'2025_06_12_173756_add_product_category_id_to_products_table',1);
+INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (19,'2025_06_12_173756_add_category_id_to_products_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (20,'2025_06_12_180446_create_opportunities_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (21,'2025_06_12_191731_create_quotations_table',1);
 INSERT INTO `migrations` (`id`, `migration`, `batch`) VALUES (22,'2025_06_12_191855_create_quotation_items_table',1);

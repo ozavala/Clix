@@ -19,14 +19,14 @@
 </div>
 
 <div class="mb-3">
-    <label for="product_category_id" class="form-label">{{ __('Category') }}</label>
-    <select class="form-select @error('product_category_id') is-invalid @enderror" id="product_category_id" name="product_category_id">
+    <label for="category_id" class="form-label">{{ __('Category') }}</label>
+    <select class="form-select @error('category_id') is-invalid @enderror" id="category_id" name="category_id">
         <option value="">{{ __('Select Category') }}</option>
         @foreach($categories as $category)
-            <option value="{{ $category->category_id }}" {{ old('product_category_id', $product->product_category_id ?? '') == $category->category_id ? 'selected' : '' }}>{{ $category->name }}</option>
+            <option value="{{ $category->category_id }}" {{ old('category_id', $product->category_id ?? '') == $category->category_id ? 'selected' : '' }}>{{ $category->name }}</option>
         @endforeach
     </select>
-    @error('product_category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
+    @error('category_id') <div class="invalid-feedback">{{ $message }}</div> @enderror
 </div>
 
 <div class="row">

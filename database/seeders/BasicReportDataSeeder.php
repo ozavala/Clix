@@ -138,7 +138,7 @@ class BasicReportDataSeeder extends Seeder
                     'sku' => $productData['sku'],
                     'price' => $productData['price'],
                     'cost' => $productData['cost'],
-                    'product_category_id' => $category ? $category->category_id : null,
+                    'category_id' => $category ? $category->category_id : null,
                     'description' => 'High quality ' . strtolower($productData['name']),
                     'reorder_point' => rand(5, 20),
                 ]

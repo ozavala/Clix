@@ -39,7 +39,7 @@ class ProductController extends Controller
         }
         
         if ($request->filled('category_filter')) {
-            $query->where('product_category_id', $request->input('category_filter'));
+            $query->where('category_id', $request->input('category_filter'));
         }
 
         $products = $query->paginate(10)->withQueryString();
