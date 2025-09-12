@@ -47,11 +47,11 @@ class IntegrationTest extends TestCase
 
         $role->permissions()->attach(Permission::pluck('permission_id'));
 
-        // Create user and assign role
-        $this->user = CrmUser::factory()->create();
+        // Create user and assign role within current tenant
+        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
         $this->user->roles()->attach($role->role_id);
         
-        $this->actingAs($this->user, 'web');
+        $this->actingAs($this->user, 'crm');
     }
 
     #[Test]

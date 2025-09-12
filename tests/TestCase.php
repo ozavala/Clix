@@ -17,14 +17,12 @@ abstract class TestCase extends BaseTestCase
     protected $tenant;
     protected $adminUser;
     protected $adminRole;
+    protected $salesRole;
 
     protected function setUp(): void
     {
         parent::setUp();
 
-        // Disable CSRF protection for feature tests
-        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
-        
         // Add the ShareErrorsFromSession middleware to handle $errors variable in views
         $this->withMiddleware(\Illuminate\View\Middleware\ShareErrorsFromSession::class);
 
@@ -50,6 +48,15 @@ abstract class TestCase extends BaseTestCase
             ['name' => 'Admin'],
             [
                 'description' => 'Administrator with full access',
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]
+        );
+
+        $this->salesRole = UserRole::firstOrCreate(
+            ['name' => 'Sales'],
+            [
+                'description' => 'Sales representative',
                 'created_at' => now(),
                 'updated_at' => now(),
             ]
@@ -84,9 +91,6 @@ abstract class TestCase extends BaseTestCase
                 'updated_at' => now(),
             ]);
         }
-
-        // Set the tenant context for the test
-        $this->actingAs($this->adminUser, 'crm');
 
         // Set the tenant_id for the current request
         request()->merge(['tenant_id' => $this->tenant->id]);

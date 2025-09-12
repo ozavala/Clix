@@ -9,7 +9,11 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h1>Order <span class="text-muted">#{{ $order->order_number ?? $order->order_id }}</span></h1>
-            <p class="lead">For customer: <a href="{{ route('customers.show', $order->customer->customer_id) }}">{{ $order->customer->full_name }}</a></p>
+            @if($order->customer)
+                <p class="lead">For customer: <a href="{{ route('customers.show', $order->customer->customer_id) }}">{{ $order->customer->full_name }}</a></p>
+            @else
+                <p class="lead">For customer: <span class="text-muted">N/A</span></p>
+            @endif
         </div>
         <div>
             <a href="{{ route('orders.index') }}" class="btn btn-secondary">Back to Orders</a>
@@ -58,7 +62,11 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Customer:</strong> <a href="{{ route('customers.show', $order->customer->customer_id) }}">{{ $order->customer->full_name }}</a></p>
+                    @if($order->customer)
+                        <p><strong>Customer:</strong> <a href="{{ route('customers.show', $order->customer->customer_id) }}">{{ $order->customer->full_name }}</a></p>
+                    @else
+                        <p><strong>Customer:</strong> <span class="text-muted">N/A</span></p>
+                    @endif
                     @if($order->quotation)
                     <p><strong>From Quotation:</strong> <a href="{{ route('quotations.show', $order->quotation->quotation_id) }}">{{ $order->quotation->subject }}</a></p>
                     @endif

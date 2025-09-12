@@ -15,7 +15,7 @@ class PasswordUpdateTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Auth::shouldUse('web');
+        Auth::shouldUse('crm');
         $this->flushSession();
     }
 

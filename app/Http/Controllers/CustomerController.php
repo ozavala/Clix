@@ -133,7 +133,7 @@ class CustomerController extends TenantAwareController
      */
     public function edit(Customer $customer)
     {
-        Gate::authorize('update-customers');
+        Gate::authorize('edit-customers');
         
         // If user has permission to edit any tenant, show tenant selector
         if (Auth::user()->can('edit-any-tenant')) {

@@ -4,18 +4,17 @@ namespace Tests\Feature\Auth;
 
 use App\Models\CrmUser;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Foundation\Testing\WithoutMiddleware;
 use Tests\TestCase;
 use Illuminate\Support\Facades\Auth;
 
 class AuthenticationTest extends TestCase
 {
-    use RefreshDatabase, WithoutMiddleware;
+    use RefreshDatabase;
 
     protected function setUp(): void
     {
         parent::setUp();
-        Auth::shouldUse('web');
+        Auth::shouldUse('crm');
         $this->flushSession();
     }
 

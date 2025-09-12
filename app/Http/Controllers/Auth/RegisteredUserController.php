@@ -30,22 +30,29 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'name' => ['required', 'string', 'max:255'],
+        $validated = $request->validate([
+            'username' => ['nullable', 'string', 'max:255', 'unique:crm_users,username'],
+            'full_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.CrmUser::class],
-            'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'password' => ['required', 'confirmed', Rules\Password::min(8)],
+            'tenant_id' => ['nullable', 'integer', 'exists:tenants,id'],
         ]);
 
+        $username = $validated['username'] ?? (Str::slug($validated['full_name']) . '-' . strtolower(Str::random(4)));
+
         $user = CrmUser::create([
-            'full_name' => $request->name,
-            'username' => Str::slug($request->name) . '-' . strtolower(Str::random(4)),
-            'email' => $request->email,
-            'password' => Hash::make($request->password),
+            'tenant_id' => $validated['tenant_id'] ?? null,
+            'full_name' => $validated['full_name'],
+            'username' => $username,
+            'email' => $validated['email'],
+            'password' => Hash::make($validated['password']),
         ]);
 
         event(new Registered($user));
 
-        Auth::login($user);
+        $guard = config('auth.defaults.guard', 'crm');
+        Auth::guard($guard)->loginUsingId($user->getKey());
+        $request->session()->regenerate();
 
         return redirect(route('dashboard', absolute: false));
     }

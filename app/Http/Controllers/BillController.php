@@ -46,6 +46,9 @@ class BillController extends Controller
 
         return DB::transaction(function () use ($validatedData) {
             $billData = collect($validatedData)->except(['items'])->all();
+            // Ensure tenant_id is present (DB requires it)
+            $billData['tenant_id'] = $billData['tenant_id']
+                ?? (auth()->user()->tenant_id ?? config('tenant_id'));
             $billData['created_by_user_id'] = Auth::id();
 
             // Calculate totals

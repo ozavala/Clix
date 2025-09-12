@@ -22,6 +22,7 @@ class Quotation extends Model
         'quotation_date',
         'expiry_date',
         'status',
+        'quotation_number',
         'subtotal',
         'discount_type',
         'discount_value',

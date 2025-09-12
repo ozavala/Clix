@@ -13,7 +13,7 @@ class RegistrationTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        Auth::shouldUse('web');
+        Auth::shouldUse('crm');
         $this->flushSession();
     }
 
@@ -27,22 +27,30 @@ class RegistrationTest extends TestCase
     public function test_new_users_can_register(): void
     {
         $tenant = \App\Models\Tenant::factory()->create();
-        
+        // Fetch the registration page to get CSRF token
+        $getResponse = $this->get('/register');
+        $content = $getResponse->getContent();
+        preg_match('/<input type="hidden" name="_token" value="([^"]+)">/', $content, $matches);
+        $token = $matches[1] ?? null;
+
+        $uniqueEmail = 'test_' . uniqid() . '@example.com';
+
         $response = $this->post('/register', [
+            '_token' => $token,
             'username' => 'testuser',
             'full_name' => 'Test User',
-            'email' => 'test@example.com',
+            'email' => $uniqueEmail,
             'password' => 'password',
             'password_confirmation' => 'password',
             'tenant_id' => $tenant->id,
         ]);
 
-        $this->assertAuthenticated();
+        $this->assertAuthenticated('crm');
         $response->assertRedirect(route('dashboard', absolute: false));
         
         $this->assertDatabaseHas('crm_users', [
             'username' => 'testuser',
-            'email' => 'test@example.com',
+            'email' => $uniqueEmail,
             'full_name' => 'Test User',
         ]);
     }

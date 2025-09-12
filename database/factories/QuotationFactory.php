@@ -24,8 +24,9 @@ class QuotationFactory extends Factory
             'quotation_date' => now(),
             'expiry_date' => now()->addDays(30),
             'status' => 'Draft',
+            'quotation_number' => 'QUO-' . $this->faker->unique()->numberBetween(1000, 9999),
             'subtotal' => $this->faker->randomFloat(2, 100, 10000),
-            'discount_type' => 'Percentage',
+            'discount_type' => 'percentage',
             'discount_value' => $this->faker->numberBetween(5, 20), // Random discount between 5% and 20%
             'discount_amount' => function (array $attributes) {
                 return $attributes['subtotal'] * ($attributes['discount_value'] / 100);

@@ -151,6 +151,10 @@ class InvoiceController extends Controller
             $invoiceData = collect($validatedData)->except(['items'])->all();
             $invoiceData['created_by_user_id'] = Auth::id();
             $invoiceData['amount_paid'] = 0; // Initially no amount paid
+            // Ensure tenant_id is present
+            if (empty($invoiceData['tenant_id'])) {
+                $invoiceData['tenant_id'] = Auth::user()->tenant_id ?? config('tenant_id');
+            }
 
             // Generar número de factura correlativo
             $lastInvoice = Invoice::orderByDesc('id')->first();

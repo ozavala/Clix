@@ -53,23 +53,20 @@ class PurchaseOrderFactory extends Factory
     public function configure()
     {
         return $this->afterCreating(function (PurchaseOrder $po) {
-            if ($po->items->isEmpty()) {
-                PurchaseOrderItem::factory(rand(1, 5))->forTenant($po->tenant)->create(['purchase_order_id' => $po->purchase_order_id]);
-                $po->load('items');
+            if ($po->items->isNotEmpty()) {
+               $subtotal = $po->items->sum('item_total');
+                $discountAmount = 0; // For now, no discount logic in factory
+                $subtotalAfterDiscount = $subtotal - $discountAmount;
+                $taxAmount = ($subtotalAfterDiscount * $po->tax_percentage) / 100;
+                $totalAmount = $subtotalAfterDiscount + $taxAmount + $po->shipping_cost + $po->other_charges;
+
+                $po->updateQuietly([
+                    'subtotal' => $subtotal,
+                    'discount_amount' => $discountAmount,
+                    'tax_amount' => $taxAmount,
+                    'total_amount' => $totalAmount,
+                ]);
             }
-
-           $subtotal = $po->items->sum('item_total');
-            $discountAmount = 0; // For now, no discount logic in factory
-            $subtotalAfterDiscount = $subtotal - $discountAmount;
-            $taxAmount = ($subtotalAfterDiscount * $po->tax_percentage) / 100;
-            $totalAmount = $subtotalAfterDiscount + $taxAmount + $po->shipping_cost + $po->other_charges;
-
-            $po->updateQuietly([
-                'subtotal' => $subtotal,
-                'discount_amount' => $discountAmount,
-                'tax_amount' => $taxAmount,
-                'total_amount' => $totalAmount,
-            ]);
         });
     }
 

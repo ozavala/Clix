@@ -15,42 +15,64 @@ class LandedCostService
      */
     public function apportionCosts(PurchaseOrder $purchaseOrder): void
     {
+        $purchaseOrder->load('items', 'landedCosts');
+        \Log::info('Starting apportionCosts', ['purchase_order_id' => $purchaseOrder->purchase_order_id]);
+
         $totalLandedCosts = $purchaseOrder->landedCosts()->sum('amount');
         $poSubtotal = $purchaseOrder->items()->sum('item_total');
 
+        \Log::info('Initial values', [
+            'total_landed_costs' => $totalLandedCosts,
+            'po_subtotal' => $poSubtotal,
+            'item_count' => $purchaseOrder->items->count()
+        ]);
+
+        if ($purchaseOrder->items->isEmpty() || $totalLandedCosts <= 0) {
+            \Log::info('No items or no landed costs to apportion');
+            foreach ($purchaseOrder->items as $item) {
+                $item->landed_cost_per_unit = 0;
+                $item->save();
+            }
+            return;
+        }
+
+        $totalLandedCostsStr = (string) $totalLandedCosts;
+        $poSubtotalStr = (string) $poSubtotal;
+
+        if (bccomp($poSubtotalStr, '0.00', 2) === 0) {
+            \Log::warning('PO subtotal is zero, cannot apportion costs by value.', ['purchase_order_id' => $purchaseOrder->purchase_order_id]);
+            foreach ($purchaseOrder->items as $item) {
+                $item->landed_cost_per_unit = 0;
+                $item->save();
+            }
+            return;
+        }
+
         foreach ($purchaseOrder->items as $item) {
-            // Using bcmath for high-precision calculations to avoid floating-point inaccuracies
+            if ($item->quantity <= 0) {
+                $item->landed_cost_per_unit = 0;
+                $item->save();
+                continue;
+            }
+
             $itemValue = (string) $item->item_total;
-            $poSubtotalStr = (string) $poSubtotal;
-            $totalLandedCostsStr = (string) $totalLandedCosts;
             $itemQuantityStr = (string) $item->quantity;
 
-            // Calculate the proportion of the total value this item represents
-            $valueProportion = ($poSubtotal > 0) ? bcdiv($itemValue, $poSubtotalStr, 10) : '0.0000000000'; // 10 decimal places for precision
-
-            // Apportion the landed costs to this item line
+            $valueProportion = bcdiv($itemValue, $poSubtotalStr, 10);
             $apportionedCost = bcmul($totalLandedCostsStr, $valueProportion, 10);
+            $costPerUnit = bcdiv($apportionedCost, $itemQuantityStr, 4);
 
-            // Calculate the landed cost per unit for this item line
-            $landedCostPerUnit = ($item->quantity > 0) ? bcdiv($apportionedCost, $itemQuantityStr, 4) : 0.0000; // 4 decimal places for unit cost
-
-            // Debug: Log the values
-            \Log::info("LandedCostService Debug", [
+            \Log::info('Landed Cost Calculation', [
                 'item_id' => $item->purchase_order_item_id,
-                'item_total' => $itemValue,
-                'po_subtotal' => $poSubtotalStr,
-                'total_landed_costs' => $totalLandedCostsStr,
+                'item_value' => $itemValue,
                 'quantity' => $itemQuantityStr,
                 'value_proportion' => $valueProportion,
                 'apportioned_cost' => $apportionedCost,
-                'landed_cost_per_unit' => $landedCostPerUnit
+                'cost_per_unit' => $costPerUnit,
             ]);
 
-            $result = $item->update(['landed_cost_per_unit' => $landedCostPerUnit]);
-            
-            // Debug: Log the update result
-            \Log::info("Update result for item {$item->purchase_order_item_id}: " . ($result ? 'true' : 'false'));
-            \Log::info("Attempted to set landed_cost_per_unit to: {$landedCostPerUnit}");
+            $item->landed_cost_per_unit = $costPerUnit;
+            $item->save();
         }
     }
 }

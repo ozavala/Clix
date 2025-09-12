@@ -9,7 +9,11 @@
     <div class="d-flex justify-content-between align-items-center mb-3">
         <div>
             <h1>Invoice <span class="text-muted">#{{ $invoice->invoice_number }}</span></h1>
-            <p class="lead">For: <a href="{{ route('customers.show', $invoice->customer->customer_id) }}">{{ $invoice->customer->full_name }}</a></p>
+            @if($invoice->customer)
+                <p class="lead">For: <a href="{{ route('customers.show', $invoice->customer->customer_id) }}">{{ $invoice->customer->full_name }}</a></p>
+            @else
+                <p class="lead">For: <span class="text-muted">Unknown customer</span></p>
+            @endif
         </div>
         <div>
             <a href="{{ route('invoices.index') }}" class="btn btn-secondary">Back to Invoices</a>
@@ -42,12 +46,16 @@
         <div class="card-body">
             <div class="row">
                 <div class="col-md-6">
-                    <p><strong>Customer:</strong> <a href="{{ route('customers.show', $invoice->customer->customer_id) }}">{{ $invoice->customer->full_name }}</a></p>
+                    @if($invoice->customer)
+                        <p><strong>Customer:</strong> <a href="{{ route('customers.show', $invoice->customer->customer_id) }}">{{ $invoice->customer->full_name }}</a></p>
+                    @else
+                        <p><strong>Customer:</strong> <span class="text-muted">N/A</span></p>
+                    @endif
                     @if($invoice->order)
-                    <p><strong>Order:</strong> <a href="{{ route('orders.show', $invoice->order->order_id) }}">#{{ $invoice->order->order_number }}</a></p>
+                        <p><strong>Order:</strong> <a href="{{ route('orders.show', $invoice->order->order_id) }}">#{{ $invoice->order->order_number }}</a></p>
                     @endif
                     @if($invoice->quotation)
-                    <p><strong>Quotation:</strong> <a href="{{ route('quotations.show', $invoice->quotation->quotation_id) }}">{{ $invoice->quotation->subject }}</a></p>
+                        <p><strong>Quotation:</strong> <a href="{{ route('quotations.show', $invoice->quotation->quotation_id) }}">{{ $invoice->quotation->subject }}</a></p>
                     @endif
                     <p><strong>Status:</strong> <span class="badge {{ match($invoice->status) {'Paid' => 'bg-success', 'Partially Paid' => 'bg-warning text-dark', 'Overdue' => 'bg-danger', default => 'bg-secondary'} }}">{{ $invoice->status }}</span></p>
                 </div>

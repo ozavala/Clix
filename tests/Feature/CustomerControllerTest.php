@@ -17,7 +17,7 @@ class CustomerControllerTest extends TestCase
     {
         parent::setUp();
         $this->seed(\Database\Seeders\SettingsTableSeeder::class);
-        $this->user = CrmUser::factory()->create();
+        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
         $this->actingAs($this->user);
         // Asignar permisos necesarios para gestión de clientes
         // Esto es requerido por la lógica de autorización en el controlador de clientes
@@ -33,7 +33,7 @@ class CustomerControllerTest extends TestCase
     public function it_can_display_customers_index()
     {
         // Create some test customers
-        Customer::factory()->count(3)->create();
+        Customer::factory()->forTenant($this->tenant)->count(3)->create();
 
         $response = $this->get(route('customers.index'));
 
@@ -46,9 +46,9 @@ class CustomerControllerTest extends TestCase
     public function it_can_search_customers()
     {
         // Create customers with specific names
-        Customer::factory()->create(['first_name' => 'John', 'last_name' => 'Doe']);
-        Customer::factory()->create(['first_name' => 'Jane', 'last_name' => 'Smith']);
-        Customer::factory()->create(['first_name' => 'Bob', 'last_name' => 'Johnson']);
+        Customer::factory()->forTenant($this->tenant)->create(['first_name' => 'John', 'last_name' => 'Doe']);
+        Customer::factory()->forTenant($this->tenant)->create(['first_name' => 'Jane', 'last_name' => 'Smith']);
+        Customer::factory()->forTenant($this->tenant)->create(['first_name' => 'Bob', 'last_name' => 'Johnson']);
 
         $response = $this->get(route('customers.index', ['search' => 'John']));
 
@@ -114,7 +114,7 @@ class CustomerControllerTest extends TestCase
     #[Test]
     public function it_can_display_customer_details()
     {
-        $customer = Customer::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
 
         $response = $this->get(route('customers.show', $customer));
 
@@ -124,16 +124,13 @@ class CustomerControllerTest extends TestCase
         $response->assertSee($customer->first_name);
         $response->assertSee($customer->last_name);
 
-        // Solución rápida para cerrar buffers
-        while (ob_get_level() > 0) {
-            ob_end_clean();
-        }
+        // Removed output buffer cleanup to avoid risky test status
     }
 
     #[Test]
     public function it_can_display_edit_customer_form()
     {
-        $customer = Customer::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
 
         $response = $this->get(route('customers.edit', $customer));
 
@@ -146,7 +143,7 @@ class CustomerControllerTest extends TestCase
     #[Test]
     public function it_can_update_customer()
     {
-        $customer = Customer::factory()->create([
+        $customer = Customer::factory()->forTenant($this->tenant)->create([
             'first_name' => 'John',
             'last_name' => 'Doe',
             'email' => 'john.doe@example.com',
@@ -194,7 +191,7 @@ class CustomerControllerTest extends TestCase
     #[Test]
     public function it_can_delete_customer()
     {
-        $customer = Customer::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
 
         $response = $this->delete(route('customers.destroy', $customer));
 

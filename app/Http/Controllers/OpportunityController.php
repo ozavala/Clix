@@ -43,6 +43,10 @@ class OpportunityController extends Controller
     {
         $validatedData = $request->validated();
         $validatedData['created_by_user_id'] = Auth::id();
+        // Ensure tenant is set on the opportunity
+        if (empty($validatedData['tenant_id'])) {
+            $validatedData['tenant_id'] = Auth::user()->tenant_id ?? config('tenant_id');
+        }
 
         $opportunity = Opportunity::create($validatedData);
 

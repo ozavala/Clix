@@ -85,6 +85,10 @@ class OrderController extends Controller
         return DB::transaction(function () use ($validatedData) {
             $orderData = collect($validatedData)->except(['items'])->all();
             $orderData['created_by_user_id'] = Auth::id();
+            // Ensure tenant_id is present
+            if (empty($orderData['tenant_id'])) {
+                $orderData['tenant_id'] = Auth::user()->tenant_id ?? config('tenant_id');
+            }
             $orderData['order_number'] = $orderData['order_number'] ?? ('ORD-' . strtoupper(Str::random(8)));
             
             $totals = $this->calculateTotals(

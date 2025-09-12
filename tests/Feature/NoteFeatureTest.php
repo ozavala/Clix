@@ -21,7 +21,7 @@ class NoteFeatureTest extends TestCase
     {
         parent::setUp();
         $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
-        $this->actingAs($this->user, 'web');
+        $this->actingAs($this->user, 'crm');
         // Asignar permiso necesario para ver clientes y asociar notas
         // Esto es requerido por la lógica de autorización en notas y clientes
         $this->givePermission($this->user, 'view-customers');
@@ -30,7 +30,7 @@ class NoteFeatureTest extends TestCase
     #[Test]
     public function a_user_can_add_a_note_to_a_customer()
     {
-        $customer = Customer::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
         $noteBody = 'This is a test note for a customer.';
 
         $response = $this->post(route('notes.store'), [
@@ -56,7 +56,7 @@ class NoteFeatureTest extends TestCase
     #[Test]
     public function a_user_can_add_a_note_to_an_opportunity()
     {
-        $opportunity = Opportunity::factory()->create();
+        $opportunity = Opportunity::factory()->forTenant($this->tenant)->create();
         $noteBody = 'This is a test note for an opportunity.';
 
         $response = $this->post(route('notes.store'), [
@@ -94,7 +94,7 @@ class NoteFeatureTest extends TestCase
     #[Test]
     public function adding_a_note_is_visible_on_the_parent_entity_page()
     {
-        $customer = Customer::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
         $noteBody = $this->faker->sentence(10);
 
         // Debug: Check if user has the permission

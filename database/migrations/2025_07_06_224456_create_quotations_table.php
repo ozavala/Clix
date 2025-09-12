@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('quotations', function (Blueprint $table) {
             $table->id('quotation_id');
+            $table->string('quotation_number')->unique();
             $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->foreignId('opportunity_id')->constrained('opportunities', 'opportunity_id')->onDelete('cascade');
             $table->string('subject');

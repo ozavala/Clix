@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use Tests\TestCase;
-use App\Models\User;
+use App\Models\CrmUser;
 use App\Models\Supplier;
 use App\Models\Customer;
 use App\Models\Product;
@@ -117,8 +117,7 @@ class IntegralFlowTest extends TestCase
     public function test_complete_integral_flow()
     {
         // 1. Crear datos base
-        $user = User::factory()->create();
-        $crmUser = \App\Models\CrmUser::factory()->create();
+        $crmUser = CrmUser::factory()->forTenant($this->tenant)->create();
         $supplier = Supplier::factory()->create([
             'legal_id' => 'SUP-001',
             'name' => 'Proveedor Test'
@@ -219,7 +218,7 @@ class IntegralFlowTest extends TestCase
             'amount' => 330.00,
             'payment_method' => 'bank_transfer',
             'reference_number' => 'PAY-INV-001',
-            'created_by_user_id' => $user->id
+            'created_by_user_id' => $crmUser->user_id
         ]);
 
         // Verificar Payment para Invoice
@@ -238,7 +237,7 @@ class IntegralFlowTest extends TestCase
             'amount' => 165.00,
             'payment_method' => 'bank_transfer',
             'reference_number' => 'PAY-BILL-001',
-            'created_by_user_id' => $user->id
+            'created_by_user_id' => $crmUser->user_id
         ]);
 
         // Verificar Payment para Bill
@@ -268,8 +267,7 @@ class IntegralFlowTest extends TestCase
      */
     public function test_journal_entries_creation()
     {
-        $user = User::factory()->create();
-        $crmUser = \App\Models\CrmUser::factory()->create();
+        $crmUser = CrmUser::factory()->forTenant($this->tenant)->create();
         
         // Crear un asiento contable
         $journalEntry = JournalEntry::factory()->create([

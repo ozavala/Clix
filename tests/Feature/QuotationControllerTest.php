@@ -10,6 +10,7 @@ use App\Models\Product;
 use App\Models\CrmUser;
 use App\Models\Permission;
 use App\Models\UserRole;
+use App\Models\Setting;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 
@@ -350,6 +351,23 @@ class QuotationControllerTest extends TestCase
         $product1 = Product::factory()->forTenant($this->tenant)->create();
         $product2 = Product::factory()->forTenant($this->tenant)->create();
         
+        // Mock the settings that would normally be loaded from the database
+        Setting::create([
+            'key' => 'quotation_prefix',
+            'value' => 'QUO-',
+            'type' => 'core',
+            'is_editable' => true,
+            'tenant_id' => $this->tenant->id
+        ]);
+        
+        Setting::create([
+            'key' => 'quotation_start_number',
+            'value' => '1000',
+            'type' => 'core',
+            'is_editable' => true,
+            'tenant_id' => $this->tenant->id
+        ]);
+        
         $quotationData = [
             'opportunity_id' => $opportunity->opportunity_id,
             'subject' => 'Quotation with Multiple Items',
@@ -399,6 +417,40 @@ class QuotationControllerTest extends TestCase
             'tenant_id' => $this->tenant->id
         ]);
         $product = Product::factory()->forTenant($this->tenant)->create();
+        
+        // Mock the settings that would normally be loaded from the database
+        Setting::create([
+            'key' => 'quotation_prefix',
+            'value' => 'QUO-',
+            'type' => 'core',
+            'is_editable' => true,
+            'tenant_id' => $this->tenant->id
+        ]);
+        
+        Setting::create([
+            'key' => 'quotation_start_number',
+            'value' => '1000',
+            'type' => 'core',
+            'is_editable' => true,
+            'tenant_id' => $this->tenant->id
+        ]);
+        
+        // Add default payment terms and due days settings
+        Setting::create([
+            'key' => 'default_payment_terms',
+            'value' => 'Net 30',
+            'type' => 'core',
+            'is_editable' => true,
+            'tenant_id' => $this->tenant->id
+        ]);
+        
+        Setting::create([
+            'key' => 'default_due_days',
+            'value' => '30',
+            'type' => 'core',
+            'is_editable' => true,
+            'tenant_id' => $this->tenant->id
+        ]);
         
         $quotationData = [
             'opportunity_id' => $opportunity->opportunity_id,

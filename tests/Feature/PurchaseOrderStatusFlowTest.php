@@ -17,21 +17,38 @@ class PurchaseOrderStatusFlowTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
+    protected $tenant;
+    protected $user;
+
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Create a tenant and user for testing
+        $this->tenant = \App\Models\Tenant::factory()->create();
+        $this->user = CrmUser::factory()->create([
+            'tenant_id' => $this->tenant->id
+        ]);
+    }
+
     public function test_purchase_order_status_flow()
     {
-        // Create user and supplier
-        $user = CrmUser::factory()->create();
-        $supplier = Supplier::factory()->create();
+        // Create supplier and product with tenant context
+        $supplier = Supplier::factory()->create([
+            'tenant_id' => $this->tenant->id
+        ]);
+        
         $product = Product::factory()->create([
             'cost' => 100.00,
-            'created_by_user_id' => $user->user_id,
+            'created_by_user_id' => $this->user->user_id,
+            'tenant_id' => $this->tenant->id,
         ]);
 
         // Create purchase order in draft status
         $purchaseOrder = PurchaseOrder::factory()->create([
             'supplier_id' => $supplier->supplier_id,
             'status' => 'draft',
-            'created_by_user_id' => $user->user_id,
+            'created_by_user_id' => $this->user->user_id,
         ]);
 
         // Test 1: Draft -> Confirmed
@@ -57,9 +74,10 @@ class PurchaseOrderStatusFlowTest extends TestCase
 
     public function test_payment_restrictions_by_status()
     {
-        // Create user and supplier
-        $user = CrmUser::factory()->create();
-        $supplier = Supplier::factory()->create();
+        // Create supplier with tenant context
+        $supplier = Supplier::factory()->create([
+            'tenant_id' => $this->tenant->id
+        ]);
 
         // Test different statuses and payment permissions
         $statuses = [
@@ -77,7 +95,8 @@ class PurchaseOrderStatusFlowTest extends TestCase
                 'supplier_id' => $supplier->supplier_id,
                 'status' => $status,
                 'total_amount' => 1000.00,
-                'created_by_user_id' => $user->user_id,
+                'created_by_user_id' => $this->user->user_id,
+                'tenant_id' => $this->tenant->id,
             ]);
 
             $this->assertEquals(
@@ -90,9 +109,10 @@ class PurchaseOrderStatusFlowTest extends TestCase
 
     public function test_payment_processing_by_status()
     {
-        // Create user and supplier
-        $user = CrmUser::factory()->create();
-        $supplier = Supplier::factory()->create();
+        // Create supplier with tenant context
+        $supplier = Supplier::factory()->create([
+            'tenant_id' => $this->tenant->id
+        ]);
 
         // Create purchase order in confirmed status (can receive payments)
         $purchaseOrder = PurchaseOrder::create([
@@ -109,7 +129,8 @@ class PurchaseOrderStatusFlowTest extends TestCase
             'other_charges' => 0,
             'total_amount' => 1000.00,
             'amount_paid' => 0,
-            'created_by_user_id' => $user->user_id,
+            'created_by_user_id' => $this->user->user_id,
+            'tenant_id' => $this->tenant->id,
         ]);
 
         // Create a payment
@@ -120,6 +141,7 @@ class PurchaseOrderStatusFlowTest extends TestCase
             'payment_date' => now(),
             'payment_method' => 'bank_transfer',
             'reference_number' => 'REF-001',
+            'tenant_id' => $this->tenant->id,
         ]);
 
         // Update status after payment
@@ -136,6 +158,7 @@ class PurchaseOrderStatusFlowTest extends TestCase
             'payment_date' => now(),
             'payment_method' => 'bank_transfer',
             'reference_number' => 'REF-002',
+            'tenant_id' => $this->tenant->id,
         ]);
 
         $purchaseOrder->updateStatusAfterPayment();
@@ -147,36 +170,42 @@ class PurchaseOrderStatusFlowTest extends TestCase
 
     public function test_inventory_receipt_separate_from_po_status()
     {
-        // Create user, supplier, and product
-        $user = CrmUser::factory()->create();
-        $supplier = Supplier::factory()->create();
+        // Create supplier and product with tenant context
+        $supplier = Supplier::factory()->create([
+            'tenant_id' => $this->tenant->id
+        ]);
+        
         $product = Product::factory()->create([
             'cost' => 100.00,
             'quantity_on_hand' => 0,
-            'created_by_user_id' => $user->user_id,
+            'created_by_user_id' => $this->user->user_id,
+            'tenant_id' => $this->tenant->id,
         ]);
 
         // Create purchase order in dispatched status
         $purchaseOrder = PurchaseOrder::factory()->create([
             'supplier_id' => $supplier->supplier_id,
             'status' => 'dispatched',
-            'created_by_user_id' => $user->user_id,
+            'created_by_user_id' => $this->user->user_id,
+            'tenant_id' => $this->tenant->id,
         ]);
 
         // Create purchase order item
         $poItem = $purchaseOrder->items()->create([
             'product_id' => $product->product_id,
             'item_name' => $product->name,
-            'quantity' => 50,
+            'quantity' => 10,
             'unit_price' => 100.00,
-            'item_total' => 5000.00,
+            'item_total' => 1000.00,
+            'tenant_id' => $this->tenant->id,
         ]);
 
         // Create goods receipt (separate transaction)
         $goodsReceipt = GoodsReceipt::factory()->create([
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
-            'received_by_user_id' => $user->user_id,
+            'received_by_user_id' => $this->user->user_id,
             'status' => 'draft',
+            'tenant_id' => $this->tenant->id,
         ]);
 
         // Create goods receipt item
@@ -186,6 +215,7 @@ class PurchaseOrderStatusFlowTest extends TestCase
             'quantity_received' => 30, // Partial receipt
             'unit_cost_with_landed' => 110.00, // Including landed costs
             'total_cost' => 3300.00,
+            'tenant_id' => $this->tenant->id,
         ]);
 
         // Process the receipt (updates inventory)
@@ -207,9 +237,10 @@ class PurchaseOrderStatusFlowTest extends TestCase
 
     public function test_cancellation_restrictions()
     {
-        // Create user and supplier
-        $user = CrmUser::factory()->create();
-        $supplier = Supplier::factory()->create();
+        // Create supplier with tenant context
+        $supplier = Supplier::factory()->create([
+            'tenant_id' => $this->tenant->id
+        ]);
 
         // Test cancellation restrictions
         $cancellableStatuses = ['draft', 'confirmed'];
@@ -219,7 +250,8 @@ class PurchaseOrderStatusFlowTest extends TestCase
             $purchaseOrder = PurchaseOrder::factory()->create([
                 'supplier_id' => $supplier->supplier_id,
                 'status' => $status,
-                'created_by_user_id' => $user->user_id,
+                'created_by_user_id' => $this->user->user_id,
+                'tenant_id' => $this->tenant->id,
             ]);
 
             $this->assertTrue(
@@ -232,7 +264,8 @@ class PurchaseOrderStatusFlowTest extends TestCase
             $purchaseOrder = PurchaseOrder::factory()->create([
                 'supplier_id' => $supplier->supplier_id,
                 'status' => $status,
-                'created_by_user_id' => $user->user_id,
+                'created_by_user_id' => $this->user->user_id,
+                'tenant_id' => $this->tenant->id,
             ]);
 
             $this->assertFalse(
@@ -244,19 +277,27 @@ class PurchaseOrderStatusFlowTest extends TestCase
 
     public function test_status_transitions_api()
     {
-        // Create user and supplier
-        $user = CrmUser::factory()->create();
-        $supplier = Supplier::factory()->create();
+        // Create supplier and product with tenant context
+        $supplier = Supplier::factory()->create([
+            'tenant_id' => $this->tenant->id
+        ]);
+        
+        $product = Product::factory()->create([
+            'cost' => 100.00,
+            'created_by_user_id' => $this->user->user_id,
+            'tenant_id' => $this->tenant->id,
+        ]);
 
         // Create purchase order in draft status
         $purchaseOrder = PurchaseOrder::factory()->create([
             'supplier_id' => $supplier->supplier_id,
             'status' => 'draft',
-            'created_by_user_id' => $user->user_id,
+            'created_by_user_id' => $this->user->user_id,
+            'tenant_id' => $this->tenant->id,
         ]);
 
         // Test API endpoint for available transitions
-        $response = $this->actingAs($user)
+        $response = $this->actingAs($this->user)
             ->getJson("/purchase-orders/{$purchaseOrder->purchase_order_id}/transitions");
 
         $response->assertStatus(200)
@@ -268,7 +309,7 @@ class PurchaseOrderStatusFlowTest extends TestCase
             ]);
 
         // Confirm the purchase order
-        $response = $this->actingAs($user)
+        $response = $this->actingAs($this->user)
             ->postJson("/purchase-orders/{$purchaseOrder->purchase_order_id}/confirm");
 
         $response->assertStatus(200)
@@ -278,7 +319,7 @@ class PurchaseOrderStatusFlowTest extends TestCase
             ]);
 
         // Check transitions after confirmation
-        $response = $this->actingAs($user)
+        $response = $this->actingAs($this->user)
             ->getJson("/purchase-orders/{$purchaseOrder->purchase_order_id}/transitions");
 
         $response->assertStatus(200)

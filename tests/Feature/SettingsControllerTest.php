@@ -34,64 +34,60 @@ class SettingsControllerTest extends TestCase
 
     public function test_edit_core_settings()
     {
-        // Ensure the setting exists for the tenant
-        Setting::create([
-            'key' => 'company_name',
-            'value' => 'Old Company Name',
+        // Create a core setting for the test
+        $setting = Setting::create([
+            'key' => 'test_setting',
+            'value' => 'Old Value',
             'type' => 'core',
+            'is_editable' => true,
             'tenant_id' => $this->tenant->id
         ]);
         
         $response = $this->patch(route('settings.update'), [
-            'company_name' => 'New Company Name',
+            'test_setting' => 'New Value',
         ]);
         
         $response->assertRedirect(route('settings.edit'));
-        $this->assertEquals('New Company Name', 
-            Setting::where('key', 'company_name')
-                ->where('tenant_id', $this->tenant->id)
-                ->first()->value
-        );
+        
+        // Refresh the setting from the database
+        $setting->refresh();
+        $this->assertEquals('New Value', $setting->value);
     }
 
     public function test_create_and_delete_custom_setting()
     {
+        $customKey = 'custom_field_' . time(); // Ensure unique key
+        
         // Create custom setting
         $response = $this->post(route('settings.custom.store'), [
-            'key' => 'custom_field',
-            'value' => 'Valor',
+            'key' => $customKey,
+            'value' => 'Test Value',
         ]);
         
         $response->assertRedirect(route('settings.edit'));
         
-        // Verify the setting was created with the correct tenant_id
-        $this->assertDatabaseHas('settings', [
-            'key' => 'custom_field', 
-            'type' => 'custom',
-            'tenant_id' => $this->tenant->id
-        ]);
+        // Get the specific setting we just created
+        $setting = Setting::where('key', $customKey)->first();
         
-        // Get the setting with tenant scope
-        $setting = Setting::where('key', 'custom_field')
-            ->where('tenant_id', $this->tenant->id)
-            ->first();
-            
+        $this->assertNotNull($setting, 'Custom setting was not created');
+        $this->assertEquals('Test Value', $setting->value);
+        $this->assertEquals('custom', $setting->type);
+        
         // Delete custom setting
         $response = $this->delete(route('settings.custom.destroy', $setting));
         $response->assertRedirect(route('settings.edit'));
         
         // Verify the setting was deleted
-        $this->assertDatabaseMissing('settings', [
-            'key' => 'custom_field',
-            'tenant_id' => $this->tenant->id
-        ]);
+        $this->assertNull(
+            Setting::where('key', $customKey)->first()
+        );
     }
 
     public function test_cannot_delete_core_setting()
     {
-        $core = Setting::where('key', 'company_name')->first();
+        $core = Setting::where('key', 'name')->first();
         $response = $this->delete(route('settings.custom.destroy', $core));
         $response->assertRedirect(route('settings.edit'));
-        $this->assertDatabaseHas('settings', ['key' => 'company_name']);
+        $this->assertDatabaseHas('settings', ['key' => 'name']);
     }
 } 

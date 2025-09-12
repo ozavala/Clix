@@ -20,8 +20,8 @@ class OrderControllerTest extends TestCase
     {
         parent::setUp();
         $this->seed(\Database\Seeders\SettingsTableSeeder::class);
-        $this->user = CrmUser::factory()->create();
-        $this->actingAs($this->user);
+        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
+        $this->actingAs($this->user, 'crm');
         // Asignar permisos necesarios para gestión de órdenes
         // Esto es requerido por la lógica de autorización en el controlador de órdenes
         $this->givePermission($this->user, [
@@ -35,7 +35,7 @@ class OrderControllerTest extends TestCase
     #[Test]
     public function it_can_display_orders_index()
     {
-        Order::factory()->count(3)->create();
+        Order::factory()->forTenant($this->tenant)->count(3)->create();
 
         $response = $this->get(route('orders.index'));
 
@@ -47,8 +47,8 @@ class OrderControllerTest extends TestCase
     #[Test]
     public function it_can_search_orders()
     {
-        Order::factory()->create(['order_number' => 'ORD-001']);
-        Order::factory()->create(['order_number' => 'ORD-002']);
+        Order::factory()->forTenant($this->tenant)->create(['order_number' => 'ORD-001']);
+        Order::factory()->forTenant($this->tenant)->create(['order_number' => 'ORD-002']);
 
         $response = $this->get(route('orders.index', ['search' => 'ORD-001']));
 
@@ -72,8 +72,8 @@ class OrderControllerTest extends TestCase
     #[Test]
     public function it_can_store_a_new_order()
     {
-        $customer = Customer::factory()->create();
-        $product = Product::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $product = Product::factory()->forTenant($this->tenant)->create();
         
         $orderData = [
             'customer_id' => $customer->customer_id,
@@ -111,7 +111,7 @@ class OrderControllerTest extends TestCase
     #[Test]
     public function it_can_display_order_details()
     {
-        $order = Order::factory()->create();
+        $order = Order::factory()->forTenant($this->tenant)->create();
 
         $response = $this->get(route('orders.show', $order));
 
@@ -124,7 +124,7 @@ class OrderControllerTest extends TestCase
     #[Test]
     public function it_can_display_edit_order_form()
     {
-        $order = Order::factory()->create();
+        $order = Order::factory()->forTenant($this->tenant)->create();
 
         $response = $this->get(route('orders.edit', $order));
 
@@ -138,9 +138,9 @@ class OrderControllerTest extends TestCase
     #[Test]
     public function it_can_update_order()
     {
-        $order = Order::factory()->create();
-        $customer = Customer::factory()->create();
-        $product = Product::factory()->create();
+        $order = Order::factory()->forTenant($this->tenant)->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $product = Product::factory()->forTenant($this->tenant)->create();
         
         $updateData = [
             'customer_id' => $customer->customer_id,
@@ -178,7 +178,7 @@ class OrderControllerTest extends TestCase
     #[Test]
     public function it_can_delete_order()
     {
-        $order = Order::factory()->create();
+        $order = Order::factory()->forTenant($this->tenant)->create();
 
         $response = $this->delete(route('orders.destroy', $order));
 
@@ -199,7 +199,7 @@ class OrderControllerTest extends TestCase
     #[Test]
     public function it_validates_order_date_format()
     {
-        $customer = Customer::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
         
         $orderData = [
             'customer_id' => $customer->customer_id,
@@ -215,7 +215,7 @@ class OrderControllerTest extends TestCase
     #[Test]
     public function it_validates_order_items_are_required()
     {
-        $customer = Customer::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
         
         $orderData = [
             'customer_id' => $customer->customer_id,
@@ -232,9 +232,9 @@ class OrderControllerTest extends TestCase
     #[Test]
     public function it_can_handle_multiple_order_items()
     {
-        $customer = Customer::factory()->create();
-        $product1 = Product::factory()->create();
-        $product2 = Product::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $product1 = Product::factory()->forTenant($this->tenant)->create();
+        $product2 = Product::factory()->forTenant($this->tenant)->create();
         
         $orderData = [
             'customer_id' => $customer->customer_id,
@@ -274,8 +274,8 @@ class OrderControllerTest extends TestCase
     #[Test]
     public function it_can_calculate_order_totals()
     {
-        $customer = Customer::factory()->create();
-        $product = Product::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $product = Product::factory()->forTenant($this->tenant)->create();
         
         $orderData = [
             'customer_id' => $customer->customer_id,
