@@ -13,6 +13,7 @@ class PurchaseOrderItem extends Model
     protected $primaryKey = 'purchase_order_item_id';
 
     protected $fillable = [
+        'tenant_id',
         'purchase_order_id',
         'product_id',
         'item_name',

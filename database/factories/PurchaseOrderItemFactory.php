@@ -14,6 +14,7 @@ class PurchaseOrderItemFactory extends Factory
     public function definition(): array
     {
         return [
+            'tenant_id' => \App\Models\Tenant::factory(),
             'purchase_order_id' => \App\Models\PurchaseOrder::factory(),
             'product_id' => \App\Models\Product::factory(),
             'item_name' => $this->faker->words(3, true),
@@ -28,6 +29,7 @@ class PurchaseOrderItemFactory extends Factory
     public function forTenant(\App\Models\Tenant $tenant): static
     {
         return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenant->id,
             'purchase_order_id' => PurchaseOrder::factory()->forTenant($tenant),
             'product_id' => Product::factory()->forTenant($tenant),
         ]);

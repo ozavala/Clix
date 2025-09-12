@@ -1,6 +1,11 @@
 @extends('layouts.guest')
 
 @section('content')
+@php
+    // Ensure $errors variable is always defined
+    $errors = $errors ?? new \Illuminate\Support\ViewErrorBag();
+@endphp
+
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-md-8">

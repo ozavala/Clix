@@ -78,6 +78,9 @@ class PaymentController extends Controller
         }
 
         DB::transaction(function () use ($validatedData, $payableModel) {
+            // Ensure the tenant_id is set from the payable model
+            $validatedData['tenant_id'] = $payableModel->tenant_id ?? null;
+            
             $payment = Payment::create($validatedData);
             $this->createJournalEntriesForPayment($payment, $payableModel);
             // The PaymentObserver will now handle updating the payable model's status and amount_paid.
@@ -186,9 +189,12 @@ class PaymentController extends Controller
     protected function createJournalEntriesForPayment(Payment $payment, Model $payableModel)
     {
         // Get company settings for legal_id
-        $companyLegalId = \App\Models\Setting::where('key', 'company_legal_id')->first()?->value ?? 'N/A';
+        $companyLegalId = \App\Models\Setting::where('key', 'company_legal_id')
+            ->where('tenant_id', $payment->tenant_id)
+            ->first()?->value ?? 'N/A';
         
         $journalEntry = JournalEntry::create([
+            'tenant_id' => $payment->tenant_id,
             'entry_date' => $payment->payment_date,
             'transaction_type' => 'Payment',
             'description' => "Payment for " . class_basename($payableModel) . " #" . ($payableModel->invoice_number ?? $payableModel->purchase_order_number ?? $payableModel->bill_number ?? $payableModel->getKey()),
@@ -215,6 +221,7 @@ class PaymentController extends Controller
             
             $journalEntry->lines()->createMany([
                 [
+                    'tenant_id' => $payment->tenant_id,
                     'account_code' => '1101',
                     'account_name' => $getAccountName('1101') . ' (' . $companyLegalId . ')',
                     'debit_amount' => $payment->amount,
@@ -222,6 +229,7 @@ class PaymentController extends Controller
                     'description' => 'Bank account of main company',
                 ],
                 [
+                    'tenant_id' => $payment->tenant_id,
                     'account_code' => '2102',
                     'account_name' => $getAccountName('2102') . ' (' . $customerLegalId . ')',
                     'debit_amount' => 0,
@@ -239,6 +247,7 @@ class PaymentController extends Controller
             
             $journalEntry->lines()->createMany([
                 [
+                    'tenant_id' => $payment->tenant_id,
                     'account_code' => '2101',
                     'account_name' => $getAccountName('2101') . ' (' . $supplierLegalId . ')',
                     'debit_amount' => $payment->amount,
@@ -248,6 +257,7 @@ class PaymentController extends Controller
                     'description' => 'Supplier accounts payable',
                 ],
                 [
+                    'tenant_id' => $payment->tenant_id,
                     'account_code' => '1101',
                     'account_name' => $getAccountName('1101') . ' (' . $companyLegalId . ')',
                     'debit_amount' => 0,

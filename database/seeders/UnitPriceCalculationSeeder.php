@@ -17,13 +17,23 @@ class UnitPriceCalculationSeeder extends Seeder
 {
     public function run(): void
     {
+        // Get or create a tenant
+        $tenant = \App\Models\Tenant::firstOrCreate(
+            ['id' => 1],
+            ['name' => 'Test Tenant', 'domain' => 'test-tenant']
+        );
+
         // Create a user for the process
-        $user = CrmUser::factory()->create();
+        $user = CrmUser::factory()->create([
+            'tenant_id' => $tenant->id,
+            'email' => 'test@example.com',
+            'password' => bcrypt('password'),
+        ]);
 
         // Create suppliers with different characteristics
         $suppliers = [
             [
-                'tenant_id' => 1,
+                'tenant_id' => $tenant->id,
                 'name' => 'Electronics Import Co.',
                 'legal_id' => 'SUP-2001',
                 'email' => 'import.electronics@example.com',
@@ -130,6 +140,7 @@ class UnitPriceCalculationSeeder extends Seeder
                 $itemTotal = $quantity * $unitPrice;
 
                 $item = PurchaseOrderItem::create([
+                    'tenant_id' => $tenant->id,
                     'purchase_order_id' => $purchaseOrder->purchase_order_id,
                     'product_id' => $product->product_id,
                     'item_name' => $product->name,
@@ -144,7 +155,8 @@ class UnitPriceCalculationSeeder extends Seeder
                 $landedCosts = $this->getLandedCostsForSupplier($supplier->name, $itemTotal);
 
                 foreach ($landedCosts as $cost) {
-                    LandedCost::create([
+LandedCost::create([
+                        'tenant_id' => $tenant->id,
                         'costable_type' => PurchaseOrder::class,
                         'costable_id' => $purchaseOrder->purchase_order_id,
                         'description' => $cost['description'],

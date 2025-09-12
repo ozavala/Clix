@@ -17,7 +17,7 @@ class ProductTest extends TestCase
     public function test_product_belongs_to_category()
     {
         $category = ProductCategory::factory()->forTenant($this->tenant)->create();
-        $product = Product::factory()->forTenant($this->tenant)->for($category, 'category')->create();
+        $product = Product::factory()->forTenant($this->tenant, $category)->create();
 
         $this->assertInstanceOf(ProductCategory::class, $product->category);
         $this->assertTrue($product->category->is($category));

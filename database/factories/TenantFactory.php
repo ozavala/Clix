@@ -15,19 +15,29 @@ class TenantFactory extends Factory
             'name' => $this->faker->company,
             'legal_id' => $this->faker->unique()->bothify('##-########-001'),
             'is_active' => true,
-            'address' => $this->faker->address,
+            'address' => json_encode([
+                'street' => $this->faker->streetAddress,
+                'city' => $this->faker->city,
+                'state' => $this->faker->state,
+                'postal_code' => $this->faker->postcode,
+                'country' => $this->faker->countryCode,
+            ]),
             'phone' => $this->faker->phoneNumber,
-            'website' => $this->faker->url,
-            'logo' => $this->faker->imageUrl(),
-            'email' => $this->faker->email,
+            'website' => 'https://' . $this->faker->domainName,
+            'logo' => $this->faker->imageUrl(200, 200, 'business'),
+            'email' => 'info@' . $this->faker->safeEmailDomain,
             'industry' => $this->faker->word,
-        
-            /*'settings' => [
-                'default_currency' => 'USD',
-                'default_locale' => 'en',
+            'settings' => [
+                'currency' => 'USD',
+                'locale' => 'en',
+                'timezone' => $this->faker->timezone,
+                'date_format' => 'Y-m-d',
+                'time_format' => 'H:i',
                 'tax_includes_services' => true,
                 'tax_includes_transport' => false,
-            ],*/
+            ],
+            'created_at' => now(),
+            'updated_at' => now(),
         ];
     }
 }

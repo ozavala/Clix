@@ -17,15 +17,17 @@ class CrmUserFactory extends Factory
      */
     public function definition(): array
     {
+        $firstName = $this->faker->firstName;
+        $lastName = $this->faker->lastName;
+        $username = strtolower($firstName[0] . $lastName . $this->faker->randomNumber(2));
+        
         return [
             'tenant_id' => Tenant::factory(),
-            'username' => $this->faker->unique()->userName,
-            'full_name' => $this->faker->name(),
-            'email' => $this->faker->unique()->email,
-            'email_verified_at' => now(), // Set email as verified
-            
-            'password' => bcrypt('password'), // Default password, can be overridden  
-            //
+            'username' => $username,
+            'full_name' => "$firstName $lastName",
+            'email' => $this->faker->unique()->safeEmail,
+            'email_verified_at' => now(),
+            'password' => bcrypt('password'),
         ];
     }
 
@@ -33,6 +35,28 @@ class CrmUserFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $tenant->id,
+            'email' => $this->faker->unique()->safeEmail,
+        ]);
+    }
+
+    public function inactive(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_active' => false,
+        ]);
+    }
+
+    public function superAdmin(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'is_super_admin' => true,
+        ]);
+    }
+
+    public function unverified(): static
+    {
+        return $this->state(fn (array $attributes) => [
+            'email_verified_at' => null,
         ]);
     }
 }

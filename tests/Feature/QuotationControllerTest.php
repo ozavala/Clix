@@ -20,7 +20,12 @@ class QuotationControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = CrmUser::factory()->create();
+        
+        // Create a tenant
+        $this->tenant = \App\Models\Tenant::factory()->create();
+        
+        // Create a user for the tenant
+        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
         
         // Create permissions and roles for quotation management
         $permissions = [
@@ -31,23 +36,34 @@ class QuotationControllerTest extends TestCase
         ];
         
         foreach ($permissions as $permissionName) {
-            Permission::create(['name' => $permissionName]);
+            Permission::create([
+                'name' => $permissionName,
+                'tenant_id' => $this->tenant->id
+            ]);
         }
         
         // Create a role with all quotation permissions
-        $role = UserRole::create(['name' => 'Quotation Manager']);
-        $role->permissions()->attach(Permission::whereIn('name', $permissions)->pluck('permission_id'));
+        $role = UserRole::create([
+            'name' => 'Quotation Manager',
+            'tenant_id' => $this->tenant->id
+        ]);
+        
+        // Assign permissions to role
+        $role->permissions()->attach(Permission::whereIn('name', $permissions)
+            ->where('tenant_id', $this->tenant->id)
+            ->pluck('permission_id'));
         
         // Assign role to user
         $this->user->roles()->attach($role->role_id);
         
-        $this->actingAs($this->user);
+        // Set the tenant for the test
+        $this->actingAs($this->user, 'crm');
     }
 
     #[Test]
     public function it_can_display_quotations_index()
     {
-        $customer = Customer::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
         $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
         Quotation::factory()->create(['opportunity_id' => $opportunity->opportunity_id]);
 
@@ -61,29 +77,40 @@ class QuotationControllerTest extends TestCase
     #[Test]
     public function it_can_search_quotations()
     {
-        $customer = Customer::factory()->create();
-        $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
-        
-        Quotation::factory()->create([
-            'opportunity_id' => $opportunity->opportunity_id,
-            'subject' => 'QUOT-001'
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
         ]);
         Quotation::factory()->create([
             'opportunity_id' => $opportunity->opportunity_id,
-            'subject' => 'QUOT-002'
+            'quotation_number' => 'QUOTE-12345',
+            'tenant_id' => $this->tenant->id
+        ]);
+        Quotation::factory()->create([
+            'opportunity_id' => $opportunity->opportunity_id,
+            'subject' => 'QUOT-002',
+            'tenant_id' => $this->tenant->id
         ]);
 
-        $response = $this->get(route('quotations.index', ['search' => 'QUOT-001']));
+        $response = $this->get(route('quotations.index', ['search' => 'QUOTE-12345']));
 
         $response->assertOk();
         $response->assertViewHas('quotations');
-        $response->assertSee('QUOT-001');
+        $response->assertSee('QUOTE-12345');
         $response->assertDontSee('QUOT-002');
     }
 
     #[Test]
     public function it_can_display_create_quotation_form()
     {
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
+        ]);
+        $product = Product::factory()->forTenant($this->tenant)->create();
+
         $response = $this->get(route('quotations.create'));
 
         $response->assertOk();
@@ -95,9 +122,12 @@ class QuotationControllerTest extends TestCase
     #[Test]
     public function it_can_store_a_new_quotation()
     {
-        $customer = Customer::factory()->create();
-        $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
-        $product = Product::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
+        ]);
+        $product = Product::factory()->forTenant($this->tenant)->create();
         
         $quotationData = [
             'opportunity_id' => $opportunity->opportunity_id,
@@ -143,9 +173,15 @@ class QuotationControllerTest extends TestCase
     #[Test]
     public function it_can_display_quotation_details()
     {
-        $customer = Customer::factory()->create();
-        $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
-        $quotation = Quotation::factory()->create(['opportunity_id' => $opportunity->opportunity_id]);
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
+        ]);
+        $quotation = Quotation::factory()->create([
+            'opportunity_id' => $opportunity->opportunity_id,
+            'tenant_id' => $this->tenant->id
+        ]);
 
         $response = $this->get(route('quotations.show', $quotation));
 
@@ -158,9 +194,15 @@ class QuotationControllerTest extends TestCase
     #[Test]
     public function it_can_display_edit_quotation_form()
     {
-        $customer = Customer::factory()->create();
-        $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
-        $quotation = Quotation::factory()->create(['opportunity_id' => $opportunity->opportunity_id]);
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
+        ]);
+        $quotation = Quotation::factory()->create([
+            'opportunity_id' => $opportunity->opportunity_id,
+            'tenant_id' => $this->tenant->id
+        ]);
 
         $response = $this->get(route('quotations.edit', $quotation));
 
@@ -174,10 +216,17 @@ class QuotationControllerTest extends TestCase
     #[Test]
     public function it_can_update_quotation()
     {
-        $customer = Customer::factory()->create();
-        $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
-        $quotation = Quotation::factory()->create(['opportunity_id' => $opportunity->opportunity_id]);
-        $product = Product::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
+        ]);
+        $quotation = Quotation::factory()->create([
+            'opportunity_id' => $opportunity->opportunity_id,
+            'status' => 'Draft',
+            'tenant_id' => $this->tenant->id
+        ]);
+        $product = Product::factory()->forTenant($this->tenant)->create();
         
         $updateData = [
             'opportunity_id' => $opportunity->opportunity_id,
@@ -221,9 +270,15 @@ class QuotationControllerTest extends TestCase
     #[Test]
     public function it_can_delete_quotation()
     {
-        $customer = Customer::factory()->create();
-        $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
-        $quotation = Quotation::factory()->create(['opportunity_id' => $opportunity->opportunity_id]);
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
+        ]);
+        $quotation = Quotation::factory()->create([
+            'opportunity_id' => $opportunity->opportunity_id,
+            'tenant_id' => $this->tenant->id
+        ]);
 
         $response = $this->delete(route('quotations.destroy', $quotation));
 
@@ -244,8 +299,11 @@ class QuotationControllerTest extends TestCase
     #[Test]
     public function it_validates_quotation_date_format()
     {
-        $customer = Customer::factory()->create();
-        $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
+        ]);
         
         $quotationData = [
             'opportunity_id' => $opportunity->opportunity_id,
@@ -262,8 +320,11 @@ class QuotationControllerTest extends TestCase
     #[Test]
     public function it_validates_quotation_items_are_required()
     {
-        $customer = Customer::factory()->create();
-        $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
+        ]);
         
         $quotationData = [
             'opportunity_id' => $opportunity->opportunity_id,
@@ -281,10 +342,13 @@ class QuotationControllerTest extends TestCase
     #[Test]
     public function it_can_handle_multiple_quotation_items()
     {
-        $customer = Customer::factory()->create();
-        $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
-        $product1 = Product::factory()->create();
-        $product2 = Product::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
+        ]);
+        $product1 = Product::factory()->forTenant($this->tenant)->create();
+        $product2 = Product::factory()->forTenant($this->tenant)->create();
         
         $quotationData = [
             'opportunity_id' => $opportunity->opportunity_id,
@@ -329,9 +393,12 @@ class QuotationControllerTest extends TestCase
     #[Test]
     public function it_can_calculate_quotation_totals_with_discount_and_tax()
     {
-        $customer = Customer::factory()->create();
-        $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
-        $product = Product::factory()->create();
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
+        ]);
+        $product = Product::factory()->forTenant($this->tenant)->create();
         
         $quotationData = [
             'opportunity_id' => $opportunity->opportunity_id,
@@ -375,11 +442,15 @@ class QuotationControllerTest extends TestCase
     #[Test]
     public function it_can_send_quotation_email()
     {
-        $customer = Customer::factory()->create(['email' => 'test@example.com']);
-        $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
+        $customer = Customer::factory()->forTenant($this->tenant)->create(['email' => 'test@example.com']);
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
+        ]);
         $quotation = Quotation::factory()->create([
             'opportunity_id' => $opportunity->opportunity_id,
-            'status' => 'Draft'
+            'status' => 'Draft',
+            'tenant_id' => $this->tenant->id
         ]);
 
         $response = $this->post(route('quotations.sendEmail', $quotation));
@@ -394,16 +465,21 @@ class QuotationControllerTest extends TestCase
     #[Test]
     public function it_can_filter_quotations_by_status()
     {
-        $customer = Customer::factory()->create();
-        $opportunity = Opportunity::factory()->create(['customer_id' => $customer->customer_id]);
+        $customer = Customer::factory()->forTenant($this->tenant)->create();
+        $opportunity = Opportunity::factory()->create([
+            'customer_id' => $customer->customer_id,
+            'tenant_id' => $this->tenant->id
+        ]);
         
         Quotation::factory()->create([
             'opportunity_id' => $opportunity->opportunity_id,
-            'status' => 'Draft'
+            'status' => 'Draft',
+            'tenant_id' => $this->tenant->id
         ]);
         Quotation::factory()->create([
             'opportunity_id' => $opportunity->opportunity_id,
-            'status' => 'Sent'
+            'status' => 'Sent',
+            'tenant_id' => $this->tenant->id
         ]);
 
         $response = $this->get(route('quotations.index', ['status_filter' => 'Draft']));

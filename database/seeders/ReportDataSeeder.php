@@ -772,6 +772,7 @@ class ReportDataSeeder extends Seeder
                 $subtotal += $itemTotal;
 
                 PurchaseOrderItem::create([
+                    'tenant_id' => $purchaseOrder->tenant_id,
                     'purchase_order_id' => $purchaseOrder->purchase_order_id,
                     'product_id' => $product->product_id,
                     'item_name' => $product->name,

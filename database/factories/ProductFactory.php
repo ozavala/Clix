@@ -43,12 +43,12 @@ class ProductFactory extends Factory
         ];
     }
 
-    public function forTenant(\App\Models\Tenant $tenant): static
+    public function forTenant(\App\Models\Tenant $tenant, ?\App\Models\ProductCategory $category = null): static
     {
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $tenant->id,
             'created_by_user_id' => CrmUser::factory()->forTenant($tenant)->create()->user_id,
-            'category_id' => ProductCategory::factory()->forTenant($tenant)->create()->category_id,
+            'category_id' => $category ? $category->category_id : ProductCategory::factory()->forTenant($tenant)->create()->category_id,
             'tax_rate_id' => TaxRate::factory()->forTenant($tenant)->create()->tax_rate_id,
         ]);
     }

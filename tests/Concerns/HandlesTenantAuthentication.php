@@ -1,34 +1,25 @@
 <?php
 
-namespace Tests;
+namespace Tests\Concerns;
 
 use App\Models\CrmUser;
 use App\Models\Tenant;
 use App\Models\UserRole;
-use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-abstract class TestCase extends BaseTestCase
+trait HandlesTenantAuthentication
 {
-    use CreatesApplication, RefreshDatabase;
-
     protected $tenant;
     protected $adminUser;
     protected $adminRole;
 
-    protected function setUp(): void
+    /**
+     * Set up the test environment with a tenant and admin user
+     */
+    protected function setUpTenant(): void
     {
-        parent::setUp();
-
-        // Disable CSRF protection for feature tests
-        $this->withoutMiddleware(\App\Http\Middleware\VerifyCsrfToken::class);
-        
-        // Add the ShareErrorsFromSession middleware to handle $errors variable in views
-        $this->withMiddleware(\Illuminate\View\Middleware\ShareErrorsFromSession::class);
-
-        // Create test tenant
+        // Create or get test tenant
         $this->tenant = Tenant::firstOrCreate(
             ['name' => 'Test Tenant'],
             [
@@ -54,23 +45,26 @@ abstract class TestCase extends BaseTestCase
                 'updated_at' => now(),
             ]
         );
-
-        // Create admin user with a unique username
-        $username = 'testadmin_' . uniqid();
-        $this->adminUser = CrmUser::firstOrCreate(
-            ['email' => 'test@example.com'],
-            [
-                'username' => $username,
+        
+        // Try to find existing admin user first
+        $this->adminUser = CrmUser::where('email', 'admin@test-tenant.example.com')->first();
+        
+        // If user doesn't exist, create a new one with a unique username
+        if (!$this->adminUser) {
+            $this->adminUser = CrmUser::create([
+                'user_id' => 1,
+                'username' => 'testadmin' . now()->timestamp, // Ensure unique username
+                'email' => 'admin@test-tenant.example.com',
                 'full_name' => 'Test Admin',
                 'password' => bcrypt('password'),
                 'tenant_id' => $this->tenant->id,
                 'email_verified_at' => now(),
                 'created_at' => now(),
                 'updated_at' => now(),
-            ]
-        );
-
-        // Assign admin role to user
+            ]);
+        }
+        
+        // Assign admin role to user using direct insert to avoid model events
         $pivotExists = DB::table('crm_user_user_role')
             ->where('crm_user_id', $this->adminUser->user_id)
             ->where('role_id', $this->adminRole->role_id)
@@ -85,18 +79,21 @@ abstract class TestCase extends BaseTestCase
             ]);
         }
 
-        // Set the tenant context for the test
+        // Authenticate as admin user
         $this->actingAs($this->adminUser, 'crm');
-
-        // Set the tenant_id for the current request
+        
+        // Set tenant context
         request()->merge(['tenant_id' => $this->tenant->id]);
         config(['tenant_id' => $this->tenant->id]);
+        
+        // Set the current tenant in the application container
+        app()->instance('currentTenant', $this->tenant);
     }
 
     /**
      * Create a test user with specific permissions
      */
-    protected function createUserWithPermissions(array $permissions = [], array $userData = [])
+    protected function createUserWithPermissions(array $permissions = [], array $userData = []): CrmUser
     {
         $user = CrmUser::factory()->create(array_merge([
             'tenant_id' => $this->tenant->id,
@@ -108,7 +105,7 @@ abstract class TestCase extends BaseTestCase
         ]);
 
         $role->permissions()->sync(
-            Permission::whereIn('name', $permissions)->pluck('id')
+            \App\Models\Permission::whereIn('name', $permissions)->pluck('id')
         );
 
         $user->roles()->attach($role);
@@ -117,37 +114,20 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Asigna uno o varios permisos a un usuario CrmUser para pruebas.
-     * Si el permiso no existe, lo crea. Si el usuario no tiene un rol, se le asigna uno temporal.
-     * El permiso se asigna al rol del usuario.
-     *
-     * @param \App\Models\CrmUser $user
-     * @param string|array $permissions Nombre(s) del permiso a asignar (ej: 'edit-settings')
+     * Act as a specific user
      */
-    protected function givePermission($user, $permissions)
+    public function actingAsUser(CrmUser $user): self
     {
-        $permissions = (array) $permissions;
-        $role = $user->roles()->first();
-        if (!$role) {
-            // Crear un rol temporal si el usuario no tiene ninguno
-            $role = \App\Models\UserRole::create([
-                'name' => 'TestRole_' . uniqid(),
-                'description' => 'Rol temporal para testing',
-            ]);
-            $user->roles()->attach($role);
-        }
-        foreach ($permissions as $permName) {
-            $permission = \App\Models\Permission::firstOrCreate([
-                'name' => $permName
-            ], [
-                'description' => 'Permiso temporal para testing'
-            ]);
-            // Asignar el permiso al rol si no lo tiene
-            if (!$role->permissions()->where('name', $permName)->exists()) {
-                $role->permissions()->attach($permission);
-            }
-        }
-        // Refrescar relaciones
-        $user->load('roles.permissions');
+        $this->actingAs($user, 'crm');
+        return $this;
+    }
+
+    /**
+     * Act as a guest user
+     */
+    public function actingAsGuest($guard = null): self
+    {
+        parent::actingAsGuest($guard);
+        return $this;
     }
 }

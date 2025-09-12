@@ -5,6 +5,7 @@ namespace Database\Factories;
 use App\Models\Contact;
 use App\Models\CrmUser;
 use App\Models\Tenant;
+use App\Models\Customer;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -26,6 +27,12 @@ class ContactFactory extends Factory
             'email' => $this->faker->unique()->safeEmail(),
             'phone' => $this->faker->phoneNumber(),
             'title' => $this->faker->jobTitle(),
+            'contactable_type' => Customer::class,
+            'contactable_id' => function (array $attributes) {
+                return Customer::factory()->create([
+                    'tenant_id' => $attributes['tenant_id']
+                ])->customer_id;
+            },
             'created_by_user_id' => CrmUser::factory(),
         ];
     }

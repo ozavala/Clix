@@ -26,14 +26,24 @@ class RegistrationTest extends TestCase
 
     public function test_new_users_can_register(): void
     {
+        $tenant = \App\Models\Tenant::factory()->create();
+        
         $response = $this->post('/register', [
-            'name' => 'Test User',
+            'username' => 'testuser',
+            'full_name' => 'Test User',
             'email' => 'test@example.com',
             'password' => 'password',
             'password_confirmation' => 'password',
+            'tenant_id' => $tenant->id,
         ]);
 
         $this->assertAuthenticated();
         $response->assertRedirect(route('dashboard', absolute: false));
+        
+        $this->assertDatabaseHas('crm_users', [
+            'username' => 'testuser',
+            'email' => 'test@example.com',
+            'full_name' => 'Test User',
+        ]);
     }
 }

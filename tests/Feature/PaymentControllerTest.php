@@ -19,7 +19,12 @@ class PaymentControllerTest extends TestCase
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = CrmUser::factory()->create();
+        
+        // Create a tenant
+        $this->tenant = \App\Models\Tenant::factory()->create();
+        
+        // Create a user for the tenant
+        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
         
         // Create permissions and roles for payment management
         $permissions = [
@@ -39,15 +44,27 @@ class PaymentControllerTest extends TestCase
         // Assign role to user
         $this->user->roles()->attach($role->role_id);
         
+        // Set the tenant for the test
         $this->actingAs($this->user);
+        
+        // Set the tenant ID on the request
+        $this->withHeader('X-Tenant-ID', $this->tenant->id);
     }
 
     #[Test]
     public function it_can_display_payments_index()
     {
-        $invoice = \App\Models\Invoice::factory()->create();
-        Payment::factory()->count(3)->state([
-            'payable_id' => $invoice->invoice_id,
+        $customer = \App\Models\Customer::factory()->forTenant($this->tenant)->create();
+        $invoice = \App\Models\Invoice::factory()
+            ->forTenant($this->tenant)
+            ->for($customer)
+            ->create();
+            
+        Payment::factory()
+            ->forTenant($this->tenant)
+            ->count(3)
+            ->state([
+                'payable_id' => $invoice->invoice_id,
             'payable_type' => \App\Models\Invoice::class,
         ])->create();
 
@@ -306,11 +323,12 @@ class PaymentControllerTest extends TestCase
         $paymentData = [
             'payable_type' => 'App\Models\Invoice',
             'payable_id' => $invoice->invoice_id,
-            'payment_date' => '2024-01-15',
+            'payment_date' => now()->format('Y-m-d'),
             'amount' => 150.00,
             'payment_method' => 'Cash',
             'reference_number' => 'PARTIAL-001',
-            'notes' => 'Partial payment'
+            'notes' => 'Partial payment',
+            'tenant_id' => $this->tenant->id
         ];
 
         $response = $this->post(route('invoices.payments.store', $invoice), $paymentData);

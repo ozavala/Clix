@@ -17,7 +17,7 @@ class InvoiceTest extends TestCase
     public function test_invoice_belongs_to_customer()
     {
         $customer = Customer::factory()->forTenant($this->tenant)->create();
-        $invoice = Invoice::factory()->forTenant($this->tenant)->for($customer)->create();
+        $invoice = Invoice::factory()->forTenant($this->tenant, $customer)->create();
 
         $this->assertInstanceOf(Customer::class, $invoice->customer);
         $this->assertTrue($invoice->customer->is($customer));

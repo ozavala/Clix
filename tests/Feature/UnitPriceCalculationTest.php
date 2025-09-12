@@ -16,23 +16,62 @@ use Illuminate\Foundation\Testing\WithFaker;
 class UnitPriceCalculationTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
+    
+    protected $tenant;
+    protected $user;
+    
+    protected function setUp(): void
+    {
+        parent::setUp();
+        
+        // Disable transaction for this test
+        $this->withoutExceptionHandling();
+        
+        // Create a tenant without specifying ID to avoid unique constraint issues
+        $this->tenant = \App\Models\Tenant::factory()->create([
+            'name' => 'Test Tenant ' . uniqid(),
+            'legal_id' => 'TEST-' . uniqid(),
+            'is_active' => true,
+        ]);
+        
+        // Create a user for the tenant
+        $this->user = CrmUser::factory()->forTenant($this->tenant)->create([
+            'email' => 'test-' . uniqid() . '@example.com',
+            'password' => bcrypt('password'),
+        ]);
+        
+        $this->actingAs($this->user, 'crm');
+    }
+    
+    protected function tearDown(): void
+    {
+        // Clean up tenant and user
+        if ($this->tenant) {
+            $this->tenant->delete();
+        }
+        
+        parent::tearDown();
+    }
 
     public function test_unit_price_calculation_with_landed_costs()
     {
-        // Create user and supplier
-        $user = CrmUser::factory()->create();
-        $supplier = Supplier::factory()->create();
+        // Create supplier with tenant context
+        $supplier = Supplier::factory()->create([
+            'tenant_id' => $this->tenant->id,
+        ]);
 
-        // Create product
+        // Create product with tenant context
         $product = Product::factory()->create([
             'cost' => 200.00,
             'quantity_on_hand' => 0,
-            'created_by_user_id' => $user->user_id,
+            'created_by_user_id' => $this->user->user_id,
+            'tenant_id' => $this->tenant->id,
         ]);
 
-        // Create purchase order without items
+        // Create purchase order with tenant context
         $purchaseOrder = PurchaseOrder::create([
             'supplier_id' => $supplier->supplier_id,
+            'created_by_user_id' => $this->user->user_id,
             'purchase_order_number' => 'PO-TEST-' . uniqid(),
             'order_date' => now(),
             'expected_delivery_date' => now()->addDays(30),
@@ -45,7 +84,7 @@ class UnitPriceCalculationTest extends TestCase
             'other_charges' => 0,
             'total_amount' => 0,
             'amount_paid' => 0,
-            'created_by_user_id' => $user->user_id,
+            'tenant_id' => $this->tenant->id,
         ]);
 
         // Create single item
@@ -57,10 +96,12 @@ class UnitPriceCalculationTest extends TestCase
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'product_id' => $product->product_id,
             'item_name' => $product->name,
+            'item_description' => $product->description ?? 'Test Item',
             'quantity' => $quantity,
             'unit_price' => $baseUnitPrice,
             'item_total' => $itemTotal,
             'landed_cost_per_unit' => null,
+            'tenant_id' => $this->tenant->id,
         ]);
 
         // Create landed costs
@@ -76,6 +117,7 @@ class UnitPriceCalculationTest extends TestCase
                 'costable_id' => $purchaseOrder->purchase_order_id,
                 'description' => $cost['description'],
                 'amount' => $cost['amount'],
+                'tenant_id' => $this->tenant->id,
             ]);
         }
 
@@ -175,29 +217,30 @@ class UnitPriceCalculationTest extends TestCase
 
     public function test_multiple_products_with_different_landed_costs()
     {
-        // Create user
-        $user = CrmUser::factory()->create();
+        // Create supplier with tenant context
+        $supplier = Supplier::factory()->create([
+            'tenant_id' => $this->tenant->id,
+        ]);
 
-        // Create supplier
-        $supplier = Supplier::factory()->create();
-
-        // Create products
+        // Create products with tenant context
         $products = [
             Product::factory()->create([
                 'name' => 'Product A',
                 'cost' => 100.00,
                 'quantity_on_hand' => 0, // Sin stock inicial
-                'created_by_user_id' => $user->user_id,
+                'created_by_user_id' => $this->user->user_id,
+                'tenant_id' => $this->tenant->id,
             ]),
             Product::factory()->create([
                 'name' => 'Product B',
                 'cost' => 200.00,
                 'quantity_on_hand' => 0, // Sin stock inicial
-                'created_by_user_id' => $user->user_id,
+                'created_by_user_id' => $this->user->user_id,
+                'tenant_id' => $this->tenant->id,
             ]),
         ];
 
-        // Create purchase order without items
+        // Create purchase order with tenant context
         $purchaseOrder = PurchaseOrder::create([
             'supplier_id' => $supplier->supplier_id,
             'purchase_order_number' => 'PO-TEST-' . uniqid(),
@@ -212,7 +255,8 @@ class UnitPriceCalculationTest extends TestCase
             'other_charges' => 0,
             'total_amount' => 0,
             'amount_paid' => 0,
-            'created_by_user_id' => $user->user_id,
+            'created_by_user_id' => $this->user->user_id,
+            'tenant_id' => $this->tenant->id,
         ]);
 
         // Create items for each product
@@ -226,10 +270,12 @@ class UnitPriceCalculationTest extends TestCase
                 'purchase_order_id' => $purchaseOrder->purchase_order_id,
                 'product_id' => $product->product_id,
                 'item_name' => $product->name,
+                'item_description' => $product->description ?? 'Test Item',
                 'quantity' => $quantity,
                 'unit_price' => $unitPrice,
                 'item_total' => $itemTotal,
                 'landed_cost_per_unit' => null,
+                'tenant_id' => $this->tenant->id,
             ]);
 
             $items[] = $item;
@@ -248,6 +294,7 @@ class UnitPriceCalculationTest extends TestCase
                 'costable_id' => $purchaseOrder->purchase_order_id,
                 'description' => $cost['description'],
                 'amount' => $cost['amount'],
+                'tenant_id' => $this->tenant->id,
             ]);
         }
 
@@ -306,24 +353,28 @@ class UnitPriceCalculationTest extends TestCase
 
     public function test_landed_cost_calculation_with_zero_quantities()
     {
-        // Create user and supplier
-        $user = CrmUser::factory()->create();
-        $supplier = Supplier::factory()->create();
-
-        // Create product
-        $product = Product::factory()->create([
-            'cost' => 100.00,
-            'created_by_user_id' => $user->user_id,
+        // Create supplier with tenant context
+        $supplier = Supplier::factory()->create([
+            'tenant_id' => $this->tenant->id,
         ]);
 
-        // Create purchase order without items
+        // Create product with tenant context
+        $product = Product::factory()->create([
+            'cost' => 100.00,
+            'quantity_on_hand' => 0,
+            'created_by_user_id' => $this->user->user_id,
+            'tenant_id' => $this->tenant->id,
+        ]);
+
+        // Create purchase order with tenant context
         $purchaseOrder = PurchaseOrder::create([
             'supplier_id' => $supplier->supplier_id,
-            'purchase_order_number' => 'PO-TEST-' . uniqid(),
+            'created_by_user_id' => $this->user->user_id,
+            'purchase_order_number' => 'PO-ZERO-' . uniqid(),
             'order_date' => now(),
             'expected_delivery_date' => now()->addDays(30),
             'type' => 'Import',
-            'status' => 'Confirmed',
+            'status' => 'confirmed',
             'subtotal' => 0,
             'tax_percentage' => 10,
             'tax_amount' => 0,
@@ -331,35 +382,37 @@ class UnitPriceCalculationTest extends TestCase
             'other_charges' => 0,
             'total_amount' => 0,
             'amount_paid' => 0,
-            'created_by_user_id' => $user->user_id,
+            'tenant_id' => $this->tenant->id,
         ]);
 
-        // Create item with zero quantity
-        $item = PurchaseOrderItem::factory()->create([
+        // Create purchase order item with zero quantity
+        $item = PurchaseOrderItem::create([
             'purchase_order_id' => $purchaseOrder->purchase_order_id,
             'product_id' => $product->product_id,
+            'item_name' => $product->name,
+            'item_description' => $product->description ?? 'Test Item',
             'quantity' => 0,
             'unit_price' => 100.00,
             'item_total' => 0,
-            'landed_cost_per_unit' => null,
+            'tenant_id' => $this->tenant->id,
         ]);
 
-        // Create landed costs
+        // Create landed cost for the purchase order
         LandedCost::create([
             'costable_type' => PurchaseOrder::class,
             'costable_id' => $purchaseOrder->purchase_order_id,
+            'cost_type' => 'freight',
+            'amount' => 100.00,
             'description' => 'Freight charges',
-            'amount' => 500.00,
+            'tenant_id' => $this->tenant->id,
         ]);
 
-        // Recargar la relación para asegurar que el item esté en memoria
-        $purchaseOrder->load('items');
-        // Calculate and apportion landed costs
+        // Process landed costs
         $landedCostService = new LandedCostService();
         $landedCostService->apportionCosts($purchaseOrder);
 
         // Refresh the item
-        $item->refresh();
+        $item = $item->fresh();
 
         // Should handle zero quantity gracefully
         $this->assertNotNull($item->landed_cost_per_unit);

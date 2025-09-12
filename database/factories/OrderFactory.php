@@ -35,11 +35,11 @@ class OrderFactory extends Factory
         ];
     }
 
-    public function forTenant(\App\Models\Tenant $tenant): static
+    public function forTenant(\App\Models\Tenant $tenant, ?\App\Models\Customer $customer = null): static
     {
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $tenant->id,
-            'customer_id' => Customer::factory()->forTenant($tenant),
+            'customer_id' => $customer ? $customer->customer_id : Customer::factory()->forTenant($tenant),
             'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
         ]);
     }

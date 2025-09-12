@@ -68,19 +68,32 @@ class QuotationController extends Controller
     public function store(StoreQuotationRequest $request)
     {
         $validatedData = $request->validated();
+        
+        // Add tenant_id from the authenticated user
+        $validatedData['tenant_id'] = Auth::user()->tenant_id;
 
         // Obtener parámetros de settings
-        $quotationPrefix = Setting::where('key', 'quotation_prefix')->value('value') ?? 'C-';
-        $quotationStart = Setting::where('key', 'quotation_start_number')->value('value') ?? 1;
-        $defaultTerms = Setting::where('key', 'default_payment_terms')->value('value') ?? 'Contado';
-        $defaultDueDays = Setting::where('key', 'default_due_days')->value('value') ?? 30;
+        $quotationPrefix = Setting::where('key', 'quotation_prefix')
+            ->where('tenant_id', $validatedData['tenant_id'])
+            ->value('value') ?? 'C-';
+        $quotationStart = Setting::where('key', 'quotation_start_number')
+            ->where('tenant_id', $validatedData['tenant_id'])
+            ->value('value') ?? 1;
+        $defaultTerms = Setting::where('key', 'default_payment_terms')
+            ->where('tenant_id', $validatedData['tenant_id'])
+            ->value('value') ?? 'Contado';
+        $defaultDueDays = Setting::where('key', 'default_due_days')
+            ->where('tenant_id', $validatedData['tenant_id'])
+            ->value('value') ?? 30;
 
         return DB::transaction(function () use ($validatedData, $quotationPrefix, $quotationStart, $defaultTerms, $defaultDueDays) {
             $quotationData = collect($validatedData)->except(['items'])->all();
             $quotationData['created_by_user_id'] = Auth::id();
 
             // Generar número de cotización correlativo
-            $lastQuotation = Quotation::orderByDesc('id')->first();
+            $lastQuotation = Quotation::where('tenant_id', $validatedData['tenant_id'])
+                ->orderByDesc('id')
+                ->first();
             $nextNumber = $lastQuotation ? ($lastQuotation->number ?? $lastQuotation->id) + 1 : (int)$quotationStart;
             $quotationData['number'] = $nextNumber;
             $quotationData['quotation_number'] = $quotationPrefix . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);

@@ -10,44 +10,61 @@ use App\Services\TaxCalculationService;
 
 class TaxCalculationTest extends TestCase
 {
+    protected $tenant;
+    
     protected function setUp(): void
     {
         parent::setUp();
         
-        // Crear configuraciones de IVA para Ecuador
-        Setting::updateOrCreate([
-            'key' => 'tax_rates_ecuador'
-        ], [
+        // Create a tenant
+        $this->tenant = \App\Models\Tenant::factory()->create();
+        
+        // Create a user for the tenant
+        $user = \App\Models\CrmUser::factory()->forTenant($this->tenant)->create();
+        $this->actingAs($user, 'crm');
+        
+        // Create tax settings for the tenant
+        Setting::create([
+            'key' => 'tax_rates_ecuador',
             'value' => json_encode([
                 ['name' => 'IVA 0%', 'rate' => 0.00, 'description' => 'Productos exentos de IVA'],
                 ['name' => 'IVA 15%', 'rate' => 15.00, 'description' => 'Tasa general de IVA'],
                 ['name' => 'IVA 22%', 'rate' => 22.00, 'description' => 'Tasa especial de IVA'],
-            ])
+            ]),
+            'tenant_id' => $this->tenant->id,
+            'type' => 'core',
+            'is_editable' => true
         ]);
         
-        Setting::updateOrCreate([
-            'key' => 'default_country_tax'
-        ], [
-            'value' => 'ecuador'
+        Setting::create([
+            'key' => 'default_country_tax',
+            'value' => 'ecuador',
+            'tenant_id' => $this->tenant->id,
+            'type' => 'core',
+            'is_editable' => true
         ]);
         
-        Setting::updateOrCreate([
-            'key' => 'tax_includes_services'
-        ], [
-            'value' => 'true'
+        Setting::create([
+            'key' => 'tax_includes_services',
+            'value' => 'true',
+            'tenant_id' => $this->tenant->id,
+            'type' => 'core',
+            'is_editable' => true
         ]);
         
-        Setting::updateOrCreate([
-            'key' => 'tax_includes_transport'
-        ], [
-            'value' => 'false'
+        Setting::create([
+            'key' => 'tax_includes_transport',
+            'value' => 'false',
+            'tenant_id' => $this->tenant->id,
+            'type' => 'core',
+            'is_editable' => true
         ]);
     }
 
     #[\PHPUnit\Framework\Attributes\Test]
     public function puede_calcular_iva_con_tasa_especifica_del_producto()
     {
-        $producto = Product::factory()->create([
+        $producto = Product::factory()->forTenant($this->tenant)->create([
             'price' => 1000.00,
             'is_taxable' => true,
             'tax_rate_percentage' => 15.00,
@@ -69,9 +86,10 @@ class TaxCalculationTest extends TestCase
             'description' => 'Tasa especial de IVA',
             'country_code' => 'EC',
             'is_active' => true,
+            'tenant_id' => $this->tenant->id,
         ]);
 
-        $producto = Product::factory()->create([
+        $producto = Product::factory()->forTenant($this->tenant)->create([
             'price' => 1000.00,
             'is_taxable' => true,
             'tax_rate_id' => $taxRate->tax_rate_id,
@@ -91,7 +109,7 @@ class TaxCalculationTest extends TestCase
     #[\PHPUnit\Framework\Attributes\Test]
     public function producto_exento_no_paga_iva()
     {
-        $producto = Product::factory()->create([
+        $producto = Product::factory()->forTenant($this->tenant)->create([
             'price' => 1000.00,
             'is_taxable' => false,
             'tax_rate_percentage' => 15.00,

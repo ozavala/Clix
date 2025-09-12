@@ -40,6 +40,10 @@ return [
             'driver' => 'session',
             'provider' => 'users',
         ],
+        'crm' => [
+            'driver' => 'session',
+            'provider' => 'crm_users',
+        ],
     ],
 
     /*
@@ -62,7 +66,11 @@ return [
     'providers' => [
         'users' => [
             'driver' => 'eloquent',
-            'model' => env('AUTH_MODEL', App\Models\CrmUser::class),
+            'model' => env('AUTH_MODEL', App\Models\User::class),
+        ],
+        'crm_users' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\CrmUser::class,
         ],
 
         // 'users' => [

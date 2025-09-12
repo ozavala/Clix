@@ -17,7 +17,7 @@ class OrderTest extends TestCase
     public function test_order_belongs_to_customer()
     {
         $customer = Customer::factory()->forTenant($this->tenant)->create();
-        $order = Order::factory()->forTenant($this->tenant)->for($customer)->create();
+        $order = Order::factory()->forTenant($this->tenant, $customer)->create();
 
         $this->assertInstanceOf(Customer::class, $order->customer);
         $this->assertTrue($order->customer->is($customer));

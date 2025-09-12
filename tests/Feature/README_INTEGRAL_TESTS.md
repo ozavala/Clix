@@ -2,7 +2,7 @@
 
 ## Descripción General
 
-Las pruebas integrales verifican el flujo completo del sistema CRM-ERP, asegurando que todos los componentes trabajen correctamente juntos. Estas pruebas sirven como validación del sistema completo y documentación de las relaciones entre entidades.
+Las pruebas integrales verifican el flujo completo del sistema Clix, asegurando que todos los componentes trabajen correctamente juntos. Estas pruebas sirven como validación del sistema completo y documentación de las relaciones entre entidades.
 
 ## Archivos de Pruebas
 
@@ -227,4 +227,4 @@ php artisan test tests/Feature/IntegralFlowTest.php -v
 
 **Última actualización:** Julio 2025  
 **Versión:** 1.0  
-**Autor:** Sistema CRM-ERP 
+**Autor:** Sistema Clix 
