@@ -14,6 +14,7 @@ class TaxPayment extends Model
     protected $primaryKey = 'tax_payment_id';
 
     protected $fillable = [
+        'tenant_id',
         'purchase_order_id',
         'invoice_id',
         'tax_rate_id',

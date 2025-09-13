@@ -36,6 +36,7 @@ use App\Http\Controllers\PurchaseOrderStatusController; // Add PurchaseOrderStat
 use App\Http\Controllers\Reports\TaxReportController;
 use App\Http\Controllers\Reports\TaxBalanceController;
 use App\Http\Controllers\ProfitAndLossController;
+use App\Http\Controllers\AccountController;
 use App\Http\Controllers\MarketingCampaignController; // Add MarketingCampaignController
 use App\Http\Controllers\EmailTemplateController; // Add EmailTemplateController
 use App\Http\Controllers\EmailServiceController; // Add EmailServiceController
@@ -74,6 +75,7 @@ Route::middleware(['setlocale', 'auth'])->group(function () {
     Route::resource('permissions', PermissionController::class);
     Route::resource('customers', CustomerController::class); // Already protected internally
     Route::resource('contacts', ContactController::class);
+    Route::resource('accounts', AccountController::class)->only(['index']); // Register a resource route for AccountController
     Route::resource('leads', LeadController::class);
     Route::post('leads/{lead}/activities', [LeadController::class, 'storeActivity'])->name('leads.activities.store');
     Route::resource('products', ProductController::class);
@@ -108,6 +110,7 @@ Route::middleware(['setlocale', 'auth'])->group(function () {
     Route::get('invoices/{invoice}/pdf', [App\Http\Controllers\InvoiceController::class, 'printPdf'])->name('invoices.pdf');
     Route::get('bills/{bill}/pdf', [App\Http\Controllers\BillController::class, 'printPdf'])->name('bills.pdf');
     Route::resource('journal-entries', JournalEntryController::class); // Allow full CRUD for manual entries
+    Route::resource('accounts', AccountController::class)->only(['index']);
     Route::post('purchase-orders/{purchase_order}/payments', [PaymentController::class, 'store'])->name('purchase-orders.payments.store');
     Route::get('purchase-orders/{purchase_order}/print', [PurchaseOrderController::class, 'printPdf'])->name('purchase-orders.print');
 

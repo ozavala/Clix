@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\JournalEntry;
+use App\Models\Account;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -15,6 +16,17 @@ class JournalEntryController extends Controller
     public function index(Request $request)
     {
         $query = JournalEntry::with(['lines', 'referenceable', 'createdBy'])->latest('entry_date')->latest('journal_entry_id');
+
+        // Tenant scoping: normal users see own tenant; super admin aggregates unless tenant_id provided
+        $user = Auth::user();
+        $isSuper = $user && (bool) ($user->is_super_admin ?? false);
+        $requestedTenantId = $request->input('tenant_id');
+        $currentTenantId = config('tenant_id') ?: ($user?->tenant_id);
+        if (!$isSuper) {
+            $query->where('tenant_id', $currentTenantId);
+        } elseif ($requestedTenantId) {
+            $query->where('tenant_id', $requestedTenantId);
+        }
 
         if ($request->filled('search_description')) {
             $query->where('description', 'like', '%' . $request->input('search_description') . '%');
@@ -67,6 +79,17 @@ class JournalEntryController extends Controller
             // Add validation for entity_id and entity_type if you implement them in the form
         ]);
 
+        // Enforce that all accounts belong to the current tenant
+        $tenantId = config('tenant_id') ?: (Auth::user()?->tenant_id);
+        foreach ($validatedData['lines'] as $idx => $line) {
+            $exists = Account::where('code', $line['account_code'])
+                ->where('tenant_id', $tenantId)
+                ->exists();
+            if (!$exists) {
+                return back()->withInput()->withErrors(["lines.$idx.account_code" => 'Selected account does not belong to your company.']);
+            }
+        }
+
         // Basic check for balanced entry (sum of debits == sum of credits)
         $totalDebits = collect($validatedData['lines'])->sum('debit_amount');
         $totalCredits = collect($validatedData['lines'])->sum('credit_amount');
@@ -79,8 +102,9 @@ class JournalEntryController extends Controller
         }
 
 
-        DB::transaction(function () use ($validatedData) {
+        DB::transaction(function () use ($validatedData, $tenantId) {
             $journalEntry = JournalEntry::create([
+                'tenant_id' => $tenantId,
                 'entry_date' => $validatedData['entry_date'],
                 'transaction_type' => $validatedData['transaction_type'],
                 'description' => $validatedData['description'],
@@ -90,6 +114,7 @@ class JournalEntryController extends Controller
 
             foreach ($validatedData['lines'] as $lineData) {
                 $journalEntry->lines()->create([
+                    'tenant_id' => $tenantId,
                     'account_code' => $lineData['account_code'],
                     'debit_amount' => $lineData['debit_amount'] ?? 0,
                     'credit_amount' => $lineData['credit_amount'] ?? 0,

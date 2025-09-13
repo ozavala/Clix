@@ -9,6 +9,7 @@ use App\Models\PurchaseOrder;
 use App\Models\Quotation;
 use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
 
 class TaxRecoveryService
 {
@@ -78,13 +79,24 @@ class TaxRecoveryService
         $start = Carbon::parse($startDate);
         $end = Carbon::parse($endDate);
 
-        $taxPayments = TaxPayment::whereBetween('payment_date', [$start, $end])
-            ->where('status', 'paid')
-            ->get();
+        $user = Auth::user();
+        $tenantId = config('tenant_id') ?: ($user?->tenant_id);
 
-        $taxCollections = TaxCollection::whereBetween('collection_date', [$start, $end])
-            ->where('status', 'collected')
-            ->get();
+        $paymentsQuery = TaxPayment::whereBetween('payment_date', [$start, $end])
+            ->where('status', 'paid');
+        $collectionsQuery = TaxCollection::whereBetween('collection_date', [$start, $end])
+            ->where('status', 'collected');
+
+        // Scope by tenant for non-super-admin users
+        if (!($user && (bool) ($user->is_super_admin ?? false))) {
+            if ($tenantId) {
+                $paymentsQuery->where('tenant_id', $tenantId);
+                $collectionsQuery->where('tenant_id', $tenantId);
+            }
+        }
+
+        $taxPayments = $paymentsQuery->get();
+        $taxCollections = $collectionsQuery->get();
 
         $totalTaxPaid = $taxPayments->sum('tax_amount');
         $totalTaxCollected = $taxCollections->sum('tax_amount');

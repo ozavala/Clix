@@ -173,8 +173,10 @@ class PurchaseOrderStatusFlowSeeder extends Seeder
         $purchaseOrder = PurchaseOrder::factory()->confirmed()->create([
             'supplier_id' => $supplier->supplier_id,
             'purchase_order_number' => "PO-DEMO-{$demoNumber}-002-{$uniqueSuffix}",
+            
             'created_by_user_id' => $user->user_id,
         ]);
+        
 
         // Add items
         $item = PurchaseOrderItem::factory()->create([

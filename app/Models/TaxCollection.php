@@ -14,6 +14,7 @@ class TaxCollection extends Model
     protected $primaryKey = 'tax_collection_id';
 
     protected $fillable = [
+        'tenant_id',
         'invoice_id',
         'quotation_id',
         'tax_rate_id',

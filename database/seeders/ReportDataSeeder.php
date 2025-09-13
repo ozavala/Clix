@@ -685,6 +685,7 @@ class ReportDataSeeder extends Seeder
             $quotation = Quotation::create([
                 'opportunity_id' => $opportunity->opportunity_id,
                 'subject' => 'Quotation for ' . $opportunity->name,
+                'quotation_number' => 'QUT-' . strtoupper(substr(preg_replace('/[^A-Za-z0-9]/', '', $opportunity->name), 0, 8)) . '-' . rand(1000, 9999),
                 'tenant_id' => $tenant->id,
                 'quotation_date' => now()->subDays(rand(1, 30)),
                 'expiry_date' => now()->addDays(rand(7, 30)),

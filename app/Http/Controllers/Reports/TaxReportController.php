@@ -33,7 +33,7 @@ class TaxReportController extends Controller
             $report = $this->taxRecoveryService->generateMonthlyReport($request->input('year'), $request->input('month'));
         }
 
-        if ($request->wantsJson() || $request->ajax()) {
+        if ($request->wantsJson() || $request->ajax() || $request->query('format') === 'json') {
             return response()->json($report);
         }
         return view('reports.iva.mensual', compact('report'));
@@ -58,7 +58,7 @@ class TaxReportController extends Controller
             }
         }
 
-        if ($request->wantsJson() || $request->ajax()) {
+        if ($request->wantsJson() || $request->ajax() || $request->query('format') === 'json') {
             return response()->json($summary);
         }
         return view('reports.iva.anual', compact('summary'));
