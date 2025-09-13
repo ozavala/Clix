@@ -2,7 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Models\User;
+use App\Models\CrmUser;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
 
@@ -23,7 +23,9 @@ class ProfileUpdateRequest extends FormRequest
                 'lowercase',
                 'email',
                 'max:255',
-                Rule::unique(User::class)->ignore($this->user()->id),
+                Rule::unique('crm_users', 'email')
+                    ->where(fn ($q) => $q->where('tenant_id', $this->user()->tenant_id))
+                    ->ignore($this->user()->user_id, 'user_id'),
             ],
             'locale' => ['required', 'string', 'max:5', Rule::in(['es', 'en'])],
         ];

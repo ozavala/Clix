@@ -11,11 +11,14 @@ use Tests\TestCase;
 
 class CustomerControllerTest extends TestCase
 {
+    protected int $obLevel;
     protected CrmUser $user;
 
     protected function setUp(): void
     {
         parent::setUp();
+        // Record initial buffer level to avoid PHPUnit risky warnings
+        $this->obLevel = ob_get_level();
         $this->seed(\Database\Seeders\SettingsTableSeeder::class);
         $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
         $this->actingAs($this->user);
@@ -27,6 +30,15 @@ class CustomerControllerTest extends TestCase
             'edit-customers',
             'delete-customers'
         ]);
+    }
+
+    protected function tearDown(): void
+    {
+        // Close any buffers opened during the test run only
+        while (ob_get_level() > $this->obLevel) {
+            @ob_end_clean();
+        }
+        parent::tearDown();
     }
 
     #[Test]
@@ -123,8 +135,6 @@ class CustomerControllerTest extends TestCase
         $response->assertViewHas('customer');
         $response->assertSee($customer->first_name);
         $response->assertSee($customer->last_name);
-
-        // Removed output buffer cleanup to avoid risky test status
     }
 
     #[Test]

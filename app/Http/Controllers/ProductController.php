@@ -71,6 +71,10 @@ class ProductController extends Controller
     {
         $validatedData = $request->validated();
         $validatedData['created_by_user_id'] = Auth::id();
+        // Ensure tenant_id is set
+        if (empty($validatedData['tenant_id'])) {
+            $validatedData['tenant_id'] = Auth::user()->tenant_id ?? config('tenant_id');
+        }
 
         // If it's a service, quantity_on_hand might not be relevant or could be set to a high number/null
         if ($validatedData['is_service']) {
@@ -116,6 +120,10 @@ class ProductController extends Controller
     public function update(UpdateProductRequest $request, Product $product)
     {
         $validatedData = $request->validated();
+        // Ensure tenant_id persists
+        if (empty($validatedData['tenant_id'])) {
+            $validatedData['tenant_id'] = $product->tenant_id ?? (Auth::user()->tenant_id ?? config('tenant_id'));
+        }
         $product->update($validatedData); 
         $this->syncFeatures($product, $validatedData['features'] ?? []);
         if (!$product->is_service) {

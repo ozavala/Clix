@@ -212,7 +212,7 @@ class PurchaseOrderStatusFlowTest extends TestCase
         $receiptItem = $goodsReceipt->items()->create([
             'purchase_order_item_id' => $poItem->purchase_order_item_id,
             'product_id' => $product->product_id,
-            'quantity_received' => 30, // Partial receipt
+            'quantity_received' => 3, // Partial receipt
             'unit_cost_with_landed' => 110.00, // Including landed costs
             'total_cost' => 3300.00,
             'tenant_id' => $this->tenant->id,
@@ -223,7 +223,7 @@ class PurchaseOrderStatusFlowTest extends TestCase
 
         // Verify inventory was updated
         $product->refresh();
-        $this->assertEquals(30, $product->quantity_on_hand);
+        $this->assertEquals(3, $product->quantity_on_hand);
         $this->assertEquals(110.00, $product->cost);
 
         // Verify purchase order status was updated

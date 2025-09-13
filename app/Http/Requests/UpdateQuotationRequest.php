@@ -26,7 +26,8 @@ class UpdateQuotationRequest extends FormRequest
         return [
             'opportunity_id' => 'required|exists:opportunities,opportunity_id',
             'subject' => 'required|string|max:255',
-            'quotation_number' => 'required|string|max:255|unique:quotations,quotation_number',
+            // Quotation number is managed by the system; allow updates without sending it
+            'quotation_number' => 'sometimes|string|max:255',
             'quotation_date' => 'required|date',
             'expiry_date' => 'nullable|date|after_or_equal:quotation_date',
             'status' => ['required', 'string', Rule::in(array_keys(Quotation::$statuses))],

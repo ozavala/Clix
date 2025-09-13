@@ -7,6 +7,7 @@ use App\Models\Tenant;
 use Tests\TestCase;
 use Tests\Concerns\HandlesTenantAuthentication;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 
 class CustomerTest extends TestCase
 {

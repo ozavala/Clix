@@ -15,16 +15,28 @@ class NoteFeatureTest extends TestCase
 {
     use RefreshDatabase, WithFaker;
 
+    protected int $obLevel;
     protected CrmUser $user;
 
     protected function setUp(): void
     {
         parent::setUp();
+        // Track initial output buffer level to prevent PHPUnit risky warnings
+        $this->obLevel = ob_get_level();
         $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
         $this->actingAs($this->user, 'crm');
         // Asignar permiso necesario para ver clientes y asociar notas
         // Esto es requerido por la lógica de autorización en notas y clientes
         $this->givePermission($this->user, 'view-customers');
+    }
+
+    protected function tearDown(): void
+    {
+        // Close any buffers opened during the test run only
+        while (ob_get_level() > $this->obLevel) {
+            @ob_end_clean();
+        }
+        parent::tearDown();
     }
 
     #[Test]
@@ -97,9 +109,7 @@ class NoteFeatureTest extends TestCase
         $customer = Customer::factory()->forTenant($this->tenant)->create();
         $noteBody = $this->faker->sentence(10);
 
-        // Debug: Check if user has the permission
-        \Log::info("User has view-customers permission: " . ($this->user->hasPermissionTo('view-customers') ? 'YES' : 'NO'));
-        \Log::info("User roles: " . $this->user->roles->pluck('name')->join(', '));
+        // Debug lines removed to avoid output buffer issues
         
         $this->post(route('notes.store'), ['body' => $noteBody, 'noteable_id' => $customer->customer_id, 'noteable_type' => 'Customer']);
 

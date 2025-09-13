@@ -28,11 +28,13 @@ class ProfileTest extends TestCase
             'email_verified_at' => now(),
         ]);
 
+        $newEmail = 'test+'.uniqid().'@example.com';
+
         $response = $this
             ->actingAs($user)
             ->patch('/profile', [
                 'name' => 'Test User',
-                'email' => 'test@example.com',
+                'email' => $newEmail,
                 'locale' => 'es',
             ]);
 
@@ -43,7 +45,7 @@ class ProfileTest extends TestCase
         $user->refresh();
 
         $this->assertSame('Test User', $user->name);
-        $this->assertSame('test@example.com', $user->email);
+        $this->assertSame($newEmail, $user->email);
         $this->assertNull($user->email_verified_at);
     }
 

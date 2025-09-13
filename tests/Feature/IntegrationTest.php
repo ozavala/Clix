@@ -18,11 +18,14 @@ class IntegrationTest extends TestCase
 {
     use RefreshDatabase;
 
+    protected int $obLevel;
     protected CrmUser $user;
 
     protected function setUp(): void
     {
         parent::setUp();
+        // Track initial output buffer level to prevent PHPUnit risky warnings
+        $this->obLevel = ob_get_level();
         
         // Create permissions
         $permissions = [
@@ -52,6 +55,15 @@ class IntegrationTest extends TestCase
         $this->user->roles()->attach($role->role_id);
         
         $this->actingAs($this->user, 'crm');
+    }
+
+    protected function tearDown(): void
+    {
+        // Close any buffers opened during the test run only
+        while (ob_get_level() > $this->obLevel) {
+            @ob_end_clean();
+        }
+        parent::tearDown();
     }
 
     #[Test]
@@ -201,9 +213,6 @@ class IntegrationTest extends TestCase
 
         // Step 8: Create final payment to complete the invoice
         $invoice->refresh();
-        fwrite(STDERR, "Amount due antes del segundo pago: " . $invoice->amount_due . "\n");
-        fwrite(STDERR, "Total amount: " . $invoice->total_amount . "\n");
-        fwrite(STDERR, "Amount paid: " . $invoice->amount_paid . "\n");
         
         $finalPaymentData = [
             'payable_type' => 'App\Models\Invoice',
@@ -216,14 +225,7 @@ class IntegrationTest extends TestCase
         ];
 
         $response = $this->post(route('invoices.payments.store', $invoice), $finalPaymentData);
-        
-        // Debug: mostrar el status de la respuesta y errores si existen
-        if ($response->status() !== 302) {
-            $errors = $response->json('errors') ?? $response->json();
-            fwrite(STDERR, 'Errores en segundo pago: ' . print_r($errors, true));
-            fwrite(STDERR, 'Status de respuesta: ' . $response->status() . "\n");
-        }
-        
+
         $response->assertRedirect();
         $response->assertSessionHas('success');
 

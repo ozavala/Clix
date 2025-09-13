@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Account;
 use Tests\TestCase;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use PHPUnit\Framework\Attributes\Test;
 
 class AccountTest extends TestCase
 {

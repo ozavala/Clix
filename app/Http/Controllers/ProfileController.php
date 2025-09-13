@@ -27,7 +27,13 @@ class ProfileController extends Controller
     public function update(ProfileUpdateRequest $request): RedirectResponse
     {
         $user = $request->user();
-        $user->fill($request->validated());
+        $validated = $request->validated();
+        // Map Breeze 'name' field to our model's 'full_name'
+        if (isset($validated['name'])) {
+            $user->full_name = $validated['name'];
+            unset($validated['name']);
+        }
+        $user->fill($validated);
         $user->locale = $request->input('locale', $user->locale ?? 'es');
 
         if ($user->isDirty('email')) {
