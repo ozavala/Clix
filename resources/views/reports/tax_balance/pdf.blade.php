@@ -106,6 +106,9 @@
     <div class="header">
         <h1>Tax Balance Report</h1>
         <p>Period: {{ $report['period']['start_formatted'] }} to {{ $report['period']['end_formatted'] }}</p>
+        @if(isset($tenant))
+        <p>Tenant: {{ $tenant->name }}</p>
+        @endif
         <p>Generated on: {{ now()->format('d/m/Y H:i:s') }}</p>
     </div>
 
@@ -248,4 +251,4 @@
         <p>For questions about this report, please contact your system administrator.</p>
     </div>
 </body>
-</html> 
+</html>

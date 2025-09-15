@@ -7,9 +7,12 @@ use App\Models\Invoice;
 use App\Models\Bill;
 use App\Models\TaxCollection;
 use App\Models\TaxPayment;
+use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
+use Barryvdh\DomPDF\Facade\Pdf;
+use Illuminate\Support\Str;
 
 class TaxBalanceController extends Controller
 {
@@ -20,24 +23,52 @@ class TaxBalanceController extends Controller
     {
         $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', now()->endOfMonth()->format('Y-m-d'));
+        $tenantId = $request->input('tenant_id');
         
-        $report = $this->generateTaxBalanceReport($startDate, $endDate);
+        $report = $this->generateTaxBalanceReport($startDate, $endDate, $tenantId);
         
-        return view('reports.tax_balance.index', compact('report', 'startDate', 'endDate'));
+        $tenants = [];
+        $requestedTenantId = null;
+        
+        if (auth()->user()->is_super_admin) {
+            $tenants = Tenant::orderBy('name')->get(['id', 'name']);
+            $requestedTenantId = $tenantId;
+        }
+        
+        return view('reports.tax_balance.index', compact(
+            'report', 
+            'startDate', 
+            'endDate',
+            'tenants',
+            'requestedTenantId'
+        ));
     }
 
     /**
      * Generate tax balance report for a specific period
      */
-    private function generateTaxBalanceReport(string $startDate, string $endDate): array
+    private function generateTaxBalanceReport(string $startDate, string $endDate, ?int $tenantId = null): array
     {
         $start = Carbon::parse($startDate)->startOfDay();
         $end = Carbon::parse($endDate)->endOfDay();
 
-        // Impuestos de venta recibidos (VAT Collected)
-        $salesTaxCollected = Invoice::whereBetween('invoice_date', [$start, $end])
+        // Base query for invoices with tenant filter if provided
+        $invoiceQuery = Invoice::whereBetween('invoice_date', [$start, $end])
             ->where('status', '!=', 'Void')
-            ->where('status', '!=', 'Cancelled')
+            ->where('status', '!=', 'Cancelled');
+
+        // Base query for bills with tenant filter if provided
+        $billQuery = Bill::whereBetween('bill_date', [$start, $end])
+            ->where('status', '!=', 'Cancelled');
+
+        // Apply tenant filter if provided and user is super admin
+        if ($tenantId && auth()->user()->is_super_admin) {
+            $invoiceQuery->where('tenant_id', $tenantId);
+            $billQuery->where('tenant_id', $tenantId);
+        }
+
+        // Impuestos de venta recibidos (VAT Collected)
+        $salesTaxCollected = (clone $invoiceQuery)
             ->select(
                 DB::raw('SUM(tax_amount) as total_tax_collected'),
                 DB::raw('COUNT(*) as total_invoices'),
@@ -46,8 +77,7 @@ class TaxBalanceController extends Controller
             ->first();
 
         // Impuestos de compra pagados (VAT Paid)
-        $purchaseTaxPaid = Bill::whereBetween('bill_date', [$start, $end])
-            ->where('status', '!=', 'Cancelled')
+        $purchaseTaxPaid = (clone $billQuery)
             ->select(
                 DB::raw('SUM(tax_amount) as total_tax_paid'),
                 DB::raw('COUNT(*) as total_bills'),
@@ -56,10 +86,8 @@ class TaxBalanceController extends Controller
             ->first();
 
         // Detalle por tasa de impuesto - Ventas
-        $salesTaxByRate = Invoice::whereBetween('invoices.invoice_date', [$start, $end])
-            ->where('invoices.status', '!=', 'Void')
-            ->where('invoices.status', '!=', 'Cancelled')
-            ->whereNotNull('invoices.tax_rate_id')
+        $salesTaxByRate = (clone $invoiceQuery)
+            ->whereNotNull('tax_rate_id')
             ->join('tax_rates', 'invoices.tax_rate_id', '=', 'tax_rates.tax_rate_id')
             ->select(
                 'tax_rates.name as tax_rate_name',
@@ -73,8 +101,7 @@ class TaxBalanceController extends Controller
             ->get();
 
         // Detalle por tasa de impuesto - Compras
-        $purchaseTaxByRate = Bill::whereBetween('bills.bill_date', [$start, $end])
-            ->where('bills.status', '!=', 'Cancelled')
+        $purchaseTaxByRate = (clone $billQuery)
             ->join('purchase_orders', 'bills.purchase_order_id', '=', 'purchase_orders.purchase_order_id')
             ->select(
                 DB::raw('purchase_orders.tax_percentage as tax_rate_percentage'),
@@ -88,9 +115,7 @@ class TaxBalanceController extends Controller
             ->get();
 
         // Top 10 clientes por impuestos pagados
-        $topCustomersByTax = Invoice::whereBetween('invoices.invoice_date', [$start, $end])
-            ->where('invoices.status', '!=', 'Void')
-            ->where('invoices.status', '!=', 'Cancelled')
+        $topCustomersByTax = (clone $invoiceQuery)
             ->join('customers', 'invoices.customer_id', '=', 'customers.customer_id')
             ->select(
                 'customers.company_name as customer_name',
@@ -100,13 +125,12 @@ class TaxBalanceController extends Controller
                 DB::raw('COUNT(*) as invoice_count')
             )
             ->groupBy('customers.customer_id', 'customers.company_name', 'customers.first_name', 'customers.last_name')
-            ->orderByDesc('total_tax_collected')
+            ->orderBy('total_tax_collected', 'desc')
             ->limit(10)
             ->get();
 
         // Top 10 proveedores por impuestos pagados
-        $topSuppliersByTax = Bill::whereBetween('bills.bill_date', [$start, $end])
-            ->where('bills.status', '!=', 'Cancelled')
+        $topSuppliersByTax = (clone $billQuery)
             ->join('suppliers', 'bills.supplier_id', '=', 'suppliers.supplier_id')
             ->select(
                 'suppliers.name as supplier_name',
@@ -115,7 +139,7 @@ class TaxBalanceController extends Controller
                 DB::raw('COUNT(*) as bill_count')
             )
             ->groupBy('suppliers.supplier_id', 'suppliers.name', 'suppliers.contact_person')
-            ->orderByDesc('total_tax_paid')
+            ->orderBy('total_tax_paid', 'desc')
             ->limit(10)
             ->get();
 
@@ -153,12 +177,27 @@ class TaxBalanceController extends Controller
     {
         $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', now()->endOfMonth()->format('Y-m-d'));
+        $tenantId = $request->input('tenant_id');
         
-        $report = $this->generateTaxBalanceReport($startDate, $endDate);
+        $report = $this->generateTaxBalanceReport($startDate, $endDate, $tenantId);
         
-        $pdf = \Barryvdh\DomPDF\Facade\Pdf::loadView('reports.tax_balance.pdf', compact('report'));
+        // Get tenant info if tenant_id is provided
+        $selectedTenant = $tenantId ? Tenant::find($tenantId) : null;
         
-        return $pdf->stream('tax_balance_report_' . $startDate . '_to_' . $endDate . '.pdf');
+        $pdf = Pdf::loadView('reports.tax_balance.pdf', [
+            'report' => $report,
+            'startDate' => $startDate,
+            'endDate' => $endDate,
+            'selectedTenant' => $selectedTenant,
+        ]);
+        
+        $filename = 'balance-iva-' . $startDate . '-a-' . $endDate;
+        if ($selectedTenant) {
+            $filename .= '-' . Str::slug($selectedTenant->name);
+        }
+        $filename .= '.pdf';
+        
+        return $pdf->download($filename);
     }
 
     /**
@@ -168,11 +207,17 @@ class TaxBalanceController extends Controller
     {
         $startDate = $request->input('start_date', now()->startOfMonth()->format('Y-m-d'));
         $endDate = $request->input('end_date', now()->endOfMonth()->format('Y-m-d'));
+        $tenantId = $request->input('tenant_id');
         
-        $report = $this->generateTaxBalanceReport($startDate, $endDate);
+        // Get tenant info if tenant_id is provided
+        $selectedTenant = $tenantId ? Tenant::find($tenantId) : null;
         
-        // Aquí implementarías la exportación a Excel
-        // Por ahora retornamos un JSON
-        return response()->json($report);
+        $filename = 'balance-iva-' . $startDate . '-a-' . $endDate;
+        if ($selectedTenant) {
+            $filename .= '-' . Str::slug($selectedTenant->name);
+        }
+        $filename .= '.xlsx';
+        
+        return (new TaxBalanceExport($startDate, $endDate, $tenantId))->download($filename);
     }
 } 

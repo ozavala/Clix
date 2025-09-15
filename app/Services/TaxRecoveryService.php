@@ -147,12 +147,210 @@ class TaxRecoveryService
     /**
      * Generate monthly tax report.
      */
-    public function generateMonthlyReport(int $year, int $month): array
+    public function generateMonthlyReport(int $year, int $month, ?int $tenantId = null): array
     {
         $startDate = Carbon::create($year, $month, 1)->startOfMonth();
         $endDate = $startDate->copy()->endOfMonth();
-
-        return $this->getTaxSummary($startDate->format('Y-m-d'), $endDate->format('Y-m-d'));
+        
+        $query = $this->buildBaseQuery($startDate, $endDate, $tenantId);
+        
+        // Add monthly specific logic here
+        $report = $query->get();
+        
+        return [
+            'period' => [
+                'start' => $startDate->format('Y-m-d'),
+                'end' => $endDate->format('Y-m-d'),
+                'start_formatted' => $startDate->format('M d, Y'),
+                'end_formatted' => $endDate->format('M d, Y'),
+                'month' => $month,
+                'year' => $year,
+            ],
+            'summary' => $this->calculateSummary($report),
+            'details' => $report->groupBy('tax_rate_id')
+        ];
+    }
+    
+    /**
+     * Generate annual tax report.
+     */
+    public function generateAnnualReport(int $year, ?int $tenantId = null): array
+    {
+        $startDate = Carbon::create($year, 1, 1)->startOfYear();
+        $endDate = $startDate->copy()->endOfYear();
+        
+        $monthlyReports = [];
+        $yearlySummary = [
+            'total_tax_collected' => 0,
+            'total_tax_paid' => 0,
+            'net_tax_balance' => 0,
+            'months' => []
+        ];
+        
+        // Generate report for each month
+        for ($month = 1; $month <= 12; $month++) {
+            $monthReport = $this->generateMonthlyReport($year, $month, $tenantId);
+            $monthlyReports[$month] = $monthReport;
+            
+            // Aggregate yearly summary
+            $yearlySummary['total_tax_collected'] += $monthReport['summary']['tax_collected']['total'];
+            $yearlySummary['total_tax_paid'] += $monthReport['summary']['tax_paid']['total'];
+            $yearlySummary['net_tax_balance'] += $monthReport['summary']['tax_collected']['total'] - $monthReport['summary']['tax_paid']['total'];
+            $yearlySummary['months'][$month] = $monthReport['summary'];
+        }
+        
+        return [
+            'year' => $year,
+            'monthly_reports' => $monthlyReports,
+            'yearly_summary' => $yearlySummary
+        ];
+    }
+    
+    /**
+     * Generate custom date range tax report.
+     */
+    public function generateCustomReport(string $startDate, string $endDate, ?int $tenantId = null): array
+    {
+        $start = Carbon::parse($startDate)->startOfDay();
+        $end = Carbon::parse($endDate)->endOfDay();
+        
+        $query = $this->buildBaseQuery($start, $end, $tenantId);
+        $report = $query->get();
+        
+        return [
+            'period' => [
+                'start' => $start->format('Y-m-d'),
+                'end' => $end->format('Y-m-d'),
+                'start_formatted' => $start->format('M d, Y'),
+                'end_formatted' => $end->format('M d, Y'),
+            ],
+            'summary' => $this->calculateSummary($report),
+            'details' => $report->groupBy('tax_rate_id')
+        ];
+    }
+    
+    /**
+     * Get dashboard data.
+     */
+    public function getDashboardData(?int $tenantId = null): array
+    {
+        $now = now();
+        $startOfMonth = $now->copy()->startOfMonth();
+        $endOfMonth = $now->copy()->endOfMonth();
+        
+        // Current month data
+        $currentMonthQuery = $this->buildBaseQuery($startOfMonth, $endOfMonth, $tenantId);
+        $currentMonthData = $this->calculateSummary($currentMonthQuery->get());
+        
+        // Previous month data
+        $prevMonthStart = $startOfMonth->copy()->subMonth();
+        $prevMonthEnd = $endOfMonth->copy()->subMonth();
+        $prevMonthQuery = $this->buildBaseQuery($prevMonthStart, $prevMonthEnd, $tenantId);
+        $prevMonthData = $this->calculateSummary($prevMonthQuery->get());
+        
+        // Year to date data
+        $startOfYear = $now->copy()->startOfYear();
+        $ytdQuery = $this->buildBaseQuery($startOfYear, $now, $tenantId);
+        $ytdData = $this->calculateSummary($ytdQuery->get());
+        
+        return [
+            'current_month' => $currentMonthData,
+            'previous_month' => $prevMonthData,
+            'year_to_date' => $ytdData,
+            'periods' => [
+                'current_month' => [
+                    'start' => $startOfMonth->format('Y-m-d'),
+                    'end' => $endOfMonth->format('Y-m-d'),
+                ],
+                'previous_month' => [
+                    'start' => $prevMonthStart->format('Y-m-d'),
+                    'end' => $prevMonthEnd->format('Y-m-d'),
+                ],
+                'year_to_date' => [
+                    'start' => $startOfYear->format('Y-m-d'),
+                    'end' => $now->format('Y-m-d'),
+                ]
+            ]
+        ];
+    }
+    
+    /**
+     * Build base query for tax reports.
+     */
+    protected function buildBaseQuery(Carbon $start, Carbon $end, ?int $tenantId = null)
+    {
+        $user = Auth::user();
+        $isSuperAdmin = $user && (bool) ($user->is_super_admin ?? false);
+        
+        // Create base query for tax collections
+        $collectionsQuery = DB::table('tax_collections as tc')
+            ->select(
+                'tc.tax_collection_id as id',
+                'tc.collection_date',
+                'tc.taxable_amount',
+                'tc.tax_amount',
+                'tc.collection_type',
+                'tr.name as tax_rate_name',
+                'tr.rate as tax_rate',
+                DB::raw('"collection" as record_type')
+            )
+            ->leftJoin('tax_rates as tr', 'tc.tax_rate_id', '=', 'tr.tax_rate_id')
+            ->where('tc.status', 'collected')
+            ->whereBetween('tc.collection_date', [$start, $end]);
+            
+        // Create base query for tax payments
+        $paymentsQuery = DB::table('tax_payments as tp')
+            ->select(
+                'tp.tax_payment_id as id',
+                'tp.payment_date as collection_date',
+                'tp.taxable_amount',
+                'tp.tax_amount',
+                'tp.payment_type as collection_type',
+                'tr.name as tax_rate_name',
+                'tr.rate as tax_rate',
+                DB::raw('"payment" as record_type')
+            )
+            ->leftJoin('tax_rates as tr', 'tp.tax_rate_id', '=', 'tr.tax_rate_id')
+            ->where('tp.status', 'paid')
+            ->whereBetween('tp.payment_date', [$start, $end]);
+            
+        if (!$isSuperAdmin || $tenantId) {
+            $tenantToFilter = $tenantId ?? ($user->tenant_id ?? null);
+            if ($tenantToFilter) {
+                $collectionsQuery->where('tc.tenant_id', $tenantToFilter);
+                $paymentsQuery->where('tp.tenant_id', $tenantToFilter);
+            }
+        }
+        
+        return $collectionsQuery->unionAll($paymentsQuery);
+    }
+    
+    /**
+     * Calculate summary from query results.
+     */
+    protected function calculateSummary($results)
+    {
+        $collections = $results->where('record_type', 'collection');
+        $payments = $results->where('record_type', 'payment');
+        
+        $taxCollected = $collections->sum('tax_amount');
+        $taxPaid = $payments->sum('tax_amount');
+        $taxableCollected = $collections->sum('taxable_amount');
+        $taxablePaid = $payments->sum('taxable_amount');
+        
+        return [
+            'tax_paid' => [
+                'total' => $taxPaid,
+                'count' => $payments->count(),
+                'taxable_amount' => $taxablePaid
+            ],
+            'tax_collected' => [
+                'total' => $taxCollected,
+                'count' => $collections->count(),
+                'taxable_amount' => $taxableCollected
+            ],
+            'net_tax_balance' => $taxCollected - $taxPaid
+        ];
     }
 
     /**
