@@ -6,6 +6,7 @@ use App\Models\Customer;
 use App\Models\CrmUser;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Order>
@@ -19,12 +20,21 @@ class OrderFactory extends Factory
      */
     public function definition(): array
     {
+        $authUser = Auth::user();
+        $tenant = $authUser && $authUser->tenant_id
+            ? Tenant::find($authUser->tenant_id)
+            : Tenant::factory()->create();
+
+        $customer = Customer::factory()->forTenant($tenant)->create();
+        $createdBy = $authUser && $authUser->tenant_id === ($tenant->id ?? null)
+            ? $authUser
+            : CrmUser::factory()->forTenant($tenant)->create();
+
         return [
-            'tenant_id' => Tenant::factory(),
+            'tenant_id' => $tenant->id,
             'order_number' => 'ORD-' . fake()->unique()->numberBetween(1000, 9999),
-            'customer_id' => Customer::factory(),
-            'created_by_user_id' => CrmUser::factory(),
-            'order_date' => fake()->dateTimeBetween('-1 year', 'now'),
+            'customer_id' => $customer->customer_id,
+            'created_by_user_id' => $createdBy->user_id,
             'order_date' => fake()->dateTimeBetween('-1 year', 'now'),
             'subtotal' => fake()->randomFloat(2, 100, 10000),
             'tax_amount' => fake()->randomFloat(2, 10, 1000),

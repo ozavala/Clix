@@ -18,14 +18,25 @@ use App\Mail\InvoiceReminder;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Setting;
 
-class InvoiceController extends Controller
+class InvoiceController extends TenantAwareController
 {
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $query = Invoice::with(['order', 'customer'])->latest();
+        $user = Auth::user();
+        $isSuper = $user && (bool) ($user->is_super_admin ?? false);
+        $requestedTenantId = $request->input('tenant_id');
+
+        if ($isSuper) {
+            $query = Invoice::withoutGlobalScopes()->with(['order', 'customer'])->latest();
+            if ($requestedTenantId) {
+                $query->where('tenant_id', $requestedTenantId);
+            }
+        } else {
+            $query = Invoice::with(['order', 'customer'])->latest();
+        }
 
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
@@ -44,6 +55,10 @@ class InvoiceController extends Controller
 
         $invoices = $query->paginate(10)->withQueryString();
         $statuses = Invoice::$statuses;
+        if ($isSuper) {
+            $tenants = \App\Models\Tenant::orderBy('name')->get(['id','name']);
+            return view('invoices.index', compact('invoices', 'statuses', 'tenants', 'requestedTenantId'));
+        }
         return view('invoices.index', compact('invoices', 'statuses'));
     }
 
@@ -56,10 +71,12 @@ class InvoiceController extends Controller
         // Fetch orders that are not yet fully invoiced or are in a state that allows invoicing
         // This logic might need to be more sophisticated based on your workflow
         $orders = Order::whereNotIn('status', ['Cancelled', 'Completed']) // Example filter
+                       ->where('tenant_id', Auth::user()->tenant_id ?? config('tenant_id'))
                        ->orderBy('order_number')
                        ->get();
         $quotations = Quotation::where('status', 'Accepted') // Only from accepted quotations
                                ->whereDoesntHave('invoice') // That don't have an invoice yet
+                               ->where('tenant_id', Auth::user()->tenant_id ?? config('tenant_id'))
                                ->orderBy('subject')
                                ->get();
         $customers = Customer::orderBy('first_name')->orderBy('last_name')->get();

@@ -14,14 +14,25 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 use Barryvdh\DomPDF\Facade\Pdf;
 
-class PurchaseOrderController extends Controller
+class PurchaseOrderController extends TenantAwareController
 {
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $query = PurchaseOrder::with(['supplier', 'shippingAddress'])->latest();
+        $user = Auth::user();
+        $isSuper = $user && (bool) ($user->is_super_admin ?? false);
+        $requestedTenantId = $request->input('tenant_id');
+
+        if ($isSuper) {
+            $query = PurchaseOrder::withoutGlobalScopes()->with(['supplier', 'shippingAddress'])->latest();
+            if ($requestedTenantId) {
+                $query->where('tenant_id', $requestedTenantId);
+            }
+        } else {
+            $query = PurchaseOrder::with(['supplier', 'shippingAddress'])->latest();
+        }
 
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
@@ -40,6 +51,10 @@ class PurchaseOrderController extends Controller
         $purchaseOrders = $query->paginate(10)->withQueryString();
         $statuses = PurchaseOrder::$statuses;
         $types = PurchaseOrder::$types;
+        if ($isSuper) {
+            $tenants = \App\Models\Tenant::orderBy('name')->get(['id','name']);
+            return view('purchase_orders.index', compact('purchaseOrders', 'statuses', 'types', 'tenants', 'requestedTenantId'));
+        }
         return view('purchase_orders.index', compact('purchaseOrders', 'statuses', 'types'));
     }
 

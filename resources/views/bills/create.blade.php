@@ -8,6 +8,7 @@
 
     <form action="{{ route('bills.store') }}" method="POST">
         @csrf
+        <x-tenant-hidden :model="$bill ?? null" />
         @if($purchaseOrder)
             <input type="hidden" name="purchase_order_id" value="{{ $purchaseOrder->purchase_order_id }}">
         @endif

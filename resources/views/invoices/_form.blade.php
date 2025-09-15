@@ -1,4 +1,5 @@
 @csrf
+<x-tenant-hidden :model="$invoice ?? null" />
 <div class="row">
     <div class="col-md-4 mb-3">
         <label for="invoice_number" class="form-label">Invoice Number <span class="text-danger">*</span></label>

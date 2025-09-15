@@ -15,14 +15,25 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
-class OrderController extends Controller
+class OrderController extends TenantAwareController
 {
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $query = Order::with(['customer', 'quotation', 'opportunity'])->latest();
+        $user = Auth::user();
+        $isSuper = $user && (bool) ($user->is_super_admin ?? false);
+        $requestedTenantId = $request->input('tenant_id');
+
+        if ($isSuper) {
+            $query = Order::withoutGlobalScopes()->with(['customer', 'quotation', 'opportunity'])->latest();
+            if ($requestedTenantId) {
+                $query->where('tenant_id', $requestedTenantId);
+            }
+        } else {
+            $query = Order::with(['customer', 'quotation', 'opportunity'])->latest();
+        }
 
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
@@ -40,6 +51,10 @@ class OrderController extends Controller
 
         $orders = $query->paginate(10)->withQueryString();
         $statuses = Order::$statuses;
+        if ($isSuper) {
+            $tenants = \App\Models\Tenant::orderBy('name')->get(['id','name']);
+            return view('orders.index', compact('orders', 'statuses', 'tenants', 'requestedTenantId'));
+        }
         return view('orders.index', compact('orders', 'statuses'));
     }
 

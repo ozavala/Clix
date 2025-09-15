@@ -14,6 +14,7 @@
                     <form action="{{ route('marketing-campaigns.update', $campaign) }}" method="POST">
                         @csrf
                         @method('PUT')
+                        <x-tenant-hidden :model="$campaign ?? null" />
                         
                         <div class="row">
                             <div class="col-md-6">

@@ -7,10 +7,11 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use App\Models\Traits\HasTenantScope;
 
 class Warehouse extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenantScope;
 
     protected $primaryKey = 'warehouse_id';
 

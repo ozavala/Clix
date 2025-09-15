@@ -1,4 +1,5 @@
 @csrf
+<x-tenant-hidden :model="$purchaseOrder ?? null" />
 <div class="row">
     <div class="col-md-4 mb-3">
         <label for="purchase_order_number" class="form-label">PO Number</label>

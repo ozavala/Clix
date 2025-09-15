@@ -1,4 +1,5 @@
 @csrf
+<x-tenant-hidden :model="$quotation ?? null" />
 <div class="row">
     <div class="col-md-8 mb-3">
         <label for="subject" class="form-label">{{ __('quotations.subject') }} <span class="text-danger">*</span></label>

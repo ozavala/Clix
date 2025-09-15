@@ -19,12 +19,33 @@ use Illuminate\Database\Eloquent\Model;
 use App\Models\Customer; // If you need to link payments to customers
 use App\Models\Account;
 
-class PaymentController extends Controller
+class PaymentController extends TenantAwareController
 {
     public function index(Request $request)
     {   
-        $payments = Payment::with(['payable', 'createdBy'])->paginate(10);
-        return view('payments.index', compact('payments'));
+        $user = Auth::user();
+        $isSuper = $user && (bool) ($user->is_super_admin ?? false);
+        $requestedTenantId = $request->input('tenant_id');
+
+        if ($isSuper) {
+            $query = Payment::withoutGlobalScopes()->with(['payable', 'createdBy'])->latest('payment_date');
+            if ($requestedTenantId) {
+                $query->where('tenant_id', $requestedTenantId);
+            }
+            if ($request->filled('search')) {
+                $term = $request->input('search');
+                $query->where(function($q) use ($term) {
+                    $q->where('reference_number', 'like', "%{$term}%")
+                      ->orWhere('notes', 'like', "%{$term}%");
+                });
+            }
+            $payments = $query->paginate(10)->withQueryString();
+            $tenants = \App\Models\Tenant::orderBy('name')->get(['id','name']);
+            return view('payments.index', compact('payments', 'tenants', 'requestedTenantId'));
+        } else {
+            $payments = Payment::with(['payable', 'createdBy'])->latest('payment_date')->paginate(10);
+            return view('payments.index', compact('payments'));
+        }
     }
     
     /**

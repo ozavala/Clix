@@ -6,7 +6,20 @@
 <div class="container">
     <div class="d-flex justify-content-between align-items-center mb-3">
         <h1>Proveedores</h1>
-        <a href="{{ route('suppliers.create') }}" class="btn btn-primary">Nuevo Proveedor</a>
+        <div class="d-flex align-items-center gap-2">
+            @isset($tenants)
+            <form action="{{ route('suppliers.index') }}" method="GET" class="d-flex align-items-center me-2">
+                <label for="tenant_id" class="me-2 mb-0">Tenant:</label>
+                <select name="tenant_id" id="tenant_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">Todos</option>
+                    @foreach($tenants as $t)
+                        <option value="{{ $t->id }}" {{ (request('tenant_id') ?? ($requestedTenantId ?? '')) == $t->id ? 'selected' : '' }}>{{ $t->name }}</option>
+                    @endforeach
+                </select>
+            </form>
+            @endisset
+            <a href="{{ route('suppliers.create') }}" class="btn btn-primary">Nuevo Proveedor</a>
+        </div>
     </div>
 
     @if (session('success'))

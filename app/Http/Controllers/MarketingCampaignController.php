@@ -7,6 +7,7 @@ use App\Models\EmailTemplate;
 use App\Models\Customer;
 use App\Models\Lead;
 use App\Models\CampaignRecipient;
+use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
@@ -15,19 +16,30 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Mail;
 use App\Mail\MarketingEmail;
 
-class MarketingCampaignController extends Controller
+class MarketingCampaignController extends TenantAwareController
 {
 
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $campaigns = MarketingCampaign::with(['creator', 'emailTemplate'])
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $user = Auth::user();
+        $isSuper = $user && (bool) ($user->is_super_admin ?? false);
+        $requestedTenantId = $request->input('tenant_id');
 
-        return view('marketing_campaigns.index', compact('campaigns'));
+        if ($isSuper) {
+            $query = MarketingCampaign::withoutGlobalScopes()->with(['creator', 'emailTemplate'])->orderBy('created_at', 'desc');
+            if ($requestedTenantId) {
+                $query->where('tenant_id', $requestedTenantId);
+            }
+            $campaigns = $query->paginate(15)->withQueryString();
+            $tenants = Tenant::orderBy('name')->get(['id','name']);
+            return view('marketing_campaigns.index', compact('campaigns', 'tenants', 'requestedTenantId'));
+        } else {
+            $campaigns = MarketingCampaign::with(['creator', 'emailTemplate'])->orderBy('created_at', 'desc')->paginate(15);
+            return view('marketing_campaigns.index', compact('campaigns'));
+        }
     }
 
     /**
@@ -36,8 +48,8 @@ class MarketingCampaignController extends Controller
     public function create(): View
     {
         $templates = EmailTemplate::active()->get();
-        $customers = Customer::all();
-        $leads = Lead::all();
+        $customers = Customer::orderBy('first_name')->orderBy('last_name')->get();
+        $leads = Lead::orderBy('title')->get();
 
         return view('marketing_campaigns.create', compact('templates', 'customers', 'leads'));
     }
@@ -60,6 +72,9 @@ class MarketingCampaignController extends Controller
         ]);
 
         $validated['created_by'] = Auth::id();
+        if (empty($validated['tenant_id'])) {
+            $validated['tenant_id'] = $this->getTenantId();
+        }
         $validated['status'] = $validated['scheduled_at'] ? 'scheduled' : 'draft';
 
         $campaign = MarketingCampaign::create($validated);

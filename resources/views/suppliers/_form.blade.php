@@ -1,4 +1,5 @@
 @csrf
+<x-tenant-hidden :model="$supplier ?? null" />
 <div class="row">
     <div class="col-md-12 mb-3">
         <label for="name" class="form-label">Name <span class="text-danger">*</span></label>

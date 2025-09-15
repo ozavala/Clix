@@ -13,6 +13,7 @@
                 <div class="card-body">
                     <form action="{{ route('email-templates.store') }}" method="POST">
                         @csrf
+                        <x-tenant-hidden />
                         
                         <div class="row">
                             <div class="col-md-6">

@@ -1,4 +1,5 @@
 @csrf
+<x-tenant-hidden :model="$payable ?? null" />
 
 {{-- Hidden fields for payable_id and payable_type --}}
 <input type="hidden" name="payable_id" value="{{ $payable->getKey() }}">

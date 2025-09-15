@@ -9,6 +9,7 @@
     <form action="{{ route('bills.update', $bill) }}" method="POST">
         @csrf
         @method('PUT')
+        <x-tenant-hidden :model="$bill ?? null" />
 
         <div class="card mb-4">
             <div class="card-header">Bill Details</div>

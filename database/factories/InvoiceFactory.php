@@ -7,6 +7,7 @@ use App\Models\CrmUser;
 use App\Models\Order;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Auth;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\Invoice>
@@ -20,12 +21,23 @@ class InvoiceFactory extends Factory
      */
     public function definition(): array
     {
+        $authUser = Auth::user();
+        $tenant = $authUser && $authUser->tenant_id
+            ? Tenant::find($authUser->tenant_id)
+            : Tenant::factory()->create();
+
+        $customer = Customer::factory()->forTenant($tenant)->create();
+        $order = Order::factory()->forTenant($tenant, $customer)->create();
+        $createdBy = $authUser && $authUser->tenant_id === ($tenant->id ?? null)
+            ? $authUser
+            : CrmUser::factory()->forTenant($tenant)->create();
+
         return [
-            'tenant_id' => Tenant::factory(),
-            'order_id' => Order::factory(),
+            'tenant_id' => $tenant->id,
+            'order_id' => $order->order_id,
             'invoice_number' => 'INV-' . fake()->unique()->numberBetween(1000, 9999),
-            'customer_id' => Customer::factory(),
-            'created_by_user_id' => CrmUser::factory(),
+            'customer_id' => $customer->customer_id,
+            'created_by_user_id' => $createdBy->user_id,
             'invoice_date' => fake()->dateTimeBetween('-1 year', 'now'),
             'due_date' => fake()->dateTimeBetween('now', '+30 days'),
             'subtotal' => fake()->randomFloat(2, 100, 10000),

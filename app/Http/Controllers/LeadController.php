@@ -14,7 +14,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class LeadController extends Controller
+class LeadController extends TenantAwareController
 {
     // Define statuses and sources for dropdowns
     protected $leadStatuses = [

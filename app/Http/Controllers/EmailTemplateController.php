@@ -3,24 +3,36 @@
 namespace App\Http\Controllers;
 
 use App\Models\EmailTemplate;
+use App\Models\Tenant;
 use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\View\View;
 use Illuminate\Support\Facades\Auth;
 
-class EmailTemplateController extends Controller
+class EmailTemplateController extends TenantAwareController
 {
 
     /**
      * Display a listing of the resource.
      */
-    public function index(): View
+    public function index(Request $request): View
     {
-        $templates = EmailTemplate::with('creator')
-            ->orderBy('created_at', 'desc')
-            ->paginate(15);
+        $user = Auth::user();
+        $isSuper = $user && (bool) ($user->is_super_admin ?? false);
+        $requestedTenantId = $request->input('tenant_id');
 
-        return view('email_templates.index', compact('templates'));
+        if ($isSuper) {
+            $query = EmailTemplate::withoutGlobalScopes()->with('creator')->orderBy('created_at', 'desc');
+            if ($requestedTenantId) {
+                $query->where('tenant_id', $requestedTenantId);
+            }
+            $templates = $query->paginate(15)->withQueryString();
+            $tenants = Tenant::orderBy('name')->get(['id','name']);
+            return view('email_templates.index', compact('templates', 'tenants', 'requestedTenantId'));
+        } else {
+            $templates = EmailTemplate::with('creator')->orderBy('created_at', 'desc')->paginate(15);
+            return view('email_templates.index', compact('templates'));
+        }
     }
 
     /**
@@ -48,6 +60,10 @@ class EmailTemplateController extends Controller
         ]);
 
         $validated['created_by'] = Auth::id();
+        // Ensure tenant_id is set
+        if (empty($validated['tenant_id'])) {
+            $validated['tenant_id'] = $this->getTenantId();
+        }
         $validated['is_active'] = $request->has('is_active');
 
         EmailTemplate::create($validated);

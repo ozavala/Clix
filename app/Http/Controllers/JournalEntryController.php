@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\JournalEntry;
 use App\Models\Account;
+use App\Models\Tenant;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -39,6 +40,10 @@ class JournalEntryController extends Controller
         // You might want to get distinct transaction types for a filter dropdown
         $transactionTypes = JournalEntry::select('transaction_type')->distinct()->pluck('transaction_type');
 
+        if ($isSuper) {
+            $tenants = Tenant::orderBy('name')->get(['id','name']);
+            return view('journal_entries.index', compact('journalEntries', 'transactionTypes', 'tenants', 'requestedTenantId'));
+        }
         return view('journal_entries.index', compact('journalEntries', 'transactionTypes'));
     }
 

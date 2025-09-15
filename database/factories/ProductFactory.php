@@ -8,6 +8,7 @@ use App\Models\CrmUser;
 use App\Models\TaxRate;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Auth;
 
 class ProductFactory extends Factory
 {
@@ -19,8 +20,11 @@ class ProductFactory extends Factory
         $taxCategories = ['goods', 'services', 'transport', 'insurance', 'storage', 'transport_public'];
         $taxRates = [0, 15, 22]; // Tasas de IVA para Ecuador
         
-        // Create a tenant for the product category if not already set by forTenant()
-        $tenant = Tenant::factory()->create();
+        // Prefer the authenticated user's tenant during tests, fallback to a new tenant
+        $authUser = Auth::user();
+        $tenant = $authUser && $authUser->tenant_id
+            ? Tenant::find($authUser->tenant_id)
+            : Tenant::factory()->create();
 
         return [
             'tenant_id' => $tenant->id, // Use the created tenant's ID
@@ -33,7 +37,9 @@ class ProductFactory extends Factory
             'reorder_point' => $isService ? 0 : fake()->numberBetween(5, 20),
             'is_service' => $isService,
             'is_active' => true,
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant)->create()->user_id, // Pass tenant to CrmUser
+            'created_by_user_id' => $authUser && $authUser->tenant_id === ($tenant->id ?? null)
+                ? $authUser->user_id
+                : CrmUser::factory()->forTenant($tenant)->create()->user_id, // Pass tenant to CrmUser
             'category_id' => ProductCategory::factory()->forTenant($tenant)->create()->category_id, // Pass tenant to ProductCategory
             'tax_rate_id' => TaxRate::factory()->forTenant($tenant)->create()->tax_rate_id, // Pass tenant to TaxRate
             'is_taxable' => fake()->boolean(80), // 80% de productos pagan IVA

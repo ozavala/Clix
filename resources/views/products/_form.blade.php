@@ -1,4 +1,9 @@
 @csrf
+@if(isset($currentTenant))
+    <input type="hidden" name="tenant_id" value="{{ $currentTenant->id }}">
+@elseif(isset($product) && isset($product->tenant_id))
+    <input type="hidden" name="tenant_id" value="{{ $product->tenant_id }}">
+@endif
 <div class="row">
     <div class="col-md-8 mb-3">
         <label for="name" class="form-label">{{ __('Name') }} <span class="text-danger">*</span></label>

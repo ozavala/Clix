@@ -9,9 +9,22 @@
             <div class="card">
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Email Templates</h3>
-                    <a href="{{ route('email-templates.create') }}" class="btn btn-primary">
-                        <i class="fas fa-plus"></i> Create Template
-                    </a>
+                    <div class="d-flex align-items-center gap-2">
+                        @isset($tenants)
+                        <form action="{{ route('email-templates.index') }}" method="GET" class="d-flex align-items-center me-2">
+                            <label for="tenant_id" class="me-2 mb-0">Tenant:</label>
+                            <select name="tenant_id" id="tenant_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                                <option value="">All</option>
+                                @foreach($tenants as $t)
+                                    <option value="{{ $t->id }}" {{ (request('tenant_id') ?? ($requestedTenantId ?? '')) == $t->id ? 'selected' : '' }}>{{ $t->name }}</option>
+                                @endforeach
+                            </select>
+                        </form>
+                        @endisset
+                        <a href="{{ route('email-templates.create') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create Template
+                        </a>
+                    </div>
                 </div>
                 <div class="card-body">
                     @if(session('success'))

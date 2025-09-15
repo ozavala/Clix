@@ -12,18 +12,31 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class BillController extends Controller
+class BillController extends TenantAwareController
 {
     // Basic CRUD methods will go here.
     // For now, let's focus on creating a bill from a PO.
 
     public function index()
     {
-        $bills = Bill::with(['supplier', 'purchaseOrder'])
-            ->orderBy('bill_date', 'desc')
-            ->paginate(15);
+        $user = Auth::user();
+        $isSuper = $user && (bool) ($user->is_super_admin ?? false);
+        $requestedTenantId = request()->input('tenant_id');
 
-        return view('bills.index', compact('bills'));
+        if ($isSuper) {
+            $query = Bill::withoutGlobalScopes()->with(['supplier', 'purchaseOrder'])->orderBy('bill_date', 'desc');
+            if ($requestedTenantId) {
+                $query->where('tenant_id', $requestedTenantId);
+            }
+            $bills = $query->paginate(15)->withQueryString();
+            $tenants = \App\Models\Tenant::orderBy('name')->get(['id','name']);
+            return view('bills.index', compact('bills', 'tenants', 'requestedTenantId'));
+        } else {
+            $bills = Bill::with(['supplier', 'purchaseOrder'])
+                ->orderBy('bill_date', 'desc')
+                ->paginate(15);
+            return view('bills.index', compact('bills'));
+        }
     }
 
     public function create(Request $request)

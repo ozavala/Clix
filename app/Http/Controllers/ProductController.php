@@ -12,14 +12,25 @@ use App\Http\Requests\UpdateProductRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
-class ProductController extends Controller
+class ProductController extends TenantAwareController
 {
     /**
      * Display a listing of the resource.
      */
     public function index(Request $request)
     {
-        $query = Product::with(['createdBy', 'category'])->latest();
+        $user = Auth::user();
+        $isSuper = $user && (bool) ($user->is_super_admin ?? false);
+        $requestedTenantId = $request->input('tenant_id');
+
+        if ($isSuper) {
+            $query = Product::withoutGlobalScopes()->with(['createdBy', 'category'])->latest();
+            if ($requestedTenantId) {
+                $query->where('tenant_id', $requestedTenantId);
+            }
+        } else {
+            $query = Product::with(['createdBy', 'category'])->latest();
+        }
 
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
@@ -44,6 +55,11 @@ class ProductController extends Controller
 
         $products = $query->paginate(10)->withQueryString();
         $categories = ProductCategory::orderBy('name')->get(); // For filter dropdown
+
+        if ($isSuper) {
+            $tenants = \App\Models\Tenant::orderBy('name')->get(['id','name']);
+            return view('products.index', compact('products', 'categories', 'tenants', 'requestedTenantId'));
+        }
         return view('products.index', compact('products', 'categories'));
     }
 

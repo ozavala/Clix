@@ -131,10 +131,11 @@ class TaxRecoveryService
     {
         return $transactions->groupBy('tax_rate_id')
             ->map(function ($group) {
-                $taxRate = $group->first()->taxRate;
+                $first = $group->first();
+                $taxRate = $first?->taxRate;
                 return [
-                    'tax_rate_name' => $taxRate->name,
-                    'tax_rate_percentage' => $taxRate->rate,
+                    'tax_rate_name' => $taxRate->name ?? 'Unknown',
+                    'tax_rate_percentage' => $taxRate->rate ?? null,
                     'count' => $group->count(),
                     'total_amount' => $group->sum('tax_amount'),
                 ];

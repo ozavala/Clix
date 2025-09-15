@@ -9,11 +9,10 @@ use Illuminate\Http\Request;
 use App\Models\Customer;
 use App\Models\Supplier;
 use Illuminate\Support\Facades\Auth; // Keep this
-use Illuminate\Routing\Controller as BaseController; // Correctly alias Laravel's base controller
 use Illuminate\Support\Facades\Route;
 
 
-class ContactController extends BaseController
+class ContactController extends TenantAwareController
 {
     public function __construct()
     {
@@ -59,6 +58,10 @@ class ContactController extends BaseController
     {
         $validatedData = $request->validated();
         $validatedData['created_by_user_id'] = Auth::id(); // Use Auth::id() for consistency
+        // Ensure tenant_id is set from context or derived from selected entity
+        if (empty($validatedData['tenant_id'])) {
+            $validatedData['tenant_id'] = $this->getTenantId();
+        }
         $contact = Contact::create($validatedData);
         return $this->redirectToContactableShow($contact->contactable_type, $contact->contactable_id, 'Contact created successfully.');
     }

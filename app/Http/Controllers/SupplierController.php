@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Supplier;
+use App\Models\Tenant;
 use App\Http\Requests\StoreSupplierRequest;
 use App\Http\Requests\UpdateSupplierRequest;
 use Illuminate\Http\Request;
@@ -16,7 +17,18 @@ class SupplierController extends Controller
      */
     public function index(Request $request)
     {
-        $query = Supplier::query()->latest();
+        $user = auth()->user();
+        $isSuper = $user && (bool) ($user->is_super_admin ?? false);
+        $requestedTenantId = $request->input('tenant_id');
+
+        if ($isSuper) {
+            $query = Supplier::withoutGlobalScopes()->latest();
+            if ($requestedTenantId) {
+                $query->where('tenant_id', $requestedTenantId);
+            }
+        } else {
+            $query = Supplier::query()->latest();
+        }
 
         if ($request->filled('search')) {
             $searchTerm = $request->input('search');
@@ -27,6 +39,10 @@ class SupplierController extends Controller
             });
         }
         $suppliers = $query->paginate(10)->withQueryString();
+        if ($isSuper) {
+            $tenants = Tenant::orderBy('name')->get(['id','name']);
+            return view('suppliers.index', compact('suppliers', 'tenants', 'requestedTenantId'));
+        }
         return view('suppliers.index', compact('suppliers'));
     }
 

@@ -8,6 +8,7 @@ use App\Models\Supplier;
 use App\Models\CrmUser;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Auth;
 
 class BillFactory extends Factory
 {
@@ -19,10 +20,21 @@ class BillFactory extends Factory
         $taxAmount = $subtotal * 0.1; // example tax
         $totalAmount = $subtotal + $taxAmount;
 
+        $authUser = Auth::user();
+        $tenant = $authUser && $authUser->tenant_id
+            ? Tenant::find($authUser->tenant_id)
+            : Tenant::factory()->create();
+
+        $supplier = Supplier::factory()->forTenant($tenant)->create();
+        $po = PurchaseOrder::factory()->forTenant($tenant)->create();
+        $createdBy = $authUser && $authUser->tenant_id === ($tenant->id ?? null)
+            ? $authUser
+            : CrmUser::factory()->forTenant($tenant)->create();
+
         return [
-            'tenant_id' => Tenant::factory(),
-            'purchase_order_id' => PurchaseOrder::factory(),
-            'supplier_id' => Supplier::factory(),
+            'tenant_id' => $tenant->id,
+            'purchase_order_id' => $po->purchase_order_id,
+            'supplier_id' => $supplier->supplier_id,
             'bill_number' => 'BILL-' . $this->faker->unique()->numerify('######'),
             'bill_date' => $this->faker->date(),
             'due_date' => $this->faker->dateTimeBetween('+1 week', '+1 month')->format('Y-m-d'),
@@ -32,7 +44,7 @@ class BillFactory extends Factory
             'amount_paid' => 0.00,
             'status' => 'Awaiting Payment',
             'notes' => $this->faker->optional()->sentence,
-            'created_by_user_id' => CrmUser::factory(),
+            'created_by_user_id' => $createdBy->user_id,
         ];
     }
 

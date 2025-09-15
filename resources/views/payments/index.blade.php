@@ -4,7 +4,22 @@
 
 @section('content')
  <div class="container">
-    
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h1>Payments</h1>
+        <div class="d-flex align-items-center gap-2">
+            @isset($tenants)
+            <form action="{{ route('payments.index') }}" method="GET" class="d-flex align-items-center me-2">
+                <label for="tenant_id" class="me-2 mb-0">Tenant:</label>
+                <select name="tenant_id" id="tenant_id" class="form-select form-select-sm" onchange="this.form.submit()">
+                    <option value="">All</option>
+                    @foreach($tenants as $t)
+                        <option value="{{ $t->id }}" {{ (request('tenant_id') ?? ($requestedTenantId ?? '')) == $t->id ? 'selected' : '' }}>{{ $t->name }}</option>
+                    @endforeach
+                </select>
+            </form>
+            @endisset
+        </div>
+    </div>
 
     @if (session('success'))
         <div class="alert alert-success alert-dismissible fade show" role="alert">

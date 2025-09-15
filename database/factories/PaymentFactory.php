@@ -8,6 +8,7 @@ use App\Models\PurchaseOrder;
 use App\Models\CrmUser; // Use CrmUser for created_by
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
+use Illuminate\Support\Facades\Auth;
 
 class PaymentFactory extends Factory
 {
@@ -25,18 +26,24 @@ class PaymentFactory extends Factory
      */
     public function definition(): array
     {
+        $authUser = Auth::user();
+        $tenant = $authUser && $authUser->tenant_id
+            ? Tenant::find($authUser->tenant_id)
+            : Tenant::factory()->create();
+
+        $bill = Bill::factory()->forTenant($tenant)->create();
+        $createdBy = $authUser && $authUser->tenant_id === ($tenant->id ?? null)
+            ? $authUser
+            : CrmUser::factory()->forTenant($tenant)->create();
+
         return [
-            'tenant_id' => Tenant::factory(),
+            'tenant_id' => $tenant->id,
             'payment_date' => $this->faker->dateTimeBetween('-1 year', 'now'),
             'notes' => $this->faker->optional()->sentence,
-            'payable_id' => function (array $attributes) {
-                return Bill::factory()->forTenant(Tenant::find($attributes['tenant_id']))->create()->bill_id;
-            },
+            'payable_id' => $bill->bill_id,
             'payable_type' => Bill::class,
             'amount' => $this->faker->randomFloat(2, 10, 1000),
-            'created_by_user_id' => function (array $attributes) {
-                return CrmUser::factory()->forTenant(Tenant::find($attributes['tenant_id']))->create()->user_id;
-            },
+            'created_by_user_id' => $createdBy->user_id,
         ];
     }
 
