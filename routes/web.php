@@ -196,8 +196,8 @@ Route::prefix('reportes/iva')->group(function () {
 // Tax Balance Report Routes
 Route::prefix('reports')->group(function () {
     Route::get('/tax-balance', [TaxBalanceController::class, 'index'])->name('reports.tax-balance');
-    Route::get('/tax-balance/pdf', [TaxBalanceController::class, 'exportPdf'])->name('reports.tax-balance.pdf');
-    Route::get('/tax-balance/excel', [TaxBalanceController::class, 'exportExcel'])->name('reports.tax-balance.excel');
+    Route::get('/tax-balance/pdf', [TaxBalanceController::class, 'exportPdf'])->name('reports.tax-balance.export-pdf');
+    Route::get('/tax-balance/excel', [TaxBalanceController::class, 'exportExcel'])->name('reports.tax-balance.export-excel');
 });
 
 // Tax Settings Routes

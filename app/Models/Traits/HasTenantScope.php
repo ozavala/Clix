@@ -18,7 +18,7 @@ trait HasTenantScope
             $user = Auth::user();
             
             if ($user && $user->tenant_id) {
-                $builder->where('tenant_id', $user->tenant_id);
+                $builder->where($builder->getModel()->getTable() . '.tenant_id', $user->tenant_id);
             }
         });
         

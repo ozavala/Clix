@@ -10,11 +10,11 @@
                 <div class="card-header d-flex justify-content-between align-items-center">
                     <h3 class="card-title">Tax Balance Report</h3>
                     <div>
-                        <a href="{{ route('reports.tax-balance.pdf') }}?start_date={{ $startDate }}&end_date={{ $endDate }}@if(isset($requestedTenantId))&tenant_id={{ $requestedTenantId }}@endif" 
+                        <a href="{{ route('reports.tax-balance.export-pdf') }}?start_date={{ $startDate }}&end_date={{ $endDate }}@if(isset($requestedTenantId))&tenant_id={{ $requestedTenantId }}@endif" 
                            class="btn btn-outline-secondary btn-sm">
                             <i class="fas fa-file-pdf"></i> Export PDF
                         </a>
-                        <a href="{{ route('reports.tax-balance.excel') }}?start_date={{ $startDate }}&end_date={{ $endDate }}@if(isset($requestedTenantId))&tenant_id={{ $requestedTenantId }}@endif" 
+                        <a href="{{ route('reports.tax-balance.export-excel') }}?start_date={{ $startDate }}&end_date={{ $endDate }}@if(isset($requestedTenantId))&tenant_id={{ $requestedTenantId }}@endif" 
                            class="btn btn-outline-success btn-sm">
                             <i class="fas fa-file-excel"></i> Export Excel
                         </a>

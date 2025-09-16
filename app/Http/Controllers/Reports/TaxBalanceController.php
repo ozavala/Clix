@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Reports;
 
 use App\Http\Controllers\Controller;
+use Maatwebsite\Excel\Excel as ExcelFacade;
+use App\Exports\TaxBalanceExport;
 use App\Models\Invoice;
 use App\Models\Bill;
 use App\Models\TaxCollection;
@@ -16,6 +18,12 @@ use Illuminate\Support\Str;
 
 class TaxBalanceController extends Controller
 {
+    protected $excel;
+
+    public function __construct(ExcelFacade $excel)
+    {
+        $this->excel = $excel;
+    }
     /**
      * Display the tax balance report
      */
@@ -29,10 +37,14 @@ class TaxBalanceController extends Controller
         
         $tenants = [];
         $requestedTenantId = null;
+        $selectedTenant = null;
         
         if (auth()->user()->is_super_admin) {
             $tenants = Tenant::orderBy('name')->get(['id', 'name']);
             $requestedTenantId = $tenantId;
+            if ($tenantId) {
+                $selectedTenant = Tenant::find($tenantId);
+            }
         }
         
         return view('reports.tax_balance.index', compact(
@@ -40,7 +52,8 @@ class TaxBalanceController extends Controller
             'startDate', 
             'endDate',
             'tenants',
-            'requestedTenantId'
+            'requestedTenantId',
+            'selectedTenant'
         ));
     }
 
@@ -53,49 +66,54 @@ class TaxBalanceController extends Controller
         $end = Carbon::parse($endDate)->endOfDay();
 
         // Base query for invoices with tenant filter if provided
-        $invoiceQuery = Invoice::whereBetween('invoice_date', [$start, $end])
-            ->where('status', '!=', 'Void')
-            ->where('status', '!=', 'Cancelled');
+        $invoiceQuery = Invoice::query()
+            ->whereBetween('invoices.invoice_date', [$start, $end])
+            ->where('invoices.status', '!=', 'Void')
+            ->where('invoices.status', '!=', 'Cancelled')
+            ->whereNull('invoices.deleted_at');
 
         // Base query for bills with tenant filter if provided
-        $billQuery = Bill::whereBetween('bill_date', [$start, $end])
-            ->where('status', '!=', 'Cancelled');
+        $billQuery = Bill::query()
+            ->whereBetween('bills.bill_date', [$start, $end])
+            ->where('bills.status', '!=', 'Cancelled')
+            ->whereNull('bills.deleted_at');
 
-        // Apply tenant filter if provided and user is super admin
-        if ($tenantId && auth()->user()->is_super_admin) {
-            $invoiceQuery->where('tenant_id', $tenantId);
-            $billQuery->where('tenant_id', $tenantId);
+        // For super admins, allow filtering by tenant
+        if (auth()->user()->is_super_admin && $tenantId) {
+            $invoiceQuery->where('invoices.tenant_id', $tenantId);
+            $billQuery->where('bills.tenant_id', $tenantId);
         }
+        // Non-super admins are automatically filtered by the HasTenantScope trait
 
         // Impuestos de venta recibidos (VAT Collected)
         $salesTaxCollected = (clone $invoiceQuery)
             ->select(
-                DB::raw('SUM(tax_amount) as total_tax_collected'),
-                DB::raw('COUNT(*) as total_invoices'),
-                DB::raw('SUM(subtotal) as total_taxable_amount')
+                DB::raw('SUM(invoices.tax_amount) as total_tax_collected'),
+                DB::raw('COUNT(invoices.invoice_id) as total_invoices'),
+                DB::raw('SUM(invoices.subtotal) as total_taxable_amount')
             )
             ->first();
 
         // Impuestos de compra pagados (VAT Paid)
         $purchaseTaxPaid = (clone $billQuery)
             ->select(
-                DB::raw('SUM(tax_amount) as total_tax_paid'),
-                DB::raw('COUNT(*) as total_bills'),
-                DB::raw('SUM(subtotal) as total_taxable_amount')
+                DB::raw('SUM(bills.tax_amount) as total_tax_paid'),
+                DB::raw('COUNT(bills.bill_id) as total_bills'),
+                DB::raw('SUM(bills.subtotal) as total_taxable_amount')
             )
             ->first();
 
         // Detalle por tasa de impuesto - Ventas
         $salesTaxByRate = (clone $invoiceQuery)
-            ->whereNotNull('tax_rate_id')
-            ->join('tax_rates', 'invoices.tax_rate_id', '=', 'tax_rates.tax_rate_id')
             ->select(
                 'tax_rates.name as tax_rate_name',
                 'tax_rates.rate as tax_rate_percentage',
                 DB::raw('SUM(invoices.tax_amount) as total_tax_collected'),
-                DB::raw('COUNT(*) as invoice_count'),
+                DB::raw('COUNT(invoices.invoice_id) as invoice_count'),
                 DB::raw('SUM(invoices.subtotal) as total_taxable_amount')
             )
+            ->join('tax_rates', 'invoices.tax_rate_id', '=', 'tax_rates.tax_rate_id')
+            ->whereNotNull('invoices.tax_rate_id')
             ->groupBy('tax_rates.tax_rate_id', 'tax_rates.name', 'tax_rates.rate')
             ->orderBy('tax_rates.rate', 'desc')
             ->get();
@@ -107,7 +125,7 @@ class TaxBalanceController extends Controller
                 DB::raw('purchase_orders.tax_percentage as tax_rate_percentage'),
                 DB::raw('CONCAT("Tax Rate ", purchase_orders.tax_percentage, "%") as tax_rate_name'),
                 DB::raw('SUM(bills.tax_amount) as total_tax_paid'),
-                DB::raw('COUNT(*) as bill_count'),
+                DB::raw('COUNT(bills.bill_id) as bill_count'),
                 DB::raw('SUM(bills.subtotal) as total_taxable_amount')
             )
             ->groupBy('purchase_orders.tax_percentage')
@@ -116,29 +134,34 @@ class TaxBalanceController extends Controller
 
         // Top 10 clientes por impuestos pagados
         $topCustomersByTax = (clone $invoiceQuery)
-            ->join('customers', 'invoices.customer_id', '=', 'customers.customer_id')
-            ->select(
-                'customers.company_name as customer_name',
-                'customers.first_name',
-                'customers.last_name',
+            ->select([
+                DB::raw('CONCAT(customers.first_name, " ", customers.last_name) as customer_name'),
+                'customers.legal_id as customer_tax_number',
                 DB::raw('SUM(invoices.tax_amount) as total_tax_collected'),
-                DB::raw('COUNT(*) as invoice_count')
-            )
-            ->groupBy('customers.customer_id', 'customers.company_name', 'customers.first_name', 'customers.last_name')
+                DB::raw('COUNT(invoices.invoice_id) as invoice_count'),
+                DB::raw('SUM(invoices.total_amount) as total_amount')
+            ])
+            ->join('customers', 'invoices.customer_id', '=', 'customers.customer_id')
+            ->whereNotNull('invoices.tax_amount')
+            ->where('invoices.tax_amount', '>', 0)
+            ->groupBy('customers.customer_id', 'customers.first_name', 'customers.last_name', 'customers.legal_id')
             ->orderBy('total_tax_collected', 'desc')
             ->limit(10)
             ->get();
 
         // Top 10 proveedores por impuestos pagados
         $topSuppliersByTax = (clone $billQuery)
-            ->join('suppliers', 'bills.supplier_id', '=', 'suppliers.supplier_id')
-            ->select(
+            ->select([
                 'suppliers.name as supplier_name',
-                'suppliers.contact_person',
+                'suppliers.legal_id as supplier_tax_number',
                 DB::raw('SUM(bills.tax_amount) as total_tax_paid'),
-                DB::raw('COUNT(*) as bill_count')
-            )
-            ->groupBy('suppliers.supplier_id', 'suppliers.name', 'suppliers.contact_person')
+                DB::raw('COUNT(bills.bill_id) as bill_count'),
+                DB::raw('SUM(bills.total_amount) as total_amount')
+            ])
+            ->join('suppliers', 'bills.supplier_id', '=', 'suppliers.supplier_id')
+            ->whereNotNull('bills.tax_amount')
+            ->where('bills.tax_amount', '>', 0)
+            ->groupBy('suppliers.supplier_id', 'suppliers.name', 'suppliers.legal_id')
             ->orderBy('total_tax_paid', 'desc')
             ->limit(10)
             ->get();
@@ -216,8 +239,10 @@ class TaxBalanceController extends Controller
         if ($selectedTenant) {
             $filename .= '-' . Str::slug($selectedTenant->name);
         }
-        $filename .= '.xlsx';
         
-        return (new TaxBalanceExport($startDate, $endDate, $tenantId))->download($filename);
+        return $this->excel->download(
+            new TaxBalanceExport($startDate, $endDate, $tenantId),
+            $filename . '.xlsx'
+        );
     }
 } 

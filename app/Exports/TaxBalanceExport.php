@@ -2,9 +2,8 @@
 
 namespace App\Exports;
 
-use Maatwebsite\Excel\Concerns\FromCollection;
+use Maatwebsite\Excel\Concerns\FromArray;
 use Maatwebsite\Excel\Concerns\WithHeadings;
-use Maatwebsite\Excel\Concerns\WithMapping;
 use Maatwebsite\Excel\Concerns\WithTitle;
 use Maatwebsite\Excel\Concerns\WithEvents;
 use Maatwebsite\Excel\Events\AfterSheet;
@@ -15,11 +14,12 @@ use Maatwebsite\Excel\Concerns\WithStyles;
 use PhpOffice\PhpSpreadsheet\Worksheet\Worksheet;
 use Carbon\Carbon;
 use App\Models\Tenant;
+use App\Http\Controllers\Reports\TaxBalanceController;
+use Maatwebsite\Excel\Excel as ExcelFacade;
 
 class TaxBalanceExport implements 
-    FromCollection, 
+    FromArray,
     WithHeadings, 
-    WithMapping, 
     WithTitle,
     WithEvents,
     WithColumnFormatting,
@@ -39,62 +39,71 @@ class TaxBalanceExport implements
         $this->selectedTenant = $tenantId ? Tenant::find($tenantId) : null;
     }
 
-    public function collection()
+    public function array(): array
     {
-        $query = \DB::table('tax_transactions as t')
-            ->select(
-                't.transaction_date',
-                't.reference_number',
-                't.description',
-                't.amount',
-                't.tax_amount',
-                't.type',
-                'tr.name as tax_rate_name',
-                'tr.rate as tax_rate',
-                't.created_at',
-                't.updated_at'
-            )
-            ->leftJoin('tax_rates as tr', 't.tax_rate_id', '=', 'tr.id')
-            ->whereBetween('t.transaction_date', [$this->startDate, $this->endDate])
-            ->orderBy('t.transaction_date');
+        // Create controller instance
+        $controller = new TaxBalanceController(app(ExcelFacade::class));
         
-        // Apply tenant filter if tenant_id is provided
-        if ($this->tenantId) {
-            $query->where('t.tenant_id', $this->tenantId);
+        // Use reflection to access the private method
+        $reflectionMethod = new \ReflectionMethod($controller, 'generateTaxBalanceReport');
+        $reflectionMethod->setAccessible(true);
+        
+        // Call the method with required parameters
+        $report = $reflectionMethod->invoke($controller, $this->startDate, $this->endDate, $this->tenantId);
+        
+        $data = [];
+        
+        // Add summary section
+        $data[] = ['Resumen de IVA'];
+        $data[] = [
+            'Período', 
+            $report['period']['start_formatted'] . ' - ' . $report['period']['end_formatted']
+        ];
+        $data[] = [
+            'Total IVA Cobrado', 
+            number_format($report['summary']['total_tax_collected'], 2)
+        ];
+        $data[] = [
+            'Total IVA Pagado', 
+            number_format($report['summary']['total_tax_paid'], 2)
+        ];
+        $data[] = [
+            'Saldo Neto de IVA', 
+            number_format($report['summary']['net_tax_balance'], 2)
+        ];
+        $data[] = []; // Empty row
+        
+        // Add sales tax by rate
+        $data[] = ['IVA por Tasa - Ventas'];
+        $data[] = ['Tasa', 'Base Imponible', 'IVA'];
+        foreach ($report['sales_tax_by_rate'] as $rate) {
+            $data[] = [
+                $rate->tax_rate_name . ' (' . $rate->tax_rate_percentage . '%)',
+                number_format($rate->total_taxable_amount, 2),
+                number_format($rate->total_tax_collected, 2)
+            ];
+        }
+        $data[] = []; // Empty row
+        
+        // Add purchase tax by rate
+        $data[] = ['IVA por Tasa - Compras'];
+        $data[] = ['Tasa', 'Base Imponible', 'IVA'];
+        foreach ($report['purchase_tax_by_rate'] as $rate) {
+            $data[] = [
+                $rate->tax_rate_name . ' (' . $rate->tax_rate_percentage . '%)',
+                number_format($rate->total_taxable_amount, 2),
+                number_format($rate->total_tax_paid, 2)
+            ];
         }
         
-        return $query->get();
+        return $data;
     }
 
     public function headings(): array
     {
         return [
-            'Fecha',
-            'Número de Referencia',
-            'Descripción',
-            'Monto',
-            'Monto de IVA',
-            'Tipo',
-            'Tasa de IVA',
-            'Porcentaje',
-            'Creado',
-            'Actualizado'
-        ];
-    }
-
-    public function map($row): array
-    {
-        return [
-            Carbon::parse($row->transaction_date)->format('d/m/Y'),
-            $row->reference_number,
-            $row->description,
-            $row->amount,
-            $row->tax_amount,
-            $row->type == 'sale' ? 'Venta' : 'Compra',
-            $row->tax_rate_name,
-            $row->tax_rate . '%',
-            Carbon::parse($row->created_at)->format('d/m/Y H:i'),
-            Carbon::parse($row->updated_at)->format('d/m/Y H:i')
+            'Concepto',
+            'Valor'
         ];
     }
 
@@ -107,84 +116,33 @@ class TaxBalanceExport implements
     {
         return [
             AfterSheet::class => function(AfterSheet $event) {
-                $event->sheet->getDelegate()->insertNewRowBefore(1, 4);
+                $sheet = $event->sheet;
                 
-                // Add report title and date range
-                $event->sheet->mergeCells('A1:J1');
-                $event->sheet->setCellValue('A1', 'Reporte de Balance de IVA');
-                $event->sheet->getStyle('A1')->getFont()->setBold(true)->setSize(16);
-                $event->sheet->getStyle('A1')->getAlignment()->setHorizontal('center');
-                
-                $event->sheet->mergeCells('A2:J2');
-                $event->sheet->setCellValue('A2', 'Período: ' . 
-                    Carbon::parse($this->startDate)->format('d/m/Y') . ' al ' . 
-                    Carbon::parse($this->endDate)->format('d/m/Y'));
-                
-                // Add tenant info if tenant is selected
-                if ($this->selectedTenant) {
-                    $event->sheet->mergeCells('A3:J3');
-                    $event->sheet->setCellValue('A3', 'Tenant: ' . $this->selectedTenant->name);
-                }
-                
-                // Format headers
-                $event->sheet->getStyle('A5:J5')->applyFromArray([
-                    'font' => ['bold' => true],
+                // Style the header
+                $sheet->getStyle('A1:B1')->applyFromArray([
+                    'font' => [
+                        'bold' => true,
+                        'size' => 14,
+                    ],
+                    'alignment' => [
+                        'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                    ],
                     'fill' => [
                         'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
                         'startColor' => ['argb' => 'FFD9D9D9'],
-                    ],
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                        ],
-                    ],
+                    ]
                 ]);
                 
-                // Add summary rows
-                $lastRow = $event->sheet->getHighestRow() + 2;
+                // Style section headers
+                $sheet->getStyle('A2:A1000')->getFont()->setBold(true);
                 
-                // Calculate totals
-                $totalCollected = $this->collection()->where('type', 'sale')->sum('tax_amount');
-                $totalPaid = $this->collection()->where('type', 'purchase')->sum('tax_amount');
-                $netBalance = $totalCollected - $totalPaid;
-                
-                // Add summary
-                $event->sheet->setCellValue("D{$lastRow}", 'Total IVA Cobrado:');
-                $event->sheet->setCellValue("E{$lastRow}", $totalCollected);
-                
-                $event->sheet->setCellValue("D" . ($lastRow + 1), 'Total IVA Pagado:');
-                $event->sheet->setCellValue("E" . ($lastRow + 1), $totalPaid);
-                
-                $event->sheet->setCellValue("D" . ($lastRow + 2), 'Saldo Neto:');
-                $event->sheet->setCellValue("E" . ($lastRow + 2), $netBalance);
-                
-                // Style summary
-                $summaryRange = "D{$lastRow}:E" . ($lastRow + 2);
-                $event->sheet->getStyle($summaryRange)->getFont()->setBold(true);
-                $event->sheet->getStyle("E{$lastRow}:E" . ($lastRow + 2))->getNumberFormat()
+                // Style currency columns
+                $sheet->getStyle('B3:B1000')->getNumberFormat()
                     ->setFormatCode(NumberFormat::FORMAT_CURRENCY_USD_SIMPLE);
-                
-                // Add border to summary
-                $event->sheet->getStyle($summaryRange)->applyFromArray([
-                    'borders' => [
-                        'allBorders' => [
-                            'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
-                        ],
-                    ],
-                ]);
-                
-                // Highlight net balance row
-                $event->sheet->getStyle("D" . ($lastRow + 2) . ":E" . ($lastRow + 2))->applyFromArray([
-                    'fill' => [
-                        'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
-                        'startColor' => ['argb' => $netBalance >= 0 ? 'FFD4EDDA' : 'FFF8D7DA'],
-                    ],
-                ]);
-                
-                // Auto-size all columns
-                foreach(range('A','J') as $columnID) {
-                    $event->sheet->getColumnDimension($columnID)->setAutoSize(true);
-                }
+                    
+                // Auto-size columns
+                $sheet->getColumnDimension('A')->setWidth(30);
+                $sheet->getColumnDimension('B')->setWidth(20);
             },
         ];
     }
@@ -192,22 +150,28 @@ class TaxBalanceExport implements
     public function columnFormats(): array
     {
         return [
-            'D' => NumberFormat::FORMAT_CURRENCY_USD_SIMPLE,
-            'E' => NumberFormat::FORMAT_CURRENCY_USD_SIMPLE,
+            'B' => NumberFormat::FORMAT_CURRENCY_USD_SIMPLE,
         ];
     }
-
+    
     public function styles(Worksheet $sheet)
     {
         return [
-            // Style the first row as bold text.
-            5    => ['font' => ['bold' => true]],
-            
-            // Styling the summary rows
-            'A1:J4' => ['font' => ['bold' => true]],
-            
-            // Add border to all cells
-            'A5:J' . $sheet->getHighestRow() => [
+            // Style the first row as bold text
+            1 => [
+                'font' => ['bold' => true, 'size' => 14],
+                'alignment' => ['horizontal' => 'center']
+            ],
+            // Style section headers
+            'A2:A1000' => [
+                'font' => ['bold' => true]
+            ],
+            // Style data rows
+            'A3:B1000' => [
+                'font' => ['size' => 12]
+            ],
+            // Add borders to all cells with data
+            'A1:B' . $sheet->getHighestRow() => [
                 'borders' => [
                     'allBorders' => [
                         'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
