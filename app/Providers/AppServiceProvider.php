@@ -6,6 +6,7 @@ use App\Models\Payment;
 use App\Observers\PaymentObserver;
 use Illuminate\Support\ServiceProvider;
 use App\Models\Setting;
+use App\Http\Middleware\EnforceTenantAccess;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -14,7 +15,7 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        $this->app->singleton(EnforceTenantAccess::class);
     }
 
     /**

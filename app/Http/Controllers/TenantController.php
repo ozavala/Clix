@@ -10,6 +10,26 @@ use Illuminate\Support\Facades\Session;
 class TenantController extends Controller
 {
     /**
+     * Show the tenant selection page.
+     *
+     * @return \Illuminate\View\View
+     */
+    public function select()
+    {
+        $user = Auth::user();
+        
+        // Superadmins can see all tenants, regular users only see their assigned tenants
+        $tenants = $user->isSuperAdmin() 
+            ? Tenant::orderBy('name')->get()
+            : $user->tenants()->orderBy('name')->get();
+            
+        return view('tenants.select', [
+            'tenants' => $tenants,
+            'currentTenant' => $user->primaryTenant()
+        ]);
+    }
+    
+    /**
      * Switch the current tenant for the authenticated user.
      *
      * @param  \Illuminate\Http\Request  $request
@@ -19,42 +39,24 @@ class TenantController extends Controller
     public function switch(Request $request, $tenantId)
     {
         $user = Auth::user();
+        $tenant = Tenant::findOrFail($tenantId);
         
-        // If user can view all tenants or is a member of the requested tenant
-        if ($user->can('view-all-tenants') || 
-            $user->tenants()->where('id', $tenantId)->exists()) {
-            
-            $tenant = Tenant::findOrFail($tenantId);
-            
-            // Store the selected tenant ID in the session
-            Session::put('current_tenant_id', $tenant->id);
-            
-            // Update user's default tenant if they have the permission
-            if ($user->can('update-tenant-default') && $request->has('set_default')) {
-                $user->tenant_id = $tenant->id;
-                $user->save();
-            }
-            
-            return redirect()->back()
-                ->with('success', __('Switched to :tenant', ['tenant' => $tenant->name]));
+        // Check if user has access to this tenant
+        if (!$user->isSuperAdmin() && !$user->hasTenantAccess($tenant)) {
+            return redirect()->back()->with('error', 'You do not have access to this tenant.');
         }
         
-        return redirect()->back()
-            ->with('error', __('You do not have permission to access this tenant.'));
-    }
-    
-    /**
-     * Show the tenant selection page.
-     *
-     * @return \Illuminate\View\View
-     */
-    public function select()
-    {
-        $user = Auth::user();
-        $tenants = $user->can('view-all-tenants') 
-            ? Tenant::orderBy('name')->get()
-            : $user->tenants()->orderBy('name')->get();
-            
-        return view('tenants.select', compact('tenants'));
+        // For non-superadmin users, they can only switch to their primary tenant
+        if (!$user->isSuperAdmin() && $tenant->id !== $user->primaryTenant()?->id) {
+            return redirect()->back()->with('error', 'You can only access your primary tenant.');
+        }
+        
+        // Set the tenant as primary
+        $user->setPrimaryTenant($tenant);
+        
+        // Store the current tenant ID in the session
+        Session::put('current_tenant_id', $tenant->id);
+        
+        return redirect()->back()->with('success', __('Switched to :tenant', ['tenant' => $tenant->name]));
     }
 }

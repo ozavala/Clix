@@ -18,6 +18,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'can' => \App\Http\Middleware\CheckPermission::class,
             'setlocale' => \App\Http\Middleware\SetLocale::class,
             'verified' => \App\Http\Middleware\EnsureEmailIsVerified::class,
+            'enforce.tenant' => \App\Http\Middleware\EnforceTenantAccess::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

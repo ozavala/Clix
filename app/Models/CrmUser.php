@@ -120,6 +120,67 @@ class CrmUser extends Authenticatable implements MustVerifyEmail
         return $this->belongsTo(Tenant::class, 'tenant_id');
     }
 
+    /**
+     * The tenants that belong to the user.
+     */
+    /**
+     * The tenants that belong to the user.
+     */
+    /**
+     * The tenants that belong to the user.
+     */
+    public function tenants()
+    {
+        return $this->belongsToMany(Tenant::class, 'crm_user_tenant', 'crm_user_id', 'tenant_id')
+            ->withPivot('is_primary')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the user's primary tenant.
+     */
+    public function primaryTenant()
+    {
+        return $this->tenants()->wherePivot('is_primary', true)->first();
+    }
+
+    /**
+     * Check if the user is a super admin.
+     */
+    public function isSuperAdmin(): bool
+    {
+        return $this->roles()->where('name', 'superadmin')->exists();
+    }
+
+    /**
+     * Check if the user has access to the given tenant.
+     */
+    public function hasTenantAccess(Tenant $tenant): bool
+    {
+        if ($this->isSuperAdmin()) {
+            return true;
+        }
+        return $this->tenants()->where('tenant_id', $tenant->id)->exists();
+    }
+
+    /**
+     * Set the user's primary tenant.
+     */
+    public function setPrimaryTenant(Tenant $tenant): void
+    {
+        if (!$this->hasTenantAccess($tenant)) {
+            throw new \RuntimeException('User does not have access to this tenant');
+        }
+
+        // Reset primary status for all other tenants
+        \DB::table('crm_user_tenant')
+            ->where('crm_user_id', $this->user_id)
+            ->update(['is_primary' => false]);
+
+        // Set the new primary tenant
+        $this->tenants()->updateExistingPivot($tenant->id, ['is_primary' => true]);
+    }
+
     public function leads() 
     {
         return $this->hasMany(Lead::class, 'created_by_user_id', 'user_id');

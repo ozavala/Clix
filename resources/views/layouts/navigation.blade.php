@@ -24,6 +24,9 @@
                         <a class="dropdown-item" href="{{ route('settings.edit') }}">
                             Settings
                         </a>
+                        <a class="dropdown-item" href="{{ route('tenants.select') }}">
+                            Tenants
+                        </a>
                         @endcan
                         <a class="dropdown-item" href="{{ route('tax-settings.index') }}">
                             Tax Settings

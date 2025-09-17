@@ -63,11 +63,14 @@ Route::middleware('auth')->group(function () {
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Tenant switching routes - must be outside auth middleware to allow switching
-Route::prefix('tenants')->name('tenants.')->group(function () {
-    Route::get('/select', [TenantController::class, 'select'])->name('select');
-    Route::get('/switch/{tenant}', [TenantController::class, 'switch'])->name('switch');
-});
+// Tenant switching routes
+Route::prefix('tenants')
+    ->name('tenants.')
+    ->middleware(['auth', 'enforce.tenant'])
+    ->group(function () {
+        Route::get('/select', [TenantController::class, 'select'])->name('select');
+        Route::post('/switch/{tenant}', [TenantController::class, 'switch'])->name('switch');
+    });
 
 Route::middleware(['setlocale', 'auth'])->group(function () {
     Route::resource('crm-users', CrmUserController::class);

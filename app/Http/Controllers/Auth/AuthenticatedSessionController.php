@@ -36,7 +36,7 @@ class AuthenticatedSessionController extends Controller
      */
     public function destroy(Request $request): RedirectResponse
     {
-        Auth::logout();
+        Auth::guard('crm')->logout();
 
         $request->session()->invalidate();
 
