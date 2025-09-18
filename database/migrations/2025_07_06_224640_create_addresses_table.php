@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('addresses', function (Blueprint $table) {
             $table->id('address_id');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('addressable_type');
             $table->unsignedBigInteger('addressable_id');
             $table->string('address_type')->nullable()->comment('e.g., Billing, Shipping, Primary, Mailing');
@@ -26,6 +27,7 @@ return new class extends Migration
             $table->timestamps();
             
             $table->index(['addressable_type', 'addressable_id']);
+            $table->index(['tenant_id', 'addressable_type', 'addressable_id']);
         });
     }
 

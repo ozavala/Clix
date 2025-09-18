@@ -18,10 +18,15 @@ return new class extends Migration
             $table->string('full_name');
             $table->string('email')->unique();
             $table->timestamp('email_verified_at')->nullable();
+            $table->string('locale', 5)->default('en');
             $table->string('password');
             $table->rememberToken();
-            $table->string('locale', 5)->default('es');
+            $table->boolean('is_super_admin')
+                ->default(false);
+            
             $table->timestamps();
+
+            $table->index(['tenant_id', 'email']);
         });
     }
 

@@ -30,6 +30,8 @@ return new class extends Migration
             $table->foreignId('created_by_user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['tenant_id', 'legal_id']);
         });
     }
 

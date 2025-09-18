@@ -6,22 +6,18 @@ use Illuminate\Support\Facades\Schema;
 
 return new class extends Migration
 {
-    /**
-     * Run the migrations.
-     */
     public function up(): void
     {
-        Schema::create('settings', function (Blueprint $table) {
-            $table->id();
+        Schema::table('settings', function (Blueprint $table) {
             // Add tenant_id column with foreign key
-            $table->unsignedBigInteger('tenant_id')->nullable();
+            $table->unsignedBigInteger('tenant_id')->nullable()->after('id');
             $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
             
             // Modify columns for better configuration management
-            $table->string('group')->default('general');
-            $table->text('description')->nullable();
-            $table->string('validation_rules')->nullable();
-            $table->boolean('is_public')->default(false);
+            $table->string('group')->default('general')->after('key');
+            $table->text('description')->nullable()->after('value');
+            $table->string('validation_rules')->nullable()->after('description');
+            $table->boolean('is_public')->default(false)->after('is_editable');
             
             // Update the value column to be a text field to support larger values
             $table->text('value')->change();
@@ -29,14 +25,8 @@ return new class extends Migration
             // Add indexes
             $table->index(['tenant_id', 'key']);
             $table->index(['tenant_id', 'group']);
-            
-            $table->string('key');
-            $table->string('value')->nullable();
-            $table->enum('type', ['core', 'custom'])->default('custom');
-            $table->boolean('is_editable')->default(false);
-            $table->json('settings')->nullable();
-            $table->timestamps();
         });
+        
         // Create a default tenant for existing settings if needed
         if (!Schema::hasColumn('settings', 'tenant_id')) {
             $defaultTenant = DB::table('tenants')->first();
@@ -46,11 +36,12 @@ return new class extends Migration
         }
     }
 
-    /**
-     * Reverse the migrations.
-     */
     public function down(): void
     {
-        Schema::dropIfExists('settings');
+        Schema::table('settings', function (Blueprint $table) {
+            $table->dropForeign(['tenant_id']);
+            $table->dropColumn(['tenant_id', 'group', 'description', 'validation_rules', 'is_public']);
+            $table->string('value')->change();
+        });
     }
 };

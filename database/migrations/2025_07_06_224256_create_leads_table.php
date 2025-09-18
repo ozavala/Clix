@@ -28,6 +28,8 @@ return new class extends Migration
             $table->date('expected_close_date')->nullable();
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['tenant_id', 'customer_id']);
         });
     }
 

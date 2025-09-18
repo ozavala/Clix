@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('marketing_campaigns', function (Blueprint $table) {
             $table->id();
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('subject');
@@ -36,6 +37,8 @@ return new class extends Migration
             
             $table->index(['status', 'scheduled_at']);
             $table->index(['type', 'created_at']);
+            $table->index(['tenant_id', 'status', 'scheduled_at']);
+            $table->index(['tenant_id', 'type', 'created_at']);
         });
     }
 

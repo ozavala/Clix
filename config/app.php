@@ -133,6 +133,7 @@ return [
         // Application Service Providers...
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
+        App\Providers\ConfigurationServiceProvider::class,
         App\Providers\EventServiceProvider::class,
         App\Providers\SettingsServiceProvider::class,
         App\Providers\MailConfigServiceProvider::class,

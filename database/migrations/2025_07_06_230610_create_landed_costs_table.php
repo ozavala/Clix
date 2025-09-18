@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('landed_costs', function (Blueprint $table) {
             $table->id('landed_cost_id');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('costable_type');
             $table->unsignedBigInteger('costable_id');
             $table->string('description');
@@ -20,6 +21,7 @@ return new class extends Migration
             $table->timestamps();
             
             $table->index(['costable_type', 'costable_id']);
+            $table->index(['tenant_id', 'costable_type', 'costable_id']);
         });
     }
 

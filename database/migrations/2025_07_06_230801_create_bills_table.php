@@ -28,6 +28,8 @@ return new class extends Migration
             $table->foreignId('created_by_user_id')->constrained('crm_users', 'user_id');
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['tenant_id', 'bill_number']);
         });
     }
 

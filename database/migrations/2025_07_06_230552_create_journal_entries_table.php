@@ -22,6 +22,8 @@ return new class extends Migration
             $table->unsignedBigInteger('referenceable_id')->nullable();
             $table->string('referenceable_type')->nullable();
             $table->timestamps();
+
+            $table->index(['tenant_id', 'referenceable_id']);
         });
     }
 

@@ -32,6 +32,8 @@ return new class extends Migration
             $table->foreignId('category_id')->nullable()->constrained('product_categories', 'category_id')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
+
+            $table->index(['tenant_id', 'sku']);
         });
     }
 

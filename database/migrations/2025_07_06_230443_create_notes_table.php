@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('notes', function (Blueprint $table) {
             $table->id('note_id');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->text('body');
             $table->string('noteable_type');
             $table->unsignedBigInteger('noteable_id');
@@ -21,6 +22,7 @@ return new class extends Migration
             $table->softDeletes();
             
             $table->index(['noteable_type', 'noteable_id']);
+            $table->index(['tenant_id', 'noteable_type', 'noteable_id']);
         });
     }
 

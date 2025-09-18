@@ -13,22 +13,12 @@ return new class extends Migration
     {
         Schema::create('crm_user_tenant', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('crm_user_id');
-            $table->unsignedBigInteger('tenant_id');
+            $table->foreignId('crm_user_id')->constrained('crm_users', 'user_id')->onDelete('set null');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->boolean('is_primary')->default(false);
             $table->timestamps();
-
-            $table->foreign('crm_user_id')
-                ->references('user_id')
-                ->on('crm_users')
-                ->onDelete('cascade');
-
-            $table->foreign('tenant_id')
-                ->references('id')
-                ->on('tenants')
-                ->onDelete('cascade');
-
             $table->unique(['crm_user_id', 'tenant_id']);
+            $table->index(['crm_user_id', 'tenant_id']);
         });
     }
 

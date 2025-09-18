@@ -25,7 +25,7 @@ class TenantFactory extends Factory
             'phone' => $this->faker->phoneNumber,
             'website' => 'https://' . $this->faker->domainName,
             'logo' => $this->faker->imageUrl(200, 200, 'business'),
-            'email' => 'info@' . $this->faker->safeEmailDomain,
+            'email' => 'info@' . $this->faker->safeEmailDomain->unique(),
             'industry' => $this->faker->word,
             'settings' => [
                 'currency' => 'USD',

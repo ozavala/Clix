@@ -66,7 +66,7 @@ class User extends Authenticatable
      */
     public function tenants(): BelongsToMany
     {
-        return $this->belongsToMany(Tenant::class, 'tenant_user')
+        return $this->belongsToMany(Tenant::class, 'crm_user_tenat')
             ->withTimestamps()
             ->withPivot('is_owner');
     }

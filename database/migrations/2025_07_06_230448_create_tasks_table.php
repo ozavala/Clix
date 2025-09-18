@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id('task_id');
+            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
             $table->date('due_date')->nullable();
@@ -26,6 +27,7 @@ return new class extends Migration
             $table->softDeletes();
             
             $table->index(['taskable_type', 'taskable_id']);
+            $table->index(['tenant_id', 'taskable_type', 'taskable_id']);
         });
     }
 
