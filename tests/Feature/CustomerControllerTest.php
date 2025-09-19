@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Customer;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Address;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -12,7 +12,7 @@ use Tests\TestCase;
 class CustomerControllerTest extends TestCase
 {
     protected int $obLevel;
-    protected CrmUser $user;
+    protected User $user;
 
     protected function setUp(): void
     {
@@ -20,7 +20,7 @@ class CustomerControllerTest extends TestCase
         // Record initial buffer level to avoid PHPUnit risky warnings
         $this->obLevel = ob_get_level();
         $this->seed(\Database\Seeders\SettingsTableSeeder::class);
-        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
+        $this->user = User::factory()->forTenant($this->tenant)->create();
         $this->actingAs($this->user);
         // Asignar permisos necesarios para gestión de clientes
         // Esto es requerido por la lógica de autorización en el controlador de clientes

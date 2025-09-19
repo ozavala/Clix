@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('products', function (Blueprint $table) {
             $table->id('product_id');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('sku', 100)->nullable()->unique();
@@ -28,7 +28,7 @@ return new class extends Migration
             $table->decimal('tax_rate_percentage', 5, 2)->nullable();            
             $table->string('tax_category')->nullable(); // 'goods', 'services', 'transport', 'insurance', 'storage'
             $table->string('tax_country_code', 3)->default('EC'); // Código de país para IVA
-            $table->foreignId('created_by_user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
+            $table->foreignId('created_by_user_id')->nullable()->constrained('users', 'user_id')->onDelete('set null');
             $table->foreignId('category_id')->nullable()->constrained('product_categories', 'category_id')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();

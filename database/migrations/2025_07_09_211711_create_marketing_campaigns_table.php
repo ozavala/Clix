@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('marketing_campaigns', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('subject');
@@ -22,7 +22,7 @@ return new class extends Migration
             $table->enum('type', ['email', 'newsletter', 'promotional', 'announcement'])->default('email');
             $table->foreignId('email_template_id')->nullable()->constrained('email_templates')->onDelete('set null');
             $table->unsignedBigInteger('created_by');
-            $table->foreign('created_by')->references('user_id')->on('crm_users')->onDelete('cascade');
+            $table->foreign('created_by')->references('user_id')->on('users')->onDelete('cascade');
             $table->timestamp('scheduled_at')->nullable();
             $table->timestamp('sent_at')->nullable();
             $table->integer('total_recipients')->default(0);

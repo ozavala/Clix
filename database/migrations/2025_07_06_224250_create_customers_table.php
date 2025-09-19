@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('customers', function (Blueprint $table) {
             $table->id('customer_id');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->string('type', 50)->default('Person');
             $table->string('first_name', 100)->nullable();
             $table->string('last_name', 100)->nullable();
@@ -27,7 +27,7 @@ return new class extends Migration
             $table->string('address_postal_code', 20)->nullable();
             $table->string('address_country', 100)->nullable();
             $table->string('status', 50)->default('Active');
-            $table->foreignId('created_by_user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
+            $table->foreignId('created_by_user_id')->nullable()->constrained('users', 'user_id')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
 

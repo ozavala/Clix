@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
 use App\Models\Product;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
 use App\Models\Payment;
@@ -26,7 +26,7 @@ class PurchaseOrderStatusFlowTest extends TestCase
         
         // Create a tenant and user for testing
         $this->tenant = \App\Models\Tenant::factory()->create();
-        $this->user = CrmUser::factory()->create([
+        $this->user = User::factory()->create([
             'tenant_id' => $this->tenant->id
         ]);
     }

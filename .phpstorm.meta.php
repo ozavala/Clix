@@ -739,22 +739,22 @@ namespace PHPSTORM_META {
         ]));
 
     override(\auth()->user(), map([
-        '' => \App\Models\CrmUser::class,
+        '' => \App\Models\User::class,
     ]));
     override(\Illuminate\Contracts\Auth\Guard::user(), map([
-        '' => \App\Models\CrmUser::class,
+        '' => \App\Models\User::class,
     ]));
     override(\Illuminate\Support\Facades\Auth::user(), map([
-        '' => \App\Models\CrmUser::class,
+        '' => \App\Models\User::class,
     ]));
     override(\request()->user(), map([
-        '' => \App\Models\CrmUser::class,
+        '' => \App\Models\User::class,
     ]));
     override(\Illuminate\Http\Request::user(), map([
-        '' => \App\Models\CrmUser::class,
+        '' => \App\Models\User::class,
     ]));
     override(\Illuminate\Support\Facades\Request::user(), map([
-        '' => \App\Models\CrmUser::class,
+        '' => \App\Models\User::class,
     ]));
 
     override(\config(), map([
@@ -2237,8 +2237,8 @@ namespace PHPSTORM_META {
 'auth.confirm-password','auth.forgot-password','auth.login','auth.register','auth.reset-password',
 'auth.verify-email','bills._item_calculation_script','bills.create','bills.edit','bills.index',
 'bills.show','components.back-to-parent_link','components.polymorphic-link','contacts._form','contacts.create',
-'contacts.edit','contacts.index','contacts.show','crm_users.create','crm_users.edit',
-'crm_users.index','crm_users.show','customers._form','customers.create','customers.edit',
+'contacts.edit','contacts.index','contacts.show','users.create','users.edit',
+'users.index','users.show','customers._form','customers.create','customers.edit',
 'customers.index','customers.show','dashboard','emails.quotations.sent','goods-receipts.create',
 'goods-receipts.show','home','invoices._form','invoices.create','invoices.edit',
 'invoices.index','journal_entries._form','journal_entries._form_scripts','journal_entries.create','journal_entries.edit',

@@ -7,7 +7,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Order;
 use App\Models\Quotation;
 use App\Models\Customer;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Address;
 use Illuminate\Support\Str;
 
@@ -20,7 +20,7 @@ class OrderSeeder extends Seeder
     {
         // Seed orders based on accepted quotations
         $acceptedQuotations = Quotation::where('status', 'Accepted')->with(['opportunity.customer', 'items'])->get();
-        $users = CrmUser::all();
+        $users = User::all();
 
         if ($acceptedQuotations->isEmpty() || $users->isEmpty()) {
             $this->command->info('Skipping OrderSeeder: Missing Accepted Quotations or Users.');

@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Models\TaxPayment;
 use App\Models\TaxRate;
 use App\Models\PurchaseOrder;
-use App\Models\CrmUser;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -38,7 +38,7 @@ class TaxPaymentFactory extends Factory
             'description' => $this->faker->sentence(),
             'status' => $this->faker->randomElement(['paid', 'pending', 'recovered']),
             'recovery_date' => $this->faker->optional(0.3)->dateTimeBetween('-1 year', 'now'),
-            'created_by_user_id' => CrmUser::factory(),
+            'created_by_user_id' => User::factory(),
         ];
     }
 
@@ -47,7 +47,7 @@ class TaxPaymentFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'purchase_order_id' => PurchaseOrder::factory()->forTenant($tenant),
             'tax_rate_id' => TaxRate::factory()->forTenant($tenant),
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+            'created_by_user_id' => User::factory()->forTenant($tenant),
         ]);
     }
 

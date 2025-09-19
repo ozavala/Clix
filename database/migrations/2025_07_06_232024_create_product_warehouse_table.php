@@ -19,6 +19,10 @@ return new class extends Migration
             $table->timestamps();
             
             $table->unique(['product_id', 'warehouse_id']);
+        
+            // Add individual indexes for specific query patterns
+            $table->index('product_id', 'product_warehouse_product_id_index');
+            $table->index('warehouse_id', 'product_warehouse_warehouse_id_index');
         });
     }
 

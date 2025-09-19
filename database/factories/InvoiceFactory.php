@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Customer;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Order;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -30,7 +30,7 @@ class InvoiceFactory extends Factory
         $order = Order::factory()->forTenant($tenant, $customer)->create();
         $createdBy = $authUser && $authUser->tenant_id === ($tenant->id ?? null)
             ? $authUser
-            : CrmUser::factory()->forTenant($tenant)->create();
+            : User::factory()->forTenant($tenant)->create();
 
         return [
             'tenant_id' => $tenant->id,
@@ -55,7 +55,7 @@ class InvoiceFactory extends Factory
             'tenant_id' => $tenant->id,
             'order_id' => Order::factory()->forTenant($tenant),
             'customer_id' => $customer ? $customer->customer_id : Customer::factory()->forTenant($tenant),
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+            'created_by_user_id' => User::factory()->forTenant($tenant),
         ]);
     }
 

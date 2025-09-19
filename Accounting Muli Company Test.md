@@ -6,7 +6,7 @@ This report reviews the logic in `tests/Feature/AccountingMultiCompanyTest.php` 
 
 - The test correctly aims to validate multi-tenant isolation for Accounts, Journal Entries, Tax Reports and Financial Reports across two companies and a super admin user.
 - There are several mismatches between the test assumptions and the actual application structure, especially route names and tenant scoping. These will cause false failures.
-- A few model details (e.g., primary key of `CrmUser`) are handled correctly in places, but `is_super_admin` mass assignment can fail due to model fillable settings.
+- A few model details (e.g., primary key of `User`) are handled correctly in places, but `is_super_admin` mass assignment can fail due to model fillable settings.
 
 ## Strengths
 
@@ -30,8 +30,8 @@ This report reviews the logic in `tests/Feature/AccountingMultiCompanyTest.php` 
    - In `tests/TestCase.php`, `setUp()` sets `request()->merge(['tenant_id' => $this->tenant->id]);` and `config(['tenant_id' => $this->tenant->id]);` using a default tenant created by the base test.
    - In `AccountingMultiCompanyTest`, you `actingAs($this->user1)` or `actingAs($this->user2)`, but you do not update the request/config tenant context accordingly. If controllers rely on `request('tenant_id')` or `config('tenant_id')` for scoping (which is common), the data may be scoped to the wrong tenant, causing false positives/negatives.
 
-3. __`CrmUser` mass-assignment for `is_super_admin`__
-   - The model `app/Models/CrmUser.php` defines `$fillable` without `is_super_admin`. Creating users with `['is_super_admin' => true]` (as the test does) risks a `MassAssignmentException` or simply ignores the attribute, depending on how the model is configured.
+3. __`User` mass-assignment for `is_super_admin`__
+   - The model `app/Models/User.php` defines `$fillable` without `is_super_admin`. Creating users with `['is_super_admin' => true]` (as the test does) risks a `MassAssignmentException` or simply ignores the attribute, depending on how the model is configured.
    - The factory also has a `superAdmin()` state that sets `is_super_admin`, which has the same risk.
 
 4. __Brittle HTML content assertions__
@@ -56,7 +56,7 @@ This report reviews the logic in `tests/Feature/AccountingMultiCompanyTest.php` 
    - After each `actingAs($user)`, set the tenant context to the user’s tenant:
      ```php
      // In tests, a small helper can keep this DRY
-     private function actAsWithTenant(\App\Models\CrmUser $user): void
+     private function actAsWithTenant(\App\Models\User $user): void
      {
          $this->actingAs($user);
          request()->merge(['tenant_id' => $user->tenant_id]);
@@ -66,7 +66,7 @@ This report reviews the logic in `tests/Feature/AccountingMultiCompanyTest.php` 
      Then replace calls like `$this->actingAs($this->user1);` with `$this->actAsWithTenant($this->user1);`.
 
 3. __Allow mass assignment of `is_super_admin` or set it explicitly__
-   - Option A: Add `is_super_admin` to `$fillable` in `app/Models/CrmUser.php`:
+   - Option A: Add `is_super_admin` to `$fillable` in `app/Models/User.php`:
      ```php
      protected $fillable = [
          'tenant_id', 'username', 'full_name', 'email', 'password', 'locale', 'is_super_admin'
@@ -74,7 +74,7 @@ This report reviews the logic in `tests/Feature/AccountingMultiCompanyTest.php` 
      ```
    - Option B: In tests, set the attribute post-creation to bypass mass-assignment:
      ```php
-     $user = CrmUser::factory()->create([...]);
+     $user = User::factory()->create([...]);
      $user->forceFill(['is_super_admin' => true])->save();
      ```
 
@@ -102,7 +102,7 @@ This report reviews the logic in `tests/Feature/AccountingMultiCompanyTest.php` 
 
 - __Tenant context helper in the test class__:
 ```php
-private function actAsWithTenant(\App\Models\CrmUser $user): void
+private function actAsWithTenant(\App\Models\User $user): void
 {
     $this->actingAs($user);
     request()->merge(['tenant_id' => $user->tenant_id]);
@@ -112,7 +112,7 @@ private function actAsWithTenant(\App\Models\CrmUser $user): void
 
 - __Fix super admin creation__:
 ```php
-$this->superAdmin = CrmUser::factory()->create([
+$this->superAdmin = User::factory()->create([
     'tenant_id' => $this->company1->id,
 ]);
 $this->superAdmin->forceFill(['is_super_admin' => true])->save();

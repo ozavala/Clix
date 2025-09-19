@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Customer;
 use App\Models\Lead;
 use App\Models\Invoice;
@@ -19,7 +19,7 @@ class IntegrationTest extends TestCase
     use RefreshDatabase;
 
     protected int $obLevel;
-    protected CrmUser $user;
+    protected User $user;
 
     protected function setUp(): void
     {
@@ -51,7 +51,7 @@ class IntegrationTest extends TestCase
         $role->permissions()->attach(Permission::pluck('permission_id'));
 
         // Create user and assign role within current tenant
-        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
+        $this->user = User::factory()->forTenant($this->tenant)->create();
         $this->user->roles()->attach($role->role_id);
         
         $this->actingAs($this->user, 'crm');

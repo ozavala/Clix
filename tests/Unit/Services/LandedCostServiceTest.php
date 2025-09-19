@@ -2,7 +2,7 @@
 
 namespace Tests\Unit\Services;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\LandedCost;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
@@ -36,7 +36,7 @@ class LandedCostServiceTest extends TestCase
             'status' => 'Draft',
             'subtotal' => 1000.00,
             'total_amount' => 1000.00,
-            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
+            'created_by_user_id' => User::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         $product1 = Product::factory()->forTenant($this->tenant)->create([
@@ -48,7 +48,7 @@ class LandedCostServiceTest extends TestCase
             'quantity_on_hand' => 10,
             'is_service' => false,
             'is_active' => true,
-            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
+            'created_by_user_id' => User::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         $product2 = Product::factory()->forTenant($this->tenant)->create([
@@ -60,7 +60,7 @@ class LandedCostServiceTest extends TestCase
             'quantity_on_hand' => 10,
             'is_service' => false,
             'is_active' => true,
-            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
+            'created_by_user_id' => User::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         // Create items with specific values
@@ -145,7 +145,7 @@ class LandedCostServiceTest extends TestCase
             'status' => 'Draft',
             'subtotal' => 100.00,
             'total_amount' => 100.00,
-            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
+            'created_by_user_id' => User::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         $product = Product::factory()->forTenant($this->tenant)->create([
@@ -157,7 +157,7 @@ class LandedCostServiceTest extends TestCase
             'quantity_on_hand' => 10,
             'is_service' => false,
             'is_active' => true,
-            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
+            'created_by_user_id' => User::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         $item = PurchaseOrderItem::factory()->forTenant($this->tenant)->create([
@@ -244,7 +244,7 @@ class LandedCostServiceTest extends TestCase
             'status' => 'Draft',
             'subtotal' => 1000.00,
             'total_amount' => 1000.00,
-            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
+            'created_by_user_id' => User::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         \Log::info("Created PO with ID: " . $purchaseOrder->purchase_order_id);
@@ -258,7 +258,7 @@ class LandedCostServiceTest extends TestCase
             'quantity_on_hand' => 10,
             'is_service' => false,
             'is_active' => true,
-            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
+            'created_by_user_id' => User::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         \Log::info("Created product with ID: " . $product->product_id);
@@ -317,7 +317,7 @@ class LandedCostServiceTest extends TestCase
             'status' => 'Draft',
             'subtotal' => 1000.00,
             'total_amount' => 1000.00,
-            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
+            'created_by_user_id' => User::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         $product = Product::factory()->forTenant($this->tenant)->create([
@@ -329,7 +329,7 @@ class LandedCostServiceTest extends TestCase
             'quantity_on_hand' => 10,
             'is_service' => false,
             'is_active' => true,
-            'created_by_user_id' => CrmUser::factory()->forTenant($this->tenant)->create()->user_id,
+            'created_by_user_id' => User::factory()->forTenant($this->tenant)->create()->user_id,
         ]);
 
         // Create a single item

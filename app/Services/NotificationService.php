@@ -7,7 +7,7 @@ use App\Models\Invoice;
 use App\Models\Order;
 use App\Models\Product;
 use App\Models\Customer;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Payment;
 use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Notification;
@@ -34,7 +34,7 @@ class NotificationService
 
         if (!empty($lowStockWarehouses)) {
             // Enviar notificación a administradores
-            $admins = CrmUser::whereHas('roles', function ($query) {
+            $admins = User::whereHas('roles', function ($query) {
                 $query->where('name', 'admin');
             })->get();
 
@@ -54,7 +54,7 @@ class NotificationService
             // Mail::to($customer->email)->send(new OverdueInvoiceReminder($invoice));
             
             // Notificar al equipo de ventas
-            $salesTeam = CrmUser::whereHas('roles', function ($query) {
+            $salesTeam = User::whereHas('roles', function ($query) {
                 $query->where('name', 'sales');
             })->get();
 
@@ -123,7 +123,7 @@ class NotificationService
             })->count(),
         ];
 
-        $admins = CrmUser::whereHas('roles', function ($query) {
+        $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'admin');
         })->get();
 
@@ -141,7 +141,7 @@ class NotificationService
             });
         });
 
-        $admins = CrmUser::whereHas('roles', function ($query) {
+        $admins = User::whereHas('roles', function ($query) {
             $query->where('name', 'admin');
         })->get();
 

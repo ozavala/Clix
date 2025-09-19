@@ -6,14 +6,13 @@ use App\Models\Address;
 use App\Models\Bill;
 use App\Models\Contact;
 use App\Models\Customer;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Invoice;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
-use App\Models\User;
 use App\Models\UserRole;
 use App\Models\Warehouse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -67,7 +66,7 @@ class TestHelper
     public static function createSalesProcess(): array
     {
         $customer = Customer::factory()->create();
-        $user = CrmUser::factory()->create();
+        $user = User::factory()->create();
         $product = Product::factory()->create();
         
         $order = Order::factory()

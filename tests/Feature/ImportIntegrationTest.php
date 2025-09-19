@@ -9,7 +9,7 @@ use App\Models\PurchaseOrderItem;
 use App\Models\LandedCost;
 use App\Models\Bill;
 use App\Models\Payment;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Services\LandedCostService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -20,12 +20,12 @@ class ImportIntegrationTest extends TestCase
 {
     use RefreshDatabase;
 
-    protected CrmUser $user;
+    protected User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
+        $this->user = User::factory()->forTenant($this->tenant)->create();
         $this->actingAs($this->user);
     }
 

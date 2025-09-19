@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('email_templates', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->string('name');
             $table->string('subject');
             $table->text('content');
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->json('settings')->nullable(); // Configuraciones de la plantilla
             $table->boolean('is_active')->default(true);
             $table->unsignedBigInteger('created_by');
-            $table->foreign('created_by')->references('user_id')->on('crm_users')->onDelete('cascade');
+            $table->foreign('created_by')->references('user_id')->on('users')->onDelete('cascade');
             $table->timestamps();
             
             $table->index(['type', 'is_active']);

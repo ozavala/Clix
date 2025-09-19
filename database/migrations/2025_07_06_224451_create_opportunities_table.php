@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('opportunities', function (Blueprint $table) {
             $table->id('opportunity_id');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
             $table->foreignId('lead_id')->nullable()->constrained('leads', 'lead_id')->onDelete('set null');
@@ -23,8 +23,8 @@ return new class extends Migration
             $table->decimal('amount', 15, 2)->nullable();
             $table->date('expected_close_date')->nullable();
             $table->string('probability')->nullable();
-            $table->foreignId('assigned_to_user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
-            $table->foreignId('created_by_user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
+            $table->foreignId('assigned_to_user_id')->nullable()->constrained('users', 'user_id')->onDelete('set null');
+            $table->foreignId('created_by_user_id')->nullable()->constrained('users', 'user_id')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
 

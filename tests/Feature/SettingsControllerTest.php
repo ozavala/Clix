@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Setting;
-use App\Models\CrmUser;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -19,7 +19,7 @@ class SettingsControllerTest extends TestCase
         $this->tenant = \App\Models\Tenant::factory()->create();
         
         // Create a user for the tenant
-        $this->user = \App\Models\CrmUser::factory()->forTenant($this->tenant)->create();
+        $this->user = \App\Models\User::factory()->forTenant($this->tenant)->create();
         
         // Seed settings for the tenant
         $this->seed(\Database\Seeders\SettingsTableSeeder::class);

@@ -10,7 +10,7 @@ use App\Models\PurchaseOrderItem;
 use App\Models\GoodsReceipt;
 use App\Models\GoodsReceiptItem;
 use App\Models\Payment;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Warehouse;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -22,7 +22,7 @@ class PurchaseOrderStatusFlowSeeder extends Seeder
     {
         $faker = Faker::create();
         // Create a user for the process
-        $user = CrmUser::factory()->create();
+        $user = User::factory()->create();
         $warehouse = Warehouse::factory()->create();
 
         // Create suppliers

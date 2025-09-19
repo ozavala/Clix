@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Tenant;
 
 /**
- * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\CrmUser>
+ * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\User>
  */
 class CrmUserFactory extends Factory
 {

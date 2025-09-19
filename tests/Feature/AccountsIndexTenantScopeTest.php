@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Account;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
@@ -15,11 +15,11 @@ class AccountsIndexTenantScopeTest extends TestCase
 
     protected Tenant $company1;
     protected Tenant $company2;
-    protected CrmUser $user1;
-    protected CrmUser $user2;
-    protected CrmUser $superAdmin;
+    protected User $user1;
+    protected User $user2;
+    protected User $superAdmin;
 
-    private function actAsWithTenant(\App\Models\CrmUser $user): void
+    private function actAsWithTenant(\App\Models\User $user): void
     {
         $this->actingAs($user);
         request()->merge(['tenant_id' => $user->tenant_id]);
@@ -43,10 +43,10 @@ class AccountsIndexTenantScopeTest extends TestCase
             'address' => '456 Oak Ave',
         ]);
 
-        $this->user1 = CrmUser::factory()->create(['tenant_id' => $this->company1->id]);
-        $this->user2 = CrmUser::factory()->create(['tenant_id' => $this->company2->id]);
+        $this->user1 = User::factory()->create(['tenant_id' => $this->company1->id]);
+        $this->user2 = User::factory()->create(['tenant_id' => $this->company2->id]);
 
-        $this->superAdmin = CrmUser::factory()->create(['tenant_id' => $this->company1->id]);
+        $this->superAdmin = User::factory()->create(['tenant_id' => $this->company1->id]);
         $this->superAdmin->forceFill(['is_super_admin' => true])->save();
 
         // Accounts for company 1

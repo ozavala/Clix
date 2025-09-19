@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Tenant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Auth;
@@ -51,7 +51,7 @@ class RegistrationTest extends TestCase
             ->post('/register', $userData);
         
         // Check the database directly
-        $user = CrmUser::where('email', $email)->first();
+        $user = User::where('email', $email)->first();
         $this->assertNotNull($user, 'User was not created in the database');
         
         // Verify the response
@@ -65,7 +65,7 @@ class RegistrationTest extends TestCase
     public function test_email_verification_after_registration(): void
     {
         $tenant = Tenant::factory()->create();
-        $user = CrmUser::factory()->unverified()->create([
+        $user = User::factory()->unverified()->create([
             'tenant_id' => $tenant->id,
             'email_verified_at' => null,
         ]);
@@ -86,7 +86,7 @@ class RegistrationTest extends TestCase
     public function test_tenant_switching_after_registration(): void
     {
         $tenant = Tenant::factory()->create();
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'tenant_id' => $tenant->id,
         ]);
         
@@ -142,7 +142,7 @@ class RegistrationTest extends TestCase
     {
         $tenant = Tenant::factory()->create();
         $password = 'password';
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'tenant_id' => $tenant->id,
             'password' => Hash::make($password),
         ]);
@@ -159,7 +159,7 @@ class RegistrationTest extends TestCase
 
     public function test_logout_functionality()
     {
-        $user = CrmUser::factory()->create();
+        $user = User::factory()->create();
         
         $response = $this->actingAs($user, 'crm')
             ->post('/logout');

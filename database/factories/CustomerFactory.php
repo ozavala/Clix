@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Customer;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -45,7 +45,7 @@ class CustomerFactory extends Factory
         }
         
         if (!isset($this->created_by_user_id)) {
-            $data['created_by_user_id'] = CrmUser::inRandomOrder()->first()->user_id ?? CrmUser::factory();
+            $data['created_by_user_id'] = User::inRandomOrder()->first()->user_id ?? User::factory();
         }
         
         // Configure the factory to create a contact when a customer is created
@@ -70,7 +70,7 @@ class CustomerFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $tenant->id,
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+            'created_by_user_id' => User::factory()->forTenant($tenant),
         ]);
     }
 

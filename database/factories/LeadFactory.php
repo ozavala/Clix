@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Customer;
 use App\Models\Lead;
 use App\Models\Tenant;
@@ -28,8 +28,8 @@ class LeadFactory extends Factory
             'status' => $this->faker->randomElement(['New', 'Contacted', 'Qualified']),
             'source' => $this->faker->randomElement(['Website', 'Referral', 'Cold Call']),
             'customer_id' => Customer::factory(),
-            'assigned_to_user_id' => CrmUser::factory(),
-            'created_by_user_id' => CrmUser::factory(),
+            'assigned_to_user_id' => User::factory(),
+            'created_by_user_id' => User::factory(),
         ];
     }
 
@@ -38,8 +38,8 @@ class LeadFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $tenant->id,
             'customer_id' => Customer::factory()->forTenant($tenant),
-            'assigned_to_user_id' => CrmUser::factory()->forTenant($tenant),
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+            'assigned_to_user_id' => User::factory()->forTenant($tenant),
+            'created_by_user_id' => User::factory()->forTenant($tenant),
         ]);
     }
 }

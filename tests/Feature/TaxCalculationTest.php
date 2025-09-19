@@ -20,7 +20,7 @@ class TaxCalculationTest extends TestCase
         $this->tenant = \App\Models\Tenant::factory()->create();
         
         // Create a user for the tenant
-        $user = \App\Models\CrmUser::factory()->forTenant($this->tenant)->create();
+        $user = \App\Models\User::factory()->forTenant($this->tenant)->create();
         $this->actingAs($user, 'crm');
         
         // Create tax settings for the tenant

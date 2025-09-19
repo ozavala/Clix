@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Models\Product;
 use App\Models\ProductCategory;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\TaxRate;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -39,7 +39,7 @@ class ProductFactory extends Factory
             'is_active' => true,
             'created_by_user_id' => $authUser && $authUser->tenant_id === ($tenant->id ?? null)
                 ? $authUser->user_id
-                : CrmUser::factory()->forTenant($tenant)->create()->user_id, // Pass tenant to CrmUser
+                : User::factory()->forTenant($tenant)->create()->user_id, // Pass tenant to User
             'category_id' => ProductCategory::factory()->forTenant($tenant)->create()->category_id, // Pass tenant to ProductCategory
             'tax_rate_id' => TaxRate::factory()->forTenant($tenant)->create()->tax_rate_id, // Pass tenant to TaxRate
             'is_taxable' => fake()->boolean(80), // 80% de productos pagan IVA
@@ -53,7 +53,7 @@ class ProductFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $tenant->id,
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant)->create()->user_id,
+            'created_by_user_id' => User::factory()->forTenant($tenant)->create()->user_id,
             'category_id' => $category ? $category->category_id : ProductCategory::factory()->forTenant($tenant)->create()->category_id,
             'tax_rate_id' => TaxRate::factory()->forTenant($tenant)->create()->tax_rate_id,
         ]);

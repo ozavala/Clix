@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Customer;
 use App\Models\Note;
 use App\Models\Opportunity;
@@ -16,14 +16,14 @@ class NoteFeatureTest extends TestCase
     use RefreshDatabase, WithFaker;
 
     protected int $obLevel;
-    protected CrmUser $user;
+    protected User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
         // Track initial output buffer level to prevent PHPUnit risky warnings
         $this->obLevel = ob_get_level();
-        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
+        $this->user = User::factory()->forTenant($this->tenant)->create();
         $this->actingAs($this->user, 'crm');
         // Asignar permiso necesario para ver clientes y asociar notas
         // Esto es requerido por la lógica de autorización en notas y clientes

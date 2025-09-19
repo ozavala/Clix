@@ -6,7 +6,7 @@ use App\Models\Lead;
 use App\Models\Customer;
 use App\Models\Opportunity;
 use App\Http\Requests\StoreActivityRequest;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Activity; // Add Activity model
 use App\Http\Requests\StoreLeadRequest;
 use App\Http\Requests\UpdateLeadRequest;
@@ -75,7 +75,7 @@ class LeadController extends TenantAwareController
         // Data for filter dropdowns
         $filterStatuses = $this->leadStatuses;
         $filterSources = $this->leadSources;
-        $crmUsers = CrmUser::orderBy('full_name')->pluck('full_name', 'user_id');
+        $crmUsers = User::orderBy('full_name')->pluck('full_name', 'user_id');
 
         return view('leads.index', compact('leads', 'filterStatuses', 'filterSources', 'crmUsers'));
     }
@@ -87,7 +87,7 @@ class LeadController extends TenantAwareController
         $statuses = $this->leadStatuses;
         $sources = $this->leadSources;
         $customers = Customer::orderBy('first_name')->orderBy('last_name')->get();
-        $crmUsers = CrmUser::orderBy('full_name')->get();
+        $crmUsers = User::orderBy('full_name')->get();
         return view('leads.create', compact('statuses', 'sources', 'customers', 'crmUsers'));
     }
 
@@ -126,7 +126,7 @@ class LeadController extends TenantAwareController
         $statuses = $this->leadStatuses;
         $sources = $this->leadSources;
         $customers = Customer::orderBy('first_name')->orderBy('last_name')->get();
-        $crmUsers = CrmUser::orderBy('full_name')->get();
+        $crmUsers = User::orderBy('full_name')->get();
         return view('leads.edit', compact('lead', 'statuses', 'sources', 'customers', 'crmUsers'));
     }
 

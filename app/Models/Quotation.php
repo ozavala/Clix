@@ -61,7 +61,7 @@ class Quotation extends Model
 
     public function createdBy(): BelongsTo
     {
-        return $this->belongsTo(CrmUser::class, 'created_by_user_id', 'user_id');
+        return $this->belongsTo(User::class, 'created_by_user_id', 'user_id');
     }
 
     public function tenant(): BelongsTo

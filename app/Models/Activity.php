@@ -32,6 +32,6 @@ class Activity extends Model
     public function user(): BelongsTo
     {
         // User who performed/logged the activity
-        return $this->belongsTo(CrmUser::class, 'user_id', 'user_id');
+        return $this->belongsTo(User::class, 'user_id', 'user_id');
     }
 }

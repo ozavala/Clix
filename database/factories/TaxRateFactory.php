@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\TaxRate;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -40,7 +40,7 @@ class TaxRateFactory extends Factory
             'is_active' => $this->faker->boolean(90), // 90% chance of being active
             'is_default' => $selectedRate['rate'] === 21.00, // IVA General como default
             'created_by_user_id' => function (array $attributes) {
-                return CrmUser::factory()->forTenant($attributes['tenant_id'])->create()->user_id;
+                return User::factory()->forTenant($attributes['tenant_id'])->create()->user_id;
             },
         ];
     }
@@ -49,7 +49,7 @@ class TaxRateFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $tenant->id,
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+            'created_by_user_id' => User::factory()->forTenant($tenant),
         ]);
     }
 

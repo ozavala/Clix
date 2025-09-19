@@ -2,7 +2,7 @@
 
 namespace Tests\Feature;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 use Tests\TestCase;
@@ -30,7 +30,7 @@ class LandingLoginTest extends TestCase
      */
     public function test_authenticated_user_can_access_landing(): void
     {
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'email' => $this->faker->unique()->safeEmail,
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
@@ -51,7 +51,7 @@ class LandingLoginTest extends TestCase
         $token = $this->getTokenFromResponse($response);
 
         $email = $this->faker->unique()->safeEmail;
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'email' => $email,
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
@@ -72,7 +72,7 @@ class LandingLoginTest extends TestCase
      */
     public function test_unverified_user_cannot_access_dashboard(): void
     {
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'email' => $this->faker->unique()->safeEmail,
             'password' => bcrypt('password'),
             'email_verified_at' => null,
@@ -88,7 +88,7 @@ class LandingLoginTest extends TestCase
      */
     public function test_verified_user_can_access_dashboard(): void
     {
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'email' => $this->faker->unique()->safeEmail,
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
@@ -104,7 +104,7 @@ class LandingLoginTest extends TestCase
      */
     public function test_unverified_user_can_access_dashboard_in_development(): void
     {
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'email' => $this->faker->unique()->safeEmail,
             'password' => bcrypt('password'),
             'email_verified_at' => null, // Usuario no verificado
@@ -124,7 +124,7 @@ class LandingLoginTest extends TestCase
         $token = $this->getTokenFromResponse($response);
 
         $email = $this->faker->unique()->safeEmail;
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'email' => $email,
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
@@ -164,7 +164,7 @@ class LandingLoginTest extends TestCase
         $token = $this->getTokenFromResponse($response);
 
         $email = $this->faker->unique()->safeEmail;
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'email' => $email,
             'password' => bcrypt('password'),
             'email_verified_at' => now(),
@@ -196,7 +196,7 @@ class LandingLoginTest extends TestCase
         $token = $this->getTokenFromResponse($response);
 
         $email = $this->faker->unique()->safeEmail;
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'email' => $email,
             'password' => bcrypt('password'),
             'email_verified_at' => now(),

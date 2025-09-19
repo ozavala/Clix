@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Models\Bill;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Auth;
@@ -29,7 +29,7 @@ class BillFactory extends Factory
         $po = PurchaseOrder::factory()->forTenant($tenant)->create();
         $createdBy = $authUser && $authUser->tenant_id === ($tenant->id ?? null)
             ? $authUser
-            : CrmUser::factory()->forTenant($tenant)->create();
+            : User::factory()->forTenant($tenant)->create();
 
         return [
             'tenant_id' => $tenant->id,

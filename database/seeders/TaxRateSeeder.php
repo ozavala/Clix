@@ -5,7 +5,7 @@ namespace Database\Seeders;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\TaxRate;
-use App\Models\CrmUser;
+use App\Models\User;
 
 class TaxRateSeeder extends Seeder
 {
@@ -15,7 +15,7 @@ class TaxRateSeeder extends Seeder
     public function run(): void
     {
         // Obtener un usuario para asignar como creador
-        $user = CrmUser::first() ?? CrmUser::factory()->create();
+        $user = User::first() ?? User::factory()->create();
 
         // Tasas de IVA para Ecuador
         TaxRate::create([
@@ -114,7 +114,7 @@ class TaxRateSeeder extends Seeder
         $this->createTaxRatesForCountry('CO', $user);
     }
 
-    private function createTaxRatesForCountry(string $countryCode, CrmUser $user): void
+    private function createTaxRatesForCountry(string $countryCode, User $user): void
     {
         $taxRates = $this->getTaxRatesForCountry($countryCode);
 

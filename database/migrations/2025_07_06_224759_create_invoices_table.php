@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('invoices', function (Blueprint $table) {
             $table->id('invoice_id');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->foreignId('order_id')->nullable()->constrained('orders', 'order_id')->onDelete('cascade');
             $table->foreignId('quotation_id')->nullable()->constrained('quotations', 'quotation_id')->onDelete('set null');
             $table->foreignId('customer_id')->constrained('customers', 'customer_id')->onDelete('cascade');
@@ -32,7 +32,7 @@ return new class extends Migration
             $table->decimal('amount_paid', 15, 2)->default(0.00);
             $table->text('terms_and_conditions')->nullable();
             $table->text('notes')->nullable();
-            $table->foreignId('created_by_user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
+            $table->foreignId('created_by_user_id')->nullable()->constrained('users', 'user_id')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
 

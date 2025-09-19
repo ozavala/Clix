@@ -24,9 +24,9 @@ class StoreCrmUserRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'username' => 'required|string|max:100|unique:crm_users,username',
+            'username' => 'required|string|max:100|unique:users,username',
             'full_name' => 'required|string|max:255',
-            'email' => 'required|string|email|max:255|unique:crm_users,email',
+            'email' => 'required|string|email|max:255|unique:users,email',
             'password' => 'required|string|min:8|confirmed',
             'roles' => 'nullable|array',
             'roles.*' => 'integer|exists:user_roles,role_id',

@@ -6,7 +6,7 @@ use Tests\TestCase;
 use App\Models\Order;
 use App\Models\Customer;
 use App\Models\Product;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Permission;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -14,13 +14,13 @@ use PHPUnit\Framework\Attributes\Test;
 
 class OrderControllerTest extends TestCase
 {
-    protected CrmUser $user;
+    protected User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
         $this->seed(\Database\Seeders\SettingsTableSeeder::class);
-        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
+        $this->user = User::factory()->forTenant($this->tenant)->create();
         $this->actingAs($this->user, 'crm');
         // Asignar permisos necesarios para gestión de órdenes
         // Esto es requerido por la lógica de autorización en el controlador de órdenes

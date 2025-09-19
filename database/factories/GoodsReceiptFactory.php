@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Models\GoodsReceipt;
 use App\Models\PurchaseOrder;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Warehouse;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
@@ -17,7 +17,7 @@ class GoodsReceiptFactory extends Factory
     {
         return [
             'purchase_order_id' => PurchaseOrder::factory(),
-            'received_by_user_id' => CrmUser::factory(),
+            'received_by_user_id' => User::factory(),
             'warehouse_id' => Warehouse::factory(),
             'receipt_number' => 'GR-' . strtoupper(Str::random(8)),
             'receipt_date' => $this->faker->dateTimeBetween('-1 month', 'now'),
@@ -30,7 +30,7 @@ class GoodsReceiptFactory extends Factory
     {
         return $this->state(fn (array $attributes) => [
             'purchase_order_id' => PurchaseOrder::factory()->forTenant($tenant),
-            'received_by_user_id' => CrmUser::factory()->forTenant($tenant),
+            'received_by_user_id' => User::factory()->forTenant($tenant),
             'warehouse_id' => Warehouse::factory()->forTenant($tenant),
         ]);
     }

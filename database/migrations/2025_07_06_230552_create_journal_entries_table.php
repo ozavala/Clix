@@ -14,11 +14,11 @@ return new class extends Migration
         Schema::create('journal_entries', function (Blueprint $table) {
             $table->id('journal_entry_id');
             $table->string('transaction_type')->nullable();
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->date('entry_date');
             $table->string('reference_number')->nullable();
             $table->text('description')->nullable();
-            $table->foreignId('created_by_user_id')->constrained('crm_users', 'user_id');
+            $table->foreignId('created_by_user_id')->constrained('users', 'user_id');
             $table->unsignedBigInteger('referenceable_id')->nullable();
             $table->string('referenceable_type')->nullable();
             $table->timestamps();

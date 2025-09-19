@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
-use App\Models\CrmUser; // Adjust the namespace according to your application structure
+use App\Models\User; // Adjust the namespace according to your application structure
 use App\Models\UserRole;
 
 class CrmUserSeeder extends Seeder
@@ -15,8 +15,8 @@ class CrmUserSeeder extends Seeder
     public function run(): void
     {
         // Only create users if they don't already exist
-        if (!CrmUser::where('username', 'admin')->exists()) {
-            $adminUser = CrmUser::create([
+        if (!User::where('username', 'admin')->exists()) {
+            $adminUser = User::create([
                 'tenant_id' => 1,
                 'username' => 'admin',
                 'full_name' => 'Admin User',
@@ -26,8 +26,8 @@ class CrmUserSeeder extends Seeder
             ]);
         }
 
-        if (!CrmUser::where('username', 'sales')->exists()) {
-            $salesUser = CrmUser::create([
+        if (!User::where('username', 'sales')->exists()) {
+            $salesUser = User::create([
                 'tenant_id' => 1,
                 'username' => 'sales',
                 'full_name' => 'Sales User',
@@ -37,8 +37,8 @@ class CrmUserSeeder extends Seeder
             ]);
         }
 
-        if (!CrmUser::where('username', 'support')->exists()) {
-            $supportUser = CrmUser::create([
+        if (!User::where('username', 'support')->exists()) {
+            $supportUser = User::create([
                 'tenant_id' => 1,
                 'username' => 'support',
                 'full_name' => 'Support User',
@@ -48,8 +48,8 @@ class CrmUserSeeder extends Seeder
             ]);
         }
 
-        if (!CrmUser::where('username', 'marketing')->exists()) {
-            $marketingUser = CrmUser::create([
+        if (!User::where('username', 'marketing')->exists()) {
+            $marketingUser = User::create([
                 'tenant_id' => 1,
                 'username' => 'marketing',
                 'full_name' => 'Marketing User',
@@ -60,10 +60,10 @@ class CrmUserSeeder extends Seeder
         }
 
         // Get users to assign roles
-        $adminUser = CrmUser::where('username', 'admin')->first();
-        $salesUser = CrmUser::where('username', 'sales')->first();
-        $supportUser = CrmUser::where('username', 'support')->first();
-        $marketingUser = CrmUser::where('username', 'marketing')->first();
+        $adminUser = User::where('username', 'admin')->first();
+        $salesUser = User::where('username', 'sales')->first();
+        $supportUser = User::where('username', 'support')->first();
+        $marketingUser = User::where('username', 'marketing')->first();
         
         // Get roles
         $adminRole = UserRole::where('name', 'Admin')->first();

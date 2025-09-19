@@ -2,36 +2,40 @@
 
 namespace App\Models;
 
-// use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
-use Illuminate\Foundation\Auth\User as Authenticatable;
-use Illuminate\Notifications\Notifiable;
-use Laravel\Sanctum\HasApiTokens;
-use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Contracts\Auth\MustVerifyEmail;
+use Illuminate\Notifications\Notifiable;
+use App\Models\UserRole; // Ensure you have the correct namespace for UserRole
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class User extends Authenticatable
+ 
+class User extends Authenticatable implements MustVerifyEmail
 {
-    /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens;
+    use HasFactory, Notifiable;
+
+    protected $primaryKey = 'user_id';
 
     /**
      * The attributes that are mass assignable.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $fillable = [
-        'name',
-        'email',
-        'password',
         'tenant_id',
+        'username',
+        'full_name',
+        'email',
         'is_super_admin',
+        'password',
+        'locale',
     ];
 
     /**
      * The attributes that should be hidden for serialization.
      *
-     * @var list<string>
+     * @var array<int, string>
      */
     protected $hidden = [
         'password',
@@ -48,27 +52,97 @@ class User extends Authenticatable
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
-            'is_super_admin' => 'boolean',
-            'tenant_id' => 'integer',
         ];
     }
 
     /**
-     * Get the tenant that the user belongs to.
+     * Determine if the user has verified their email address.
+     * En desarrollo, siempre retorna true para evitar problemas de verificación.
      */
-    public function tenant(): BelongsTo
+    public function hasVerifiedEmail(): bool
     {
-        return $this->belongsTo(Tenant::class);
+        if (app()->environment('local', 'development')) {
+            return true;
+        }
+        
+        return ! is_null($this->email_verified_at);
     }
 
     /**
-     * The tenants that the user has access to.
+     * Mark the given user's email as verified.
      */
-    public function tenants(): BelongsToMany
+    public function markEmailAsVerified(): bool
     {
-        return $this->belongsToMany(Tenant::class, 'crm_user_tenat')
-            ->withTimestamps()
-            ->withPivot('is_owner');
+        if (app()->environment('local', 'development')) {
+            return true;
+        }
+        
+        return $this->forceFill([
+            'email_verified_at' => $this->freshTimestamp(),
+        ])->save();
+    }
+
+    /**
+     * Send the email verification notification.
+     */
+    public function sendEmailVerificationNotification(): void
+    {
+        if (app()->environment('local', 'development')) {
+            return; // No enviar emails en desarrollo
+        }
+        
+        parent::sendEmailVerificationNotification();
+    }
+
+    /**
+     * The roles that belong to the CRM user.
+     */
+    public function roles()
+    {
+        return $this->belongsToMany(UserRole::class, 'crm_user_user_role', 'crm_user_id', 'role_id')->withTimestamps();
+    }
+    public function hasPermissionTo(string $permissionName): bool
+    {
+        return $this->roles()->whereHas('permissions', function ($query) use ($permissionName) {
+            $query->where('name', $permissionName);
+        })->exists();
+    }
+
+    /**
+     * Accessor for the 'name' attribute, for compatibility with Breeze.
+     */
+    public function getNameAttribute(): string
+    {
+        return $this->full_name;
+    }
+
+    public function tenant(): BelongsTo
+    {
+        return $this->belongsTo(Tenant::class, 'tenant_id');
+    }
+
+    /**
+     * The tenants that belong to the user.
+     */
+    /**
+     * The tenants that belong to the user.
+     */
+    /**
+     * The tenants that belong to the user.
+     */
+    public function tenants()
+    {
+        return $this->belongsToMany(Tenant::class, 'crm_user_tenant', 'crm_user_id', 'tenant_id')
+            ->withPivot('is_primary')
+            ->withTimestamps();
+    }
+
+    /**
+     * Get the user's primary tenant.
+     */
+    public function primaryTenant()
+    {
+        return $this->tenants()->wherePivot('is_primary', true)->first();
     }
 
     /**
@@ -76,22 +150,7 @@ class User extends Authenticatable
      */
     public function isSuperAdmin(): bool
     {
-        return (bool) $this->is_super_admin;
-    }
-
-    /**
-     * Check if the user is an owner of the given tenant.
-     */
-    public function isTenantOwner(Tenant $tenant): bool
-    {
-        if ($this->isSuperAdmin()) {
-            return true;
-        }
-
-        return $this->tenants()
-            ->where('tenant_id', $tenant->id)
-            ->wherePivot('is_owner', true)
-            ->exists();
+        return $this->roles()->where('name', 'superadmin')->exists();
     }
 
     /**
@@ -102,20 +161,38 @@ class User extends Authenticatable
         if ($this->isSuperAdmin()) {
             return true;
         }
-
-        return $this->tenants()->where('tenant_id', $tenant->id)->exists() || 
-               $this->tenant_id === $tenant->id;
+        return $this->tenants()->where('tenant_id', $tenant->id)->exists();
     }
 
     /**
-     * Get the current tenant for the user.
+     * Set the user's primary tenant.
      */
-    public function getCurrentTenantAttribute(): ?Tenant
+    public function setPrimaryTenant(Tenant $tenant): void
     {
-        if (session()->has('current_tenant_id')) {
-            return $this->tenants()->find(session('current_tenant_id')) ?? $this->tenant;
+        if (!$this->hasTenantAccess($tenant)) {
+            throw new \RuntimeException('User does not have access to this tenant');
         }
 
-        return $this->tenant;
+        // Reset primary status for all other tenants
+        \DB::table('crm_user_tenant')
+            ->where('crm_user_id', $this->user_id)
+            ->update(['is_primary' => false]);
+
+        // Set the new primary tenant
+        $this->tenants()->updateExistingPivot($tenant->id, ['is_primary' => true]);
+    }
+
+    public function leads() 
+    {
+        return $this->hasMany(Lead::class, 'created_by_user_id', 'user_id');
+    }
+    public function customers() 
+    {
+        return $this->hasMany(Customer::class, 'created_by_user_id', 'user_id');
+    }
+    public function addresses()
+    {
+        return $this->morphMany(Address::class, 'addressable');
     }
 }
+   

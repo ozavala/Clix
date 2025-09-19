@@ -17,8 +17,8 @@ class InvoiceObserver
         // Ensure a valid created_by_user_id
         $created_by_user_id = Auth::id();
         if (!$created_by_user_id) {
-            // Create a CrmUser for the current tenant if no authenticated user
-            $user = \App\Models\CrmUser::factory()->forTenant($invoice->tenant)->create();
+            // Create a User for the current tenant if no authenticated user
+            $user = \App\Models\User::factory()->forTenant($invoice->tenant)->create();
             $created_by_user_id = $user->user_id;
         }
 

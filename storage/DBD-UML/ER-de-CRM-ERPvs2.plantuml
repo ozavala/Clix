@@ -1,4 +1,4 @@
-@startuml
+"@startuml Clix"
 !define entity(x) class x << (E,#FFAAAA) >>
 
 entity(Tenant) {
@@ -12,7 +12,7 @@ entity(Tenant) {
   created_at : datetime
   updated_at : datetime
 }
-
+"
 entity(Warehouses) {
   +id : int <<PK>>
   tenant_id : int <<FK>>
@@ -414,8 +414,8 @@ entity(Notes) {
 }
 
 ' Relaciones principales
-OwnerCompanies "1" -- "*" Warehouses : has >
-OwnerCompanies "1" -- "*" Users : employs >
+Tenants "1" -- "*" Warehouses : has >
+Tenants "1" -- "*" Users : employs >
 Roles "1" -- "*" Users : defines >
 Customers "1" -- "*" Contacts : has >
 Suppliers "1" -- "*" Products : supplies >

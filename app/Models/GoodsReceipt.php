@@ -40,7 +40,7 @@ class GoodsReceipt extends Model
 
     public function receivedBy(): BelongsTo
     {
-        return $this->belongsTo(CrmUser::class, 'received_by_user_id', 'user_id');
+        return $this->belongsTo(User::class, 'received_by_user_id', 'user_id');
     }
 
     public function items(): HasMany

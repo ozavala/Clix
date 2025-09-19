@@ -13,16 +13,14 @@ return new class extends Migration
     {
         Schema::create('tenant_user', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
-            $table->foreignId('user_id')->constrained('crm_users', 'user_id')->onDelete('cascade');
-            $table->boolean('is_owner')->default(false);
+            $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
+            $table->boolean('is_primary')->default(false);
             $table->timestamps();
-            
+            $table->unique(['user_id', 'tenant_id']);
             // Ensure a user can only be associated with a tenant once
-            $table->unique(['tenant_id', 'user_id']);
-            
-            // Index for faster lookups
-            $table->index(['user_id', 'is_owner']);
+            //$table->index(['user_id', 'tenant_id']);
+            $table->index(['tenant_id', 'is_primary']);
         });
     }
 

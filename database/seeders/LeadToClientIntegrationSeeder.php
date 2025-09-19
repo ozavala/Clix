@@ -10,7 +10,7 @@ use App\Models\Product;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
-use App\Models\CrmUser;
+use App\Models\User;
 use Carbon\Carbon;
 
 class LeadToClientIntegrationSeeder extends Seeder
@@ -18,7 +18,7 @@ class LeadToClientIntegrationSeeder extends Seeder
     public function run(): void
     {
         // 1. Crear un usuario CRM para asignaciones
-        $user = CrmUser::factory()->create();
+        $user = User::factory()->create();
 
         // 2. Crear un lead
         $lead = Lead::factory()->create([

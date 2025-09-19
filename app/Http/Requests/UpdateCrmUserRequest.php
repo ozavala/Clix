@@ -24,17 +24,17 @@ class UpdateCrmUserRequest extends FormRequest
      */
     public function rules(): array
     {
-        $userId = $this->route('crm_user') ? $this->route('crm_user')->user_id : null;
+        $userId = $this->route('user') ? $this->route('user')->user_id : null;
 
         return [
             'username' => [
                 'required', 'string', 'max:100',
-                Rule::unique('crm_users', 'username')->ignore($userId, 'user_id'),
+                Rule::unique('users', 'username')->ignore($userId, 'user_id'),
             ],
             'full_name' => 'required|string|max:255',
             'email' => [
                 'required', 'string', 'email', 'max:255',
-                Rule::unique('crm_users', 'email')->ignore($userId, 'user_id'),
+                Rule::unique('users', 'email')->ignore($userId, 'user_id'),
             ],
             'password' => 'nullable|string|min:8|confirmed', // Password is optional on update
             'roles' => 'nullable|array',

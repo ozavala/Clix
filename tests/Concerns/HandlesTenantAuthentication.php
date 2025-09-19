@@ -2,7 +2,7 @@
 
 namespace Tests\Concerns;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Tenant;
 use App\Models\UserRole;
 use Illuminate\Support\Facades\Auth;
@@ -47,11 +47,11 @@ trait HandlesTenantAuthentication
         );
         
         // Try to find existing admin user first
-        $this->adminUser = CrmUser::where('email', 'admin@test-tenant.example.com')->first();
+        $this->adminUser = User::where('email', 'admin@test-tenant.example.com')->first();
         
         // If user doesn't exist, create a new one with a unique username
         if (!$this->adminUser) {
-            $this->adminUser = CrmUser::create([
+            $this->adminUser = User::create([
                 'user_id' => 1,
                 'username' => 'testadmin' . now()->timestamp, // Ensure unique username
                 'email' => 'admin@test-tenant.example.com',
@@ -93,9 +93,9 @@ trait HandlesTenantAuthentication
     /**
      * Create a test user with specific permissions
      */
-    protected function createUserWithPermissions(array $permissions = [], array $userData = []): CrmUser
+    protected function createUserWithPermissions(array $permissions = [], array $userData = []): User
     {
-        $user = CrmUser::factory()->create(array_merge([
+        $user = User::factory()->create(array_merge([
             'tenant_id' => $this->tenant->id,
         ], $userData));
 
@@ -116,7 +116,7 @@ trait HandlesTenantAuthentication
     /**
      * Act as a specific user
      */
-    public function actingAsUser(CrmUser $user): self
+    public function actingAsUser(User $user): self
     {
         $this->actingAs($user, 'crm');
         return $this;

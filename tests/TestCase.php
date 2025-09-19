@@ -2,7 +2,7 @@
 
 namespace Tests;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Tenant;
 use App\Models\UserRole;
 use Illuminate\Foundation\Testing\TestCase as BaseTestCase;
@@ -64,7 +64,7 @@ abstract class TestCase extends BaseTestCase
 
         // Create admin user with a unique username
         $username = 'testadmin_' . uniqid();
-        $this->adminUser = CrmUser::firstOrCreate(
+        $this->adminUser = User::firstOrCreate(
             ['email' => 'test@example.com'],
             [
                 'username' => $username,
@@ -102,7 +102,7 @@ abstract class TestCase extends BaseTestCase
      */
     protected function createUserWithPermissions(array $permissions = [], array $userData = [])
     {
-        $user = CrmUser::factory()->create(array_merge([
+        $user = User::factory()->create(array_merge([
             'tenant_id' => $this->tenant->id,
         ], $userData));
 
@@ -121,11 +121,11 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Asigna uno o varios permisos a un usuario CrmUser para pruebas.
+     * Asigna uno o varios permisos a un usuario User para pruebas.
      * Si el permiso no existe, lo crea. Si el usuario no tiene un rol, se le asigna uno temporal.
      * El permiso se asigna al rol del usuario.
      *
-     * @param \App\Models\CrmUser $user
+     * @param \App\Models\User $user
      * @param string|array $permissions Nombre(s) del permiso a asignar (ej: 'edit-settings')
      */
     protected function givePermission($user, $permissions)

@@ -3,7 +3,7 @@
 namespace Database\Seeders;
 
 use App\Models\Tenant;
-use App\Models\CrmUser;
+use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
@@ -38,7 +38,7 @@ class AdminUserAndTenantSeeder extends Seeder
         );
 
         // Create admin user
-        $admin = CrmUser::firstOrCreate(
+        $admin = User::firstOrCreate(
             ['email' => 'admin@example.com'],
             [
                 'username' => 'admin',

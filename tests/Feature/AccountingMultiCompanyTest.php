@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Account;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\JournalEntry;
 use App\Models\Tenant;
 use App\Models\TaxRate;
@@ -17,9 +17,9 @@ class AccountingMultiCompanyTest extends TestCase
 
     protected Tenant $company1;
     protected Tenant $company2;
-    protected CrmUser $user1;
-    protected CrmUser $user2;
-    protected CrmUser $superAdmin;
+    protected User $user1;
+    protected User $user2;
+    protected User $superAdmin;
     protected Account $asset1;
     protected Account $liability1;
     protected Account $income1;
@@ -32,7 +32,7 @@ class AccountingMultiCompanyTest extends TestCase
     /**
      * Helper to act as a user and set tenant context for the request/config.
      */
-    private function actAsWithTenant(\App\Models\CrmUser $user): void
+    private function actAsWithTenant(\App\Models\User $user): void
     {
         $this->actingAs($user);
         request()->merge(['tenant_id' => $user->tenant_id]);
@@ -60,16 +60,16 @@ class AccountingMultiCompanyTest extends TestCase
         ]);
 
         // Create users for each company
-        $this->user1 = CrmUser::factory()->create([
+        $this->user1 = User::factory()->create([
             'tenant_id' => $this->company1->id,
         ]);
 
-        $this->user2 = CrmUser::factory()->create([
+        $this->user2 = User::factory()->create([
             'tenant_id' => $this->company2->id,
         ]);
 
         // Create a super admin user (avoid mass-assignment issues)
-        $this->superAdmin = CrmUser::factory()->create([
+        $this->superAdmin = User::factory()->create([
             'tenant_id' => $this->company1->id, // Primary company
         ]);
         $this->superAdmin->forceFill(['is_super_admin' => true])->save();

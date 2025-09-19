@@ -6,7 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\PurchaseOrder;
 use App\Models\Supplier;
-use App\Models\CrmUser;
+use App\Models\User;
 
 class PurchaseOrderSeeder extends Seeder
 {
@@ -16,7 +16,7 @@ class PurchaseOrderSeeder extends Seeder
     public function run(): void
     {
         $suppliers = Supplier::all();
-        $users = CrmUser::all();
+        $users = User::all();
 
         if ($suppliers->isEmpty() || $users->isEmpty()) {
             $this->command->info('Skipping PurchaseOrderSeeder: No suppliers or users found. Please seed them first.');

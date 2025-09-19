@@ -8,7 +8,7 @@ use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\LandedCost;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Services\LandedCostService;
 use Carbon\Carbon;
 use Illuminate\Support\Str;
@@ -24,7 +24,7 @@ class UnitPriceCalculationSeeder extends Seeder
         );
 
         // Create a user for the process
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'tenant_id' => $tenant->id,
             'email' => 'test@example.com',
             'password' => bcrypt('password'),

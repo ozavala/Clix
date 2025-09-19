@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use Tests\TestCase;
 use App\Models\Setting;
-use App\Models\CrmUser;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 class TaxSettingsControllerTest extends TestCase
@@ -16,7 +16,7 @@ class TaxSettingsControllerTest extends TestCase
         parent::setUp();
         
         // Crear un usuario para las pruebas
-        $this->user = CrmUser::factory()->create();
+        $this->user = User::factory()->create();
         $this->actingAs($this->user);
     }
 

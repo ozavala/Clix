@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('activities', function (Blueprint $table) {
             $table->id('activity_id');
             $table->foreignId('lead_id')->constrained('leads', 'lead_id')->onDelete('cascade');
-            $table->foreignId('user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
+            $table->foreignId('user_id')->nullable()->constrained('users', 'user_id')->onDelete('set null');
             $table->string('type', 50);
             $table->text('description');
             $table->timestamp('activity_date')->useCurrent();

@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Middleware;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Tenant;
 use App\Models\UserRole;
 use App\Models\Permission;
@@ -84,7 +84,7 @@ class EnforceTenantAccessTest extends TestCase
     public function it_allows_superadmin_to_access_any_tenant()
     {
         // Create a superadmin user
-        $superadmin = CrmUser::factory()->create([
+        $superadmin = User::factory()->create([
             'password' => Hash::make('password')
         ]);
         
@@ -138,7 +138,7 @@ class EnforceTenantAccessTest extends TestCase
     public function it_prevents_regular_user_from_accessing_unauthorized_tenant()
     {
         // Create a regular user
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'password' => Hash::make('password')
         ]);
         
@@ -202,7 +202,7 @@ class EnforceTenantAccessTest extends TestCase
     public function it_allows_regular_user_to_access_their_tenant()
     {
         // Create a regular user
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'password' => Hash::make('password')
         ]);
         
@@ -255,7 +255,7 @@ class EnforceTenantAccessTest extends TestCase
     public function it_redirects_to_tenant_selection_if_no_tenant_set()
     {
         // Create a regular user
-        $user = CrmUser::factory()->create([
+        $user = User::factory()->create([
             'password' => Hash::make('password')
         ]);
         

@@ -5,7 +5,7 @@ namespace Database\Factories;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Product;
 use App\Models\Order;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\OrderItem;
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\OrderItem>

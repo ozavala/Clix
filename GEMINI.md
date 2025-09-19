@@ -15,7 +15,7 @@ This document outlines the changes and decisions made during the development pro
     *   `database/seeders/OwnerCompanySeeder.php` removed and replaced by `database/seeders/TenantSeeder.php`
 
 2.  **Model Associations with `Tenant`:**
-    *   A `tenant_id` foreign key was added to all relevant models (e.g., `Account`, `Bill`, `Contact`, `CrmUser`, `Customer`, `Invoice`, `JournalEntry`, `JournalEntryLine`, `Lead`, `Opportunity`, `Order`, `Payment`, `Product`, `PurchaseOrder`, `Quotation`, `Supplier`, `Transaction`, `Warehouse`).
+    *   A `tenant_id` foreign key was added to all relevant models (e.g., `Account`, `Bill`, `Contact`, `User`, `Customer`, `Invoice`, `JournalEntry`, `JournalEntryLine`, `Lead`, `Opportunity`, `Order`, `Payment`, `Product`, `PurchaseOrder`, `Quotation`, `Supplier`, `Transaction`, `Warehouse`).
     *   A `belongsTo` relationship to the `Tenant` model was defined in each of these models to establish the association.
 
 3.  **Scope Coverage Mechanisms:**

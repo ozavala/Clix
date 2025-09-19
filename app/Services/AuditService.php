@@ -2,7 +2,7 @@
 
 namespace App\Services;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
@@ -88,11 +88,11 @@ class AuditService
         );
     }
 
-    public function logUserLogin(CrmUser $user, bool $success, string $reason = null): void
+    public function logUserLogin(User $user, bool $success, string $reason = null): void
     {
         $this->logActivity(
             $success ? 'login_success' : 'login_failed',
-            'CrmUser',
+            'User',
             $user->id,
             [
                 'success' => $success,
@@ -150,7 +150,7 @@ class AuditService
         return $query->orderBy('timestamp', 'desc')->get()->toArray();
     }
 
-    public function getUserActivity(CrmUser $user, Carbon $startDate = null, Carbon $endDate = null): array
+    public function getUserActivity(User $user, Carbon $startDate = null, Carbon $endDate = null): array
     {
         $query = Log::channel('audit')->where('user_id', $user->id);
         

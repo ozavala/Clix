@@ -1,0 +1,135 @@
+#@startuml Users-Tenants-Settings"
+!define entity(x) class x << (E,#FFAAAA) >>
+
+entity(tenants) {
+  +tenant_id : int <<PK>>
+  name : string
+  legal_id : string
+  is_active : boolean
+  subscription_plan : string
+  subscription_ends_at : datetime
+  settings : json
+  address : string
+  phone : string
+  website : string
+  logo : string
+  email : string
+  slogan : string
+  industry : string
+  deleted_at : datetime
+  created_at : datetime
+  updated_at : datetime
+}
+entity(settings) {
+  +id : int <<PK>>
+  tenant_id : int <<FK>>
+  group : string
+  description : string
+  validation_rules : string
+  is_public : boolean
+  is_editable : boolean
+  type : string
+  key : string
+  value : string
+  settings : json
+  created_at : datetime'
+  updated_at : datetime
+  
+}  
+
+entity(tax_rates) {
+  +id : int <<PK>>
+  tenant_id : int <<FK>>
+  name : string
+  rate : decimal
+  description : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity(users) {
+  +user_id : int <<PK>>
+  tenant_id : int <<FK>>
+  username : string
+  full_name : string
+  email : string
+  email_verified_at : datetime
+  locale : string
+  password : string
+  remember_token : string
+  is_super_admin : boolean
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity(tenant_settings_groups) {
+  +id : int <<PK>>
+  tenant_id : int <<FK>>
+  name : string
+  description : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity(tenant_settings_types) {
+  *id : int <<PK>>
+  +tenant_id : int <<FK>>
+  name : string
+  description : string
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity(tenant_user) {
+  +id : int <<PK>>
+  tenant_id : int <<FK>>
+  user_id : int <<FK>>
+  is_primary : boolean
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity(user_roles) {
+  +role_id : int <<PK>>
+  name : string
+  description : string
+  permissions : json
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity(user_user_role) {
+  +id : int <<PK>>
+  user_id : int <<FK>>
+  role_id : int <<FK>>
+  created_at : datetime
+  updated_at : datetime
+}
+
+entity(permissions) {
+  +permission_id : int <<PK>>
+  name : string
+  description : string
+  created_at : datetime
+  updated_at : datetime
+}
+entity(permission_user_role) {
+  +id : int <<PK>>
+  permission_id : int <<FK>>
+  role_id : int <<FK>>
+  created_at : datetime
+  updated_at : datetime
+}
+'Main relationships
+tenants "1" -- "*" users : employs >
+tenants "1" -- "1" settings : has >
+tenants "1" -- "*" tenant_user : "has  many tenant associations" >
+tenants "1" -- "*" tax_rates : "has  many tenant associations" >
+tenants "1" -- "*" tenant_settings_groups : "has  many tenant associations" >
+tenants "1" -- "*" tenant_settings_types : "has  many tenant associations" >
+users "1" -- "*" tenant_users : "has  many tenant associations" >
+
+users "1" --"*" user_user_role : "has  many tenant associations" >
+user_roles "1" -- "*" user_user_role : "has  many tenant associations" >
+user_roles "1" -- "*" permission_user_role : has >
+permissions "1" -- "*" permission_user_role : has >

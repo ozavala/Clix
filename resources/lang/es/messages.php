@@ -505,8 +505,8 @@ return [
         'create_supplier' => 'Crear proveedor',
     ],
 
-    // Usuarios (crm_users)
-    'crm_users' => [
+    // Usuarios (users)
+    'users' => [
         'title' => 'Usuarios',
         'add_new_user' => 'Agregar nuevo usuario',
         'details' => 'Detalles del usuario',

@@ -6,7 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Invoice;
 use App\Models\Order;
-use App\Models\CrmUser;
+use App\Models\User;
 use Illuminate\Support\Str;
 
 class InvoiceSeeder extends Seeder
@@ -57,7 +57,7 @@ class InvoiceSeeder extends Seeder
                 'amount_paid' => 0, // Initially unpaid
                 'terms_and_conditions' => 'Standard payment terms apply. Please pay within 30 days.',
                 'notes' => 'Invoice for Order: ' . $order->order_number,
-                'created_by_user_id' => $order->created_by_user_id ?? CrmUser::first()->user_id, // Fallback
+                'created_by_user_id' => $order->created_by_user_id ?? User::first()->user_id, // Fallback
             ];
 
             $invoice = Invoice::create($invoiceData);

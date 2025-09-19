@@ -9,7 +9,7 @@ use App\Models\Invoice;
 use App\Models\PurchaseOrder;
 use App\Models\Order;
 use App\Models\Payment;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\UserRole;
 use App\Models\Warehouse;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -31,7 +31,7 @@ class NotificationServiceTest extends TestCase
         $adminRole = UserRole::factory()->create(['name' => 'admin']);
         
         // Crear usuario admin
-        $admin = CrmUser::factory()->create();
+        $admin = User::factory()->create();
         $admin->roles()->attach($adminRole);
 
         // Crear warehouse
@@ -60,7 +60,7 @@ class NotificationServiceTest extends TestCase
         $salesRole = UserRole::factory()->create(['name' => 'sales']);
         
         // Crear usuario de ventas
-        $salesUser = CrmUser::factory()->create();
+        $salesUser = User::factory()->create();
         $salesUser->roles()->attach($salesRole);
 
         // Crear factura vencida
@@ -139,7 +139,7 @@ class NotificationServiceTest extends TestCase
         $adminRole = UserRole::factory()->create(['name' => 'admin']);
         
         // Crear usuario admin
-        $admin = CrmUser::factory()->create();
+        $admin = User::factory()->create();
         $admin->roles()->attach($adminRole);
 
         // Mock del servicio de email

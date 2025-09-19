@@ -21,7 +21,7 @@ CREATE TABLE `activities` (
   KEY `activities_lead_id_foreign` (`lead_id`),
   KEY `activities_user_id_foreign` (`user_id`),
   CONSTRAINT `activities_lead_id_foreign` FOREIGN KEY (`lead_id`) REFERENCES `leads` (`lead_id`) ON DELETE CASCADE,
-  CONSTRAINT `activities_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL
+  CONSTRAINT `activities_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `addresses`;
@@ -94,7 +94,7 @@ CREATE TABLE `bills` (
   KEY `bills_purchase_order_id_foreign` (`purchase_order_id`),
   KEY `bills_supplier_id_foreign` (`supplier_id`),
   KEY `bills_created_by_user_id_foreign` (`created_by_user_id`),
-  CONSTRAINT `bills_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`),
+  CONSTRAINT `bills_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `bills_purchase_order_id_foreign` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`purchase_order_id`) ON DELETE SET NULL,
   CONSTRAINT `bills_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`supplier_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -139,7 +139,7 @@ CREATE TABLE `contacts` (
   UNIQUE KEY `contacts_email_unique` (`email`),
   KEY `contacts_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `contacts_contactable_type_contactable_id_index` (`contactable_type`,`contactable_id`),
-  CONSTRAINT `contacts_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`)
+  CONSTRAINT `contacts_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `crm_user_user_role`;
@@ -152,14 +152,14 @@ CREATE TABLE `crm_user_user_role` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`crm_user_id`,`role_id`),
   KEY `crm_user_user_role_role_id_foreign` (`role_id`),
-  CONSTRAINT `crm_user_user_role_crm_user_id_foreign` FOREIGN KEY (`crm_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE CASCADE,
+  CONSTRAINT `crm_user_user_role_crm_user_id_foreign` FOREIGN KEY (`crm_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE,
   CONSTRAINT `crm_user_user_role_role_id_foreign` FOREIGN KEY (`role_id`) REFERENCES `user_roles` (`role_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
-DROP TABLE IF EXISTS `crm_users`;
+DROP TABLE IF EXISTS `users`;
 /*!40101 SET @saved_cs_client     = @@character_set_client */;
 /*!40101 SET character_set_client = utf8mb4 */;
-CREATE TABLE `crm_users` (
+CREATE TABLE `users` (
   `user_id` bigint(20) unsigned NOT NULL AUTO_INCREMENT,
   `username` varchar(100) NOT NULL,
   `full_name` varchar(255) NOT NULL,
@@ -200,7 +200,7 @@ CREATE TABLE `customers` (
   UNIQUE KEY `customers_legal_id_unique` (`legal_id`),
   UNIQUE KEY `customers_email_unique` (`email`),
   KEY `customers_created_by_user_id_foreign` (`created_by_user_id`),
-  CONSTRAINT `customers_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL
+  CONSTRAINT `customers_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `failed_jobs`;
@@ -232,7 +232,7 @@ CREATE TABLE `feedback` (
   `updated_at` timestamp NULL DEFAULT NULL,
   PRIMARY KEY (`feedback_id`),
   KEY `feedback_user_id_foreign` (`user_id`),
-  CONSTRAINT `feedback_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE CASCADE
+  CONSTRAINT `feedback_user_id_foreign` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `goods_receipt_items`;
@@ -277,7 +277,7 @@ CREATE TABLE `goods_receipts` (
   KEY `goods_receipts_received_by_user_id_foreign` (`received_by_user_id`),
   KEY `goods_receipts_warehouse_id_foreign` (`warehouse_id`),
   CONSTRAINT `goods_receipts_purchase_order_id_foreign` FOREIGN KEY (`purchase_order_id`) REFERENCES `purchase_orders` (`purchase_order_id`) ON DELETE CASCADE,
-  CONSTRAINT `goods_receipts_received_by_user_id_foreign` FOREIGN KEY (`received_by_user_id`) REFERENCES `crm_users` (`user_id`),
+  CONSTRAINT `goods_receipts_received_by_user_id_foreign` FOREIGN KEY (`received_by_user_id`) REFERENCES `users` (`user_id`),
   CONSTRAINT `goods_receipts_warehouse_id_foreign` FOREIGN KEY (`warehouse_id`) REFERENCES `warehouses` (`warehouse_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -334,7 +334,7 @@ CREATE TABLE `invoices` (
   KEY `invoices_customer_id_foreign` (`customer_id`),
   KEY `invoices_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `invoices_quotation_id_foreign` (`quotation_id`),
-  CONSTRAINT `invoices_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL,
+  CONSTRAINT `invoices_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
   CONSTRAINT `invoices_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`customer_id`) ON DELETE CASCADE,
   CONSTRAINT `invoices_order_id_foreign` FOREIGN KEY (`order_id`) REFERENCES `orders` (`order_id`) ON DELETE CASCADE,
   CONSTRAINT `invoices_quotation_id_foreign` FOREIGN KEY (`quotation_id`) REFERENCES `quotations` (`quotation_id`) ON DELETE SET NULL
@@ -388,7 +388,7 @@ CREATE TABLE `journal_entries` (
   PRIMARY KEY (`journal_entry_id`),
   KEY `journal_entries_referenceable_type_referenceable_id_index` (`referenceable_type`,`referenceable_id`),
   KEY `journal_entries_created_by_user_id_foreign` (`created_by_user_id`),
-  CONSTRAINT `journal_entries_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL
+  CONSTRAINT `journal_entries_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `journal_entry_lines`;
@@ -449,8 +449,8 @@ CREATE TABLE `leads` (
   KEY `leads_customer_id_foreign` (`customer_id`),
   KEY `leads_assigned_to_user_id_foreign` (`assigned_to_user_id`),
   KEY `leads_created_by_user_id_foreign` (`created_by_user_id`),
-  CONSTRAINT `leads_assigned_to_user_id_foreign` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL,
-  CONSTRAINT `leads_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL,
+  CONSTRAINT `leads_assigned_to_user_id_foreign` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  CONSTRAINT `leads_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
   CONSTRAINT `leads_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`customer_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -479,7 +479,7 @@ CREATE TABLE `notes` (
   PRIMARY KEY (`note_id`),
   KEY `notes_noteable_type_noteable_id_index` (`noteable_type`,`noteable_id`),
   KEY `notes_created_by_user_id_foreign` (`created_by_user_id`),
-  CONSTRAINT `notes_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`)
+  CONSTRAINT `notes_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `opportunities`;
@@ -507,9 +507,9 @@ CREATE TABLE `opportunities` (
   KEY `opportunities_assigned_to_user_id_foreign` (`assigned_to_user_id`),
   KEY `opportunities_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `opportunities_contact_id_foreign` (`contact_id`),
-  CONSTRAINT `opportunities_assigned_to_user_id_foreign` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL,
+  CONSTRAINT `opportunities_assigned_to_user_id_foreign` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
   CONSTRAINT `opportunities_contact_id_foreign` FOREIGN KEY (`contact_id`) REFERENCES `contacts` (`contact_id`) ON DELETE CASCADE,
-  CONSTRAINT `opportunities_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL,
+  CONSTRAINT `opportunities_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
   CONSTRAINT `opportunities_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`customer_id`) ON DELETE SET NULL,
   CONSTRAINT `opportunities_lead_id_foreign` FOREIGN KEY (`lead_id`) REFERENCES `leads` (`lead_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
@@ -567,7 +567,7 @@ CREATE TABLE `orders` (
   KEY `orders_quotation_id_foreign` (`quotation_id`),
   KEY `orders_opportunity_id_foreign` (`opportunity_id`),
   KEY `orders_created_by_user_id_foreign` (`created_by_user_id`),
-  CONSTRAINT `orders_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL,
+  CONSTRAINT `orders_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
   CONSTRAINT `orders_customer_id_foreign` FOREIGN KEY (`customer_id`) REFERENCES `customers` (`customer_id`) ON DELETE CASCADE,
   CONSTRAINT `orders_opportunity_id_foreign` FOREIGN KEY (`opportunity_id`) REFERENCES `opportunities` (`opportunity_id`) ON DELETE SET NULL,
   CONSTRAINT `orders_quotation_id_foreign` FOREIGN KEY (`quotation_id`) REFERENCES `quotations` (`quotation_id`) ON DELETE SET NULL
@@ -602,7 +602,7 @@ CREATE TABLE `payments` (
   PRIMARY KEY (`payment_id`),
   KEY `payments_payable_type_payable_id_index` (`payable_type`,`payable_id`),
   KEY `payments_created_by_user_id_foreign` (`created_by_user_id`),
-  CONSTRAINT `payments_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL
+  CONSTRAINT `payments_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `permission_user_role`;
@@ -717,7 +717,7 @@ CREATE TABLE `products` (
   UNIQUE KEY `products_sku_unique` (`sku`),
   KEY `products_created_by_user_id_foreign` (`created_by_user_id`),
   KEY `products_category_id_foreign` (`category_id`),
-  CONSTRAINT `products_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL,
+  CONSTRAINT `products_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
   CONSTRAINT `products_category_id_foreign` FOREIGN KEY (`category_id`) REFERENCES `product_categories` (`category_id`) ON DELETE SET NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -775,7 +775,7 @@ CREATE TABLE `purchase_orders` (
   UNIQUE KEY `purchase_orders_purchase_order_number_unique` (`purchase_order_number`),
   KEY `purchase_orders_supplier_id_foreign` (`supplier_id`),
   KEY `purchase_orders_created_by_user_id_foreign` (`created_by_user_id`),
-  CONSTRAINT `purchase_orders_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL,
+  CONSTRAINT `purchase_orders_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
   CONSTRAINT `purchase_orders_supplier_id_foreign` FOREIGN KEY (`supplier_id`) REFERENCES `suppliers` (`supplier_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -826,7 +826,7 @@ CREATE TABLE `quotations` (
   PRIMARY KEY (`quotation_id`),
   KEY `quotations_opportunity_id_foreign` (`opportunity_id`),
   KEY `quotations_created_by_user_id_foreign` (`created_by_user_id`),
-  CONSTRAINT `quotations_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL,
+  CONSTRAINT `quotations_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
   CONSTRAINT `quotations_opportunity_id_foreign` FOREIGN KEY (`opportunity_id`) REFERENCES `opportunities` (`opportunity_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
@@ -892,8 +892,8 @@ CREATE TABLE `tasks` (
   KEY `tasks_taskable_type_taskable_id_index` (`taskable_type`,`taskable_id`),
   KEY `tasks_assigned_to_user_id_foreign` (`assigned_to_user_id`),
   KEY `tasks_created_by_user_id_foreign` (`created_by_user_id`),
-  CONSTRAINT `tasks_assigned_to_user_id_foreign` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE SET NULL,
-  CONSTRAINT `tasks_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `crm_users` (`user_id`) ON DELETE CASCADE
+  CONSTRAINT `tasks_assigned_to_user_id_foreign` FOREIGN KEY (`assigned_to_user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL,
+  CONSTRAINT `tasks_created_by_user_id_foreign` FOREIGN KEY (`created_by_user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 /*!40101 SET character_set_client = @saved_cs_client */;
 DROP TABLE IF EXISTS `user_roles`;

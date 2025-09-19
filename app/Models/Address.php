@@ -30,7 +30,7 @@ class Address extends Model
     ];
 
     /**
-     * Get the parent addressable model (Customer, CrmUser, etc.).
+     * Get the parent addressable model (Customer, User, etc.).
      */
     public function addressable(): MorphTo
     {

@@ -35,7 +35,7 @@ class StoreLeadRequest extends FormRequest
             'contact_name' => 'nullable|string|max:255',
             'contact_email' => 'nullable|email|max:255',
             'contact_phone' => 'nullable|string|max:50',
-            'assigned_to_user_id' => 'nullable|exists:crm_users,user_id',
+            'assigned_to_user_id' => 'nullable|exists:users,user_id',
             'expected_close_date' => 'nullable|date',
             // created_by_user_id will be set automatically
         ];

@@ -3,7 +3,7 @@
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Tenant;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -41,9 +41,9 @@ class RegisteredUserController extends Controller
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'username' => ['nullable', 'string', 'max:255', 'unique:crm_users,username'],
+            'username' => ['nullable', 'string', 'max:255', 'unique:users,username'],
             'full_name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.CrmUser::class],
+            'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::min(8)],
             'tenant_id' => ['required', 'integer', 'exists:tenants,id'],
         ]);
@@ -57,7 +57,7 @@ class RegisteredUserController extends Controller
             $tenant = Tenant::findOrFail($validated['tenant_id']);
             
             // Create the user with the tenant_id
-            $user = CrmUser::create([
+            $user = User::create([
                 'full_name' => $validated['full_name'],
                 'username' => $username,
                 'email' => $validated['email'],

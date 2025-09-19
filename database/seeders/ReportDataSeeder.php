@@ -11,7 +11,7 @@ use App\Models\OrderItem;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\UserRole;
 use App\Models\Warehouse;
 use App\Models\Supplier;
@@ -140,7 +140,7 @@ class ReportDataSeeder extends Seeder
                 ]
             );
 
-            $user = CrmUser::firstOrCreate(
+            $user = User::firstOrCreate(
                 ['email' => $userData['email']],
                 [
                     'tenant_id' => $tenant->id,
@@ -649,7 +649,7 @@ class ReportDataSeeder extends Seeder
                     'probability' => rand(30, 70),
                     'lead_id' => $lead->lead_id,
                     'tenant_id' => $tenant->id,
-                    'created_by_user_id' => CrmUser::where('tenant_id', $tenant->id)->first()->user_id ?? null
+                    'created_by_user_id' => User::where('tenant_id', $tenant->id)->first()->user_id ?? null
                 ];
 
                 Opportunity::firstOrCreate(
@@ -673,7 +673,7 @@ class ReportDataSeeder extends Seeder
 
         $opportunities = Opportunity::where('tenant_id', $tenant->id)->get();
         $products = Product::where('tenant_id', $tenant->id)->get();
-        $users = CrmUser::where('tenant_id', $tenant->id)
+        $users = User::where('tenant_id', $tenant->id)
                       ->whereHas('roles', function ($query) {
             $query->whereIn('name', ['sales', 'manager']);
         })->get();
@@ -740,7 +740,7 @@ class ReportDataSeeder extends Seeder
     {
         $suppliers = Supplier::all();
         $products = Product::all();
-        $users = CrmUser::all();
+        $users = User::all();
 
         for ($i = 0; $i < 20; $i++) {
             $supplier = $suppliers->random();
@@ -800,7 +800,7 @@ class ReportDataSeeder extends Seeder
     {
         $customers = Customer::all();
         $products = Product::all();
-        $users = CrmUser::whereHas('roles', function ($query) {
+        $users = User::whereHas('roles', function ($query) {
             $query->whereIn('name', ['sales', 'manager']);
         })->get();
 
@@ -861,7 +861,7 @@ class ReportDataSeeder extends Seeder
         $orders = Order::whereIn('status', ['Delivered', 'Shipped'])->get();
         $customers = Customer::all();
         $products = Product::all();
-        $users = CrmUser::all();
+        $users = User::all();
 
         // Crear facturas basadas en órdenes
         foreach ($orders as $order) {

@@ -11,9 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('crm_users', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->id('user_id');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->string('username', 100)->unique();
             $table->string('full_name');
             $table->string('email')->unique();
@@ -35,6 +35,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('crm_users');
+        Schema::dropIfExists('users');
     }
 };

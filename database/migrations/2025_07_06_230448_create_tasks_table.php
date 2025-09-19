@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('tasks', function (Blueprint $table) {
             $table->id('task_id');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->string('title');
             $table->text('description')->nullable();
             $table->date('due_date')->nullable();
@@ -21,8 +21,8 @@ return new class extends Migration
             $table->string('priority')->default('Normal');
             $table->string('taskable_type');
             $table->unsignedBigInteger('taskable_id');
-            $table->foreignId('assigned_to_user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
-            $table->foreignId('created_by_user_id')->constrained('crm_users', 'user_id')->onDelete('cascade');
+            $table->foreignId('assigned_to_user_id')->nullable()->constrained('users', 'user_id')->onDelete('set null');
+            $table->foreignId('created_by_user_id')->constrained('users', 'user_id')->onDelete('cascade');
             $table->timestamps();
             $table->softDeletes();
             

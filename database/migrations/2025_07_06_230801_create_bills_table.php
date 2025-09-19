@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('bills', function (Blueprint $table) {
             $table->id('bill_id');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->foreignId('purchase_order_id')->nullable()->constrained('purchase_orders', 'purchase_order_id')->onDelete('set null');
             $table->foreignId('supplier_id')->constrained('suppliers', 'supplier_id')->onDelete('cascade');
             $table->string('bill_number')->comment('Supplier\'s invoice/bill number');
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->decimal('amount_paid', 15, 2)->default(0.00);
             $table->string('status');
             $table->text('notes')->nullable();
-            $table->foreignId('created_by_user_id')->constrained('crm_users', 'user_id');
+            $table->foreignId('created_by_user_id')->constrained('users', 'user_id');
             $table->timestamps();
             $table->softDeletes();
 

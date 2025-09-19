@@ -6,7 +6,7 @@ use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use App\Models\Quotation;
 use App\Models\Opportunity;
-use App\Models\CrmUser;
+use App\Models\User;
 
 class QuotationSeeder extends Seeder
 {
@@ -16,7 +16,7 @@ class QuotationSeeder extends Seeder
     public function run(): void
     {
         $opportunities = Opportunity::all();
-        $users = CrmUser::all();
+        $users = User::all();
 
         if ($opportunities->isEmpty() || $users->isEmpty()) {
             $this->command->info('Skipping QuotationSeeder: Missing Opportunities or Users to create quotations for.');

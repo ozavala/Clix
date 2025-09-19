@@ -2,7 +2,7 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Http\Requests\StoreCrmUserRequest;
 use App\Http\Requests\UpdateCrmUserRequest;
 use Illuminate\Http\Request;
@@ -18,8 +18,8 @@ class CrmUserController extends Controller
      */
     public function index()
     {
-        $crmUsers = CrmUser::with('roles')->paginate(10);
-        return view('crm_users.index', compact('crmUsers'));
+        $crmUsers = User::with('roles')->paginate(10);
+        return view('users.index', compact('crmUsers'));
     }
 
     /**
@@ -28,7 +28,7 @@ class CrmUserController extends Controller
     public function create()
     {
         $roles = UserRole::orderBy('name')->get(); 
-        return view('crm_users.create',compact('roles'));
+        return view('users.create',compact('roles'));
     }
 
     /**
@@ -39,10 +39,10 @@ class CrmUserController extends Controller
         $validatedData = $request->validated();
         $validatedData['password'] = Hash::make($validatedData['password']);
 
-        $crmUser= CrmUser::create($validatedData);
+        $User= User::create($validatedData);
 
          if ($request->has('roles')) {
-            $crmUser->roles()->sync($request->input('roles'));
+            $User->roles()->sync($request->input('roles'));
         }
 
         return redirect()->route('crm-users.index')->with('success', 'CRM User created successfully.');
@@ -51,25 +51,25 @@ class CrmUserController extends Controller
     /**
      * Display the specified resource.
      */
-    public function show(CrmUser $crmUser)
+    public function show(User $User)
     {
-        return view('crm_users.show', compact('crmUser'));
+        return view('users.show', compact('User'));
     }
 
     /**
      * Show the form for editing the specified resource.
      */
-    public function edit(CrmUser $crmUser)
+    public function edit(User $User)
     {
        $roles = UserRole::orderBy('name')->get();
-        $assignedRoles = $crmUser->roles->pluck('role_id')->toArray();
-        return view('crm_users.edit', compact('crmUser', 'roles', 'assignedRoles'));
+        $assignedRoles = $User->roles->pluck('role_id')->toArray();
+        return view('users.edit', compact('User', 'roles', 'assignedRoles'));
     }
 
     /**
      * Update the specified resource in storage.
      */
-    public function update(UpdateCrmUserRequest $request, CrmUser $crmUser)
+    public function update(UpdateCrmUserRequest $request, User $User)
     {
         $validatedData = $request->validated();
 
@@ -79,12 +79,12 @@ class CrmUserController extends Controller
             unset($validatedData['password']); // Don't update password if not provided
         }
 
-        $crmUser->update($validatedData);
+        $User->update($validatedData);
 
          if ($request->has('roles')) {
-            $crmUser->roles()->sync($request->input('roles'));
+            $User->roles()->sync($request->input('roles'));
         } else {
-            $crmUser->roles()->detach(); // Remove all roles if none are selected
+            $User->roles()->detach(); // Remove all roles if none are selected
         }
 
         return redirect()->route('crm-users.index')->with('success', 'CRM User updated successfully.');
@@ -93,15 +93,15 @@ class CrmUserController extends Controller
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(CrmUser $crmUser)
+    public function destroy(User $User)
     {
         // Add any checks here, e.g., prevent deleting the logged-in user or last admin
         // For now, basic delete:
-        // if (auth()->id() === $crmUser->user_id) {
+        // if (auth()->id() === $User->user_id) {
         //     return redirect()->route('crm-users.index')->with('error', 'You cannot delete yourself.');
         // }
-        $crmUser->roles()->detach(); // Detach roles before deleting user
-        $crmUser->delete();
+        $User->roles()->detach(); // Detach roles before deleting user
+        $User->delete();
         return redirect()->route('crm-users.index')->with('success', 'CRM User deleted successfully.');
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\Supplier;
@@ -28,7 +28,7 @@ class PurchaseOrderFactory extends Factory
             'status' => 'draft', // Start with draft status
             'terms_and_conditions' => 'Net 30. All items subject to inspection upon delivery.',
             'notes' => $this->faker->optional()->paragraph,
-            'created_by_user_id' => CrmUser::factory(),
+            'created_by_user_id' => User::factory(),
             'subtotal' => 0,
             'discount_amount' => 0,
             'tax_percentage' => $this->faker->randomElement([0, 5, 10]),
@@ -45,7 +45,7 @@ class PurchaseOrderFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $tenant->id,
             'supplier_id' => Supplier::factory()->forTenant($tenant)->create()->supplier_id,
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant)->create()->user_id,
+            'created_by_user_id' => User::factory()->forTenant($tenant)->create()->user_id,
             'shipping_address_id' => Warehouse::factory()->forTenant($tenant)->create()->addresses()->first()->address_id ?? null,
         ]);
     }

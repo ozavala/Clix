@@ -2,7 +2,7 @@
 
 namespace Database\Factories;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Customer;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
@@ -27,7 +27,7 @@ class NoteFactory extends Factory
             },
             'noteable_type' => Customer::class,
             'created_by_user_id' => function (array $attributes) {
-                return CrmUser::factory()->forTenant(Tenant::find($attributes['tenant_id']))->create()->user_id;
+                return User::factory()->forTenant(Tenant::find($attributes['tenant_id']))->create()->user_id;
             },
         ];
     }
@@ -37,7 +37,7 @@ class NoteFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $tenant->id,
             'noteable_id' => Customer::factory()->forTenant($tenant),
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+            'created_by_user_id' => User::factory()->forTenant($tenant),
         ]);
     }
 }

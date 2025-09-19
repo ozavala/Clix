@@ -49,7 +49,7 @@ class QuotationFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $tenant->id,
             'opportunity_id' => Opportunity::factory()->forTenant($tenant),
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+            'created_by_user_id' => User::factory()->forTenant($tenant),
         ]);
     }
 }

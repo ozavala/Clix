@@ -6,7 +6,7 @@ use App\Models\Opportunity;
 use App\Models\Lead;
 use App\Models\Contact;
 use App\Models\Customer;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
@@ -33,8 +33,8 @@ class OpportunityFactory extends Factory
             'amount' => $this->faker->randomFloat(2, 1000, 100000),
             'expected_close_date' => $this->faker->dateTimeBetween('+1 week', '+6 months')->format('Y-m-d'),
             'probability' => $this->faker->numberBetween(5, 95),
-            'assigned_to_user_id' => CrmUser::factory(),
-            'created_by_user_id' => CrmUser::factory(),
+            'assigned_to_user_id' => User::factory(),
+            'created_by_user_id' => User::factory(),
         ];
     }
 
@@ -45,8 +45,8 @@ class OpportunityFactory extends Factory
             'customer_id' => Customer::factory()->forTenant($tenant),
             'lead_id' => Lead::factory()->forTenant($tenant),
             'contact_id' => Contact::factory()->forTenant($tenant),
-            'assigned_to_user_id' => CrmUser::factory()->forTenant($tenant),
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+            'assigned_to_user_id' => User::factory()->forTenant($tenant),
+            'created_by_user_id' => User::factory()->forTenant($tenant),
         ]);
     }
 }

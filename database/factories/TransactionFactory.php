@@ -10,7 +10,7 @@ use App\Models\Invoice;
 use App\Models\Bill;
 use App\Models\Payment;
 use App\Models\JournalEntry;
-use App\Models\CrmUser;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 class TransactionFactory extends Factory
@@ -33,7 +33,7 @@ class TransactionFactory extends Factory
             'payment_id' => Payment::factory(),
             'journal_entry_id' => JournalEntry::factory(),
             'status' => $this->faker->randomElement(['pending', 'completed', 'cancelled']),
-            'created_by_user_id' => CrmUser::factory(),
+            'created_by_user_id' => User::factory(),
         ];
     }
 
@@ -47,7 +47,7 @@ class TransactionFactory extends Factory
             'bill_id' => Bill::factory()->forTenant($tenant),
             'payment_id' => Payment::factory()->forTenant($tenant),
             'journal_entry_id' => JournalEntry::factory()->forTenant($tenant),
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+            'created_by_user_id' => User::factory()->forTenant($tenant),
         ]);
     }
 }

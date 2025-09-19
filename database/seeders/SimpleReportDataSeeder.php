@@ -11,7 +11,7 @@ use App\Models\OrderItem;
 use App\Models\Invoice;
 use App\Models\InvoiceItem;
 use App\Models\Payment;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\UserRole;
 use App\Models\Warehouse;
 use App\Models\Supplier;

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('transactions', function (Blueprint $table) {
             $table->bigIncrements('id');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->string('type');
             $table->date('date');
             $table->decimal('amount', 15, 2);
@@ -36,7 +36,7 @@ return new class extends Migration
             $table->foreign('bill_id')->references('bill_id')->on('bills');
             $table->foreign('payment_id')->references('payment_id')->on('payments');
             $table->foreign('journal_entry_id')->references('journal_entry_id')->on('journal_entries');
-            $table->foreign('created_by_user_id')->references('user_id')->on('crm_users');
+            $table->foreign('created_by_user_id')->references('user_id')->on('users');
         });
     }
 

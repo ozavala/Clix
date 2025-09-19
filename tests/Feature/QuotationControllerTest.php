@@ -7,7 +7,7 @@ use App\Models\Quotation;
 use App\Models\Customer;
 use App\Models\Opportunity;
 use App\Models\Product;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Permission;
 use App\Models\UserRole;
 use App\Models\Setting;
@@ -16,7 +16,7 @@ use PHPUnit\Framework\Attributes\Test;
 
 class QuotationControllerTest extends TestCase
 {
-    protected CrmUser $user;
+    protected User $user;
 
     protected function setUp(): void
     {
@@ -26,7 +26,7 @@ class QuotationControllerTest extends TestCase
         $this->tenant = \App\Models\Tenant::factory()->create();
         
         // Create a user for the tenant
-        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
+        $this->user = User::factory()->forTenant($this->tenant)->create();
         
         // Create permissions and roles for quotation management
         $permissions = [

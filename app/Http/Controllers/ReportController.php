@@ -85,9 +85,9 @@ class ReportController extends Controller
         list($startDate, $endDate) = $this->getDateRange($request);
 
         $employeeSalesData = DB::table('orders')
-            ->join('crm_users', 'orders.created_by_user_id', '=', 'crm_users.user_id')
+            ->join('users', 'orders.created_by_user_id', '=', 'users.user_id')
             ->whereBetween('orders.created_at', [$startDate, $endDate])
-            ->select('crm_users.full_name as employee_name', DB::raw('SUM(orders.total_amount) as total_sales'))
+            ->select('users.full_name as employee_name', DB::raw('SUM(orders.total_amount) as total_sales'))
             ->groupBy('employee_name')
             ->orderByDesc('total_sales')
             ->get();

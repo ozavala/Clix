@@ -7,14 +7,14 @@ use App\Models\Payment;
 use App\Models\Customer;
 use App\Models\Invoice;
 use App\Models\Order;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Permission;
 use App\Models\UserRole;
 use PHPUnit\Framework\Attributes\Test;
 
 class PaymentControllerTest extends TestCase
 {
-    protected CrmUser $user;
+    protected User $user;
 
     protected function setUp(): void
     {
@@ -24,7 +24,7 @@ class PaymentControllerTest extends TestCase
         $this->tenant = \App\Models\Tenant::factory()->create();
         
         // Create a user for the tenant
-        $this->user = CrmUser::factory()->forTenant($this->tenant)->create();
+        $this->user = User::factory()->forTenant($this->tenant)->create();
         
         // Create permissions and roles for payment management
         $permissions = [

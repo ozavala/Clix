@@ -1,6 +1,6 @@
 @php
     // Fetch users once for the dropdown to avoid querying in a loop
-    $crmUsers = \App\Models\CrmUser::orderBy('full_name')->get();
+    $crmUsers = \App\Models\User::orderBy('full_name')->get();
 @endphp
 <div class="card mt-4">
     <div class="card-header">

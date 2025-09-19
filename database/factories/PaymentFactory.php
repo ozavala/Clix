@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Models\Bill;
 use App\Models\Payment;
 use App\Models\PurchaseOrder;
-use App\Models\CrmUser; // Use CrmUser for created_by
+use App\Models\User; // Use User for created_by
 use App\Models\Tenant;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Facades\Auth;
@@ -34,7 +34,7 @@ class PaymentFactory extends Factory
         $bill = Bill::factory()->forTenant($tenant)->create();
         $createdBy = $authUser && $authUser->tenant_id === ($tenant->id ?? null)
             ? $authUser
-            : CrmUser::factory()->forTenant($tenant)->create();
+            : User::factory()->forTenant($tenant)->create();
 
         return [
             'tenant_id' => $tenant->id,
@@ -52,7 +52,7 @@ class PaymentFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'tenant_id' => $tenant->id,
             'payable_id' => Bill::factory()->forTenant($tenant)->create()->bill_id,
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant)->create()->user_id,
+            'created_by_user_id' => User::factory()->forTenant($tenant)->create()->user_id,
         ]);
     }
 }

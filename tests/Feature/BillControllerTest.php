@@ -4,7 +4,7 @@ namespace Tests\Feature;
 
 use App\Models\Bill;
 use App\Models\BillItem;
-use App\Models\CrmUser;
+use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
@@ -12,12 +12,12 @@ use App\Models\PurchaseOrder;
 
 class BillControllerTest extends TestCase
 {
-    protected CrmUser $user;
+    protected User $user;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = CrmUser::factory()->create();
+        $this->user = User::factory()->create();
         $this->actingAs($this->user);
     }
 

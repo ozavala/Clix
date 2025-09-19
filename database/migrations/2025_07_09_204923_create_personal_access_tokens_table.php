@@ -20,6 +20,11 @@ return new class extends Migration
             $table->timestamp('last_used_at')->nullable();
             $table->timestamp('expires_at')->nullable();
             $table->timestamps();
+
+            // The composite index is already created by morphs()
+            // Add individual indexes for specific query patterns
+            $table->index('tokenable_type', 'personal_access_tokens_tokenable_type_index');
+            $table->index('tokenable_id', 'personal_access_tokens_tokenable_id_index');
         });
     }
 

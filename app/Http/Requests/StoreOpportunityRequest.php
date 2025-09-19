@@ -33,7 +33,7 @@ class StoreOpportunityRequest extends FormRequest
             'amount' => 'nullable|numeric|min:0',
             'expected_close_date' => 'nullable|date',
             'probability' => 'nullable|integer|min:0|max:100',
-            'assigned_to_user_id' => 'required|exists:crm_users,user_id',
+            'assigned_to_user_id' => 'required|exists:users,user_id',
             // created_by_user_id will be set automatically
         ];
     }

@@ -45,10 +45,10 @@ class AuthServiceProvider extends ServiceProvider
             }
         });
 
-        Gate::define('view-feedback', function ($Crmuser, $user) {
+        Gate::define('view-feedback', function ($User, $user) {
             return $user->hasPermissionTo('view-feedback');
         });
-        Gate::define('edit-feedback', function ($Crmuser, $user) {
+        Gate::define('edit-feedback', function ($User, $user) {
             return $user->hasPermissionTo('edit-feedback');
         });
         Gate::define('edit-settings', function ($user) {

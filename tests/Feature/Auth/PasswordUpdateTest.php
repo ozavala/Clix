@@ -2,7 +2,7 @@
 
 namespace Tests\Feature\Auth;
 
-use App\Models\CrmUser;
+use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\Hash;
@@ -21,7 +21,7 @@ class PasswordUpdateTest extends TestCase
 
     public function test_password_can_be_updated(): void
     {
-        $user = CrmUser::factory()->create();
+        $user = User::factory()->create();
 
         $response = $this
             ->actingAs($user)
@@ -41,7 +41,7 @@ class PasswordUpdateTest extends TestCase
 
     public function test_correct_password_must_be_provided_to_update_password(): void
     {
-        $user = CrmUser::factory()->create();
+        $user = User::factory()->create();
 
         $response = $this
             ->actingAs($user)

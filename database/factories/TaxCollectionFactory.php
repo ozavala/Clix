@@ -5,7 +5,7 @@ namespace Database\Factories;
 use App\Models\TaxCollection;
 use App\Models\TaxRate;
 use App\Models\Invoice;
-use App\Models\CrmUser;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
@@ -37,7 +37,7 @@ class TaxCollectionFactory extends Factory
             'description' => $this->faker->sentence(),
             'status' => $this->faker->randomElement(['collected', 'pending', 'refunded']),
             'remittance_date' => $this->faker->optional(0.4)->dateTimeBetween('-1 year', 'now'),
-            'created_by_user_id' => CrmUser::factory(),
+            'created_by_user_id' => User::factory(),
         ];
     }
 
@@ -46,7 +46,7 @@ class TaxCollectionFactory extends Factory
         return $this->state(fn (array $attributes) => [
             'invoice_id' => Invoice::factory()->forTenant($tenant),
             'tax_rate_id' => TaxRate::factory()->forTenant($tenant),
-            'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
+            'created_by_user_id' => User::factory()->forTenant($tenant),
         ]);
     }
 

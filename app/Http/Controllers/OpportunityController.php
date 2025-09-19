@@ -6,7 +6,7 @@ namespace App\Http\Controllers;
 use App\Http\Requests\StoreOpportunityRequest;
 use App\Http\Requests\UpdateOpportunityRequest;
 use App\Models\Contact;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Customer;
 use App\Models\Lead;
 use App\Models\Opportunity; // Ensure this is imported
@@ -29,7 +29,7 @@ class OpportunityController extends Controller
     {
         $opportunity = new Opportunity();
         $customers = Customer::orderBy('company_name')->get();
-        $crmUsers = CrmUser::orderBy('full_name')->get();
+        $crmUsers = User::orderBy('full_name')->get();
         $stages = Opportunity::$stages;
 
         // Pre-select customer if provided (e.g., from a customer's detail page)
@@ -63,7 +63,7 @@ class OpportunityController extends Controller
     public function edit(Opportunity $opportunity)
     {
         $customers = Customer::orderBy('company_name')->get();
-        $crmUsers = CrmUser::orderBy('full_name')->get();
+        $crmUsers = User::orderBy('full_name')->get();
         $stages = Opportunity::$stages;
 
         $selectedCustomerId = $opportunity->customer_id;
@@ -129,7 +129,7 @@ class OpportunityController extends Controller
         $stages = Opportunity::$stages;
         $kanbanData = [];
         $stageTotals = [];
-        $crmUsers = CrmUser::orderBy('full_name')->get();
+        $crmUsers = User::orderBy('full_name')->get();
 
         foreach ($stages as $stageKey => $stageName) {
             $opportunitiesInStage = $opportunitiesByStage->get($stageKey, collect());

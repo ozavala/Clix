@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('payments', function (Blueprint $table) {
             $table->id('payment_id');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->string('payable_type');
             $table->unsignedBigInteger('payable_id');
             $table->date('payment_date');
@@ -21,7 +21,7 @@ return new class extends Migration
             $table->string('payment_method')->nullable();
             $table->string('reference_number')->nullable();
             $table->text('notes')->nullable();
-            $table->foreignId('created_by_user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
+            $table->foreignId('created_by_user_id')->nullable()->constrained('users', 'user_id')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
             

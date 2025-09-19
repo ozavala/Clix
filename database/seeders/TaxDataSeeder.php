@@ -9,7 +9,7 @@ use App\Models\TaxCollection;
 use App\Models\PurchaseOrder;
 use App\Models\Invoice;
 use App\Models\Quotation;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Services\TaxRecoveryService;
 
 class TaxDataSeeder extends Seeder
@@ -25,7 +25,7 @@ class TaxDataSeeder extends Seeder
         $purchaseOrders = PurchaseOrder::where('tax_amount', '>', 0)->get();
         $invoices = Invoice::where('tax_amount', '>', 0)->get();
         $quotations = Quotation::where('tax_amount', '>', 0)->get();
-        $user = CrmUser::first() ?? CrmUser::factory()->create();
+        $user = User::first() ?? User::factory()->create();
 
         $taxRecoveryService = new TaxRecoveryService();
 
@@ -59,7 +59,7 @@ class TaxDataSeeder extends Seeder
         $this->command->info('✅ Tax data seeded successfully!');
     }
 
-    private function createTaxPaymentsForPeriod(CrmUser $user): void
+    private function createTaxPaymentsForPeriod(User $user): void
     {
         $startDate = now()->subYears(2);
         $endDate = now();
@@ -81,7 +81,7 @@ class TaxDataSeeder extends Seeder
         }
     }
 
-    private function createTaxCollectionsForPeriod(CrmUser $user): void
+    private function createTaxCollectionsForPeriod(User $user): void
     {
         $startDate = now()->subYears(2);
         $endDate = now();

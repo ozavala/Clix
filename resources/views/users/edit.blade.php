@@ -4,15 +4,15 @@
 
 @section('content')
 <div class="container">
-    <h1>{{ __('messages.Edit') }} {{ __('messages.CRM User') }}: {{ $crmUser->name }}</h1>
+    <h1>{{ __('messages.Edit') }} {{ __('messages.CRM User') }}: {{ $User->name }}</h1>
 
-    <form action="{{ route('crm-users.update', $crmUser->user_id) }}" method="POST">
+    <form action="{{ route('crm-users.update', $User->user_id) }}" method="POST">
         @csrf
         @method('PUT')
 
         <div class="mb-3">
             <label for="username" class="form-label">Username</label>
-            <input type="text" class="form-control @error('username') is-invalid @enderror" id="username" name="username" value="{{ old('username', $crmUser->username) }}" required>
+            <input type="text" class="form-control @error('username') is-invalid @enderror" id="username" name="username" value="{{ old('username', $User->username) }}" required>
             @error('username')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -20,7 +20,7 @@
 
         <div class="mb-3">
             <label for="full_name" class="form-label">Full Name</label>
-            <input type="text" class="form-control @error('full_name') is-invalid @enderror" id="full_name" name="full_name" value="{{ old('full_name', $crmUser->full_name) }}" required>
+            <input type="text" class="form-control @error('full_name') is-invalid @enderror" id="full_name" name="full_name" value="{{ old('full_name', $User->full_name) }}" required>
             @error('full_name')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror
@@ -28,7 +28,7 @@
 
         <div class="mb-3">
             <label for="email" class="form-label">Email address</label>
-            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $crmUser->email) }}" required>
+            <input type="email" class="form-control @error('email') is-invalid @enderror" id="email" name="email" value="{{ old('email', $User->email) }}" required>
             @error('email')
                 <div class="invalid-feedback">{{ $message }}</div>
             @enderror

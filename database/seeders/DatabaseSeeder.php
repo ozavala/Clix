@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use App\Models\Contact;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Customer;
 use App\Models\Lead;
 use App\Models\Opportunity;
@@ -24,7 +24,7 @@ class DatabaseSeeder extends Seeder
     {
         // For a clean slate, you might want to disable foreign key checks before truncating
         // \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
-        // CrmUser::truncate(); // etc.
+        // User::truncate(); // etc.
         // \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         // 1. Seed foundational data that is mostly static
@@ -55,9 +55,9 @@ class DatabaseSeeder extends Seeder
         $this->command->info('Creating dynamic data using factories...');
 
         // Get all users (from seeder and potentially new ones) to assign tasks/opportunities
-        $users = CrmUser::all();
+        $users = User::all();
         if ($users->count() < 10) {
-            $users = $users->merge(CrmUser::factory(10 - $users->count())->create());
+            $users = $users->merge(User::factory(10 - $users->count())->create());
         }
 
         // Create customers, each with contacts and opportunities

@@ -16,7 +16,7 @@ class TaskController extends Controller
             'description' => 'nullable|string',
             'due_date' => 'nullable|date',
             'priority' => ['required', 'string', Rule::in(Task::$priorities)],
-            'assigned_to_user_id' => 'nullable|exists:crm_users,user_id',
+            'assigned_to_user_id' => 'nullable|exists:users,user_id',
             'taskable_id' => 'required|integer',
             'taskable_type' => 'required|string',
         ]);

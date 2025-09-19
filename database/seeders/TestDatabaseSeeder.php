@@ -4,7 +4,7 @@ namespace Database\Seeders;
 
 use App\Models\Tenant;
 use App\Models\UserRole;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Permission;
 use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\Hash;
@@ -51,11 +51,11 @@ class TestDatabaseSeeder extends Seeder
         }
 
         // Try to find existing admin user first
-        $adminUser = CrmUser::where('email', 'test@example.com')->first();
+        $adminUser = User::where('email', 'test@example.com')->first();
         
         // If user doesn't exist, create a new one with a unique username
         if (!$adminUser) {
-            $adminUser = CrmUser::create([
+            $adminUser = User::create([
                 'user_id' => 1,
                 'username' => 'testadmin' . now()->timestamp, // Ensure unique username
                 'email' => 'test@example.com',

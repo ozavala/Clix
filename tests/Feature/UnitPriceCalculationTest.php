@@ -8,7 +8,7 @@ use App\Models\Product;
 use App\Models\PurchaseOrder;
 use App\Models\PurchaseOrderItem;
 use App\Models\LandedCost;
-use App\Models\CrmUser;
+use App\Models\User;
 use App\Services\LandedCostService;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
@@ -35,7 +35,7 @@ class UnitPriceCalculationTest extends TestCase
         ]);
         
         // Create a user for the tenant
-        $this->user = CrmUser::factory()->forTenant($this->tenant)->create([
+        $this->user = User::factory()->forTenant($this->tenant)->create([
             'email' => 'test-' . uniqid() . '@example.com',
             'password' => bcrypt('password'),
         ]);

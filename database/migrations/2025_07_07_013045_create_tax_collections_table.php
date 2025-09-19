@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('tax_collections', function (Blueprint $table) {
             $table->id('tax_collection_id');
-            $table->foreignId('tenant_id')->constrained('tenants', 'id')->cascadeOnDelete();
+            $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->cascadeOnDelete();
             $table->foreignId('invoice_id')->nullable()->constrained('invoices', 'invoice_id')->onDelete('cascade');
             $table->foreignId('quotation_id')->nullable()->constrained('quotations', 'quotation_id')->onDelete('cascade');
             $table->foreignId('tax_rate_id')->constrained('tax_rates', 'tax_rate_id')->onDelete('cascade');
@@ -25,7 +25,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->string('status')->default('collected'); // 'collected', 'pending', 'refunded'
             $table->date('remittance_date')->nullable(); // Date of IVA remittance
-            $table->foreignId('created_by_user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
+            $table->foreignId('created_by_user_id')->nullable()->constrained('users', 'user_id')->onDelete('set null');
             $table->timestamps();
             $table->softDeletes();
         });
