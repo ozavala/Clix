@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('landed_costs', function (Blueprint $table) {
             $table->id('landed_cost_id');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
             $table->string('costable_type');
             $table->unsignedBigInteger('costable_id');
             $table->string('description');

@@ -13,15 +13,19 @@ return new class extends Migration
     {
         Schema::create('suppliers', function (Blueprint $table) {
             $table->id('supplier_id');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->string('name');
-            $table->string('legal_id')->nullable()->unique();
+            $table->string('legal_id',100)->nullable()->unique();
             $table->string('contact_person')->nullable();
             $table->string('email')->nullable()->unique();
             $table->string('phone_number')->nullable();
             $table->morphs('noteable');
             $table->timestamps();
             $table->softDeletes();
+
+            // Add individual indexes for specific query patterns
+            $table->index('noteable_type', 'suppliers_noteable_type_index');
+            $table->index('noteable_id', 'suppliers_noteable_id_index');
         });
     }
 

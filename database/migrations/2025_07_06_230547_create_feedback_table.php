@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('feedback', function (Blueprint $table) {
             $table->id('feedback_id');
+            $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
             $table->foreignId('user_id')->constrained('crm_users', 'user_id')->onDelete('cascade');
             $table->string('title');
             $table->text('description');

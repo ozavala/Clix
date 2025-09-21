@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('campaign_recipients', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('campaign_id')->constrained('marketing_campaigns')->onDelete('cascade');
+            $table->foreignId('campaign_id')->constrained('marketing_campaigns', 'marketing_campaign_id')->onDelete('cascade');
             $table->unsignedBigInteger('customer_id')->nullable();
             $table->unsignedBigInteger('lead_id')->nullable();
             $table->string('email');

@@ -12,10 +12,10 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('settings', function (Blueprint $table) {
-            $table->id();
+            $table->id('setting_id');
             // Add tenant_id column with foreign key
-            $table->unsignedBigInteger('tenant_id')->nullable();
-            $table->foreign('tenant_id')->references('id')->on('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
+            
             
             // Modify columns for better configuration management
             $table->string('group')->default('general');

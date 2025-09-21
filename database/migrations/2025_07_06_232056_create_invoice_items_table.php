@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('invoice_items', function (Blueprint $table) {
             $table->id('invoice_item_id');
+            $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
             $table->foreignId('invoice_id')->constrained('invoices', 'invoice_id')->onDelete('cascade');
             $table->foreignId('product_id')->nullable()->constrained('products', 'product_id')->onDelete('set null');
             $table->string('item_name');

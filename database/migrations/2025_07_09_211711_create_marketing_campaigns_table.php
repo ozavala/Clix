@@ -12,15 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('marketing_campaigns', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->id('marketing_campaign_id');
+            $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
             $table->string('name');
             $table->text('description')->nullable();
             $table->string('subject');
             $table->text('content');
             $table->enum('status', ['draft', 'scheduled', 'sending', 'sent', 'paused', 'cancelled'])->default('draft');
             $table->enum('type', ['email', 'newsletter', 'promotional', 'announcement'])->default('email');
-            $table->foreignId('email_template_id')->nullable()->constrained('email_templates')->onDelete('set null');
+            $table->foreignId('email_template_id')->nullable()->constrained('email_templates', 'email_template_id')->onDelete('set null');
             $table->unsignedBigInteger('created_by');
             $table->foreign('created_by')->references('user_id')->on('crm_users')->onDelete('cascade');
             $table->timestamp('scheduled_at')->nullable();

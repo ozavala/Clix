@@ -12,8 +12,8 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('email_logs', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('campaign_id')->nullable()->constrained('marketing_campaigns')->onDelete('cascade');
+            $table->id('email_logs_id');
+            $table->foreignId('campaign_id')->nullable()->constrained('marketing_campaigns', 'marketing_campaign_id')->onDelete('cascade');
             $table->foreignId('recipient_id')->nullable()->constrained('campaign_recipients')->onDelete('cascade');
             $table->string('email');
             $table->string('subject');

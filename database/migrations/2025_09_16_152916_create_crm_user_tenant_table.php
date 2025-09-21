@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('crm_user_tenant', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('crm_user_id')->constrained('crm_users', 'user_id')->onDelete('set null');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('crm_user_id')->constrained('crm_users', 'user_id')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->boolean('is_primary')->default(false);
             $table->timestamps();
             $table->unique(['crm_user_id', 'tenant_id']);

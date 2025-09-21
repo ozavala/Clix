@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('product_features', function (Blueprint $table) {
             $table->id('feature_id');
+            $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
             $table->string('name')->unique();
             $table->text('description')->nullable();
             $table->timestamps();

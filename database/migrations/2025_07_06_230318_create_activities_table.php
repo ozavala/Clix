@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('activities', function (Blueprint $table) {
             $table->id('activity_id');
+            $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
             $table->foreignId('lead_id')->constrained('leads', 'lead_id')->onDelete('cascade');
             $table->foreignId('user_id')->nullable()->constrained('crm_users', 'user_id')->onDelete('set null');
             $table->string('type', 50);

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('crm_users', function (Blueprint $table) {
             $table->id('user_id');
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
             $table->string('username', 100)->unique();
             $table->string('full_name');
             $table->string('email')->unique();

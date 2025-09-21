@@ -13,6 +13,7 @@ return new class extends Migration
     {
         Schema::create('goods_receipt_items', function (Blueprint $table) {
             $table->id('goods_receipt_item_id');
+            $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
             $table->foreignId('goods_receipt_id')->constrained('goods_receipts', 'goods_receipt_id')->onDelete('cascade');
             $table->foreignId('purchase_order_item_id')->constrained('purchase_order_items', 'purchase_order_item_id');
             $table->foreignId('product_id')->constrained('products', 'product_id');

@@ -14,8 +14,8 @@ return new class extends Migration
     public function up()
     {
         Schema::create('accounts', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('tenant_id')->constrained('tenants')->onDelete('cascade');
+            $table->id('account_id');
+            $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->string('code')->unique();
             $table->string('name');
             $table->string('type'); // Activo, Pasivo, Ingreso, Gasto, Impuesto, Patrimonio
@@ -23,7 +23,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->timestamps();
 
-            $table->foreign('parent_id')->references('id')->on('accounts')->onDelete('set null');
+            $table->foreign('parent_id')->references('account_id')->on('accounts', 'account_id')->onDelete('set null');
         });
     }
 

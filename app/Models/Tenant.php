@@ -12,7 +12,7 @@ use Illuminate\Support\Facades\App;
 
 class Tenant extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory;
 
     protected $fillable = [
         'name',
@@ -28,7 +28,7 @@ class Tenant extends Model
         'logo',
         'email',
         'slogan',
-        'deleted_at',
+        
     ];
 
     protected $casts = [
