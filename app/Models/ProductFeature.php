@@ -5,14 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use \App\Models\Traits\HasTenantScope;
 
 class ProductFeature extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenantScope;
 
     protected $primaryKey = 'feature_id';
 
     protected $fillable = [
+        'tenant_id',
         'name',
         'description',
     ];

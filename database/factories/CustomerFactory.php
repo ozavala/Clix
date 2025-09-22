@@ -29,6 +29,8 @@ class CustomerFactory extends Factory
         $type = $this->faker->randomElement(['Person', 'Company']);
 
         $data = [
+            'tenant_id' => $this->tenant_id ?? Tenant::factory(),
+            'created_by_user_id' => $this->created_by_user_id ?? CrmUser::inRandomOrder()->first()->user_id ?? CrmUser::factory(),
             'type' => $type,
             'legal_id' => $this->faker->unique()->bothify('??-#######-#'), // e.g., AB-1234567-8
             'email' => $this->faker->unique()->safeEmail,
@@ -37,6 +39,12 @@ class CustomerFactory extends Factory
             'first_name' => $type === 'Person' ? $this->faker->firstName : null,
             'last_name' => $type === 'Person' ? $this->faker->lastName : null,
             'company_name' => $type === 'Company' ? $this->faker->company : null,
+            'address_street' => $this->faker->streetAddress,
+            'address_city' => $this->faker->city,
+            'address_state' => $this->faker->state,
+            'address_postal_code' => $this->faker->postcode,
+            'address_country' => $this->faker->country,
+            // 'notes' => $this->faker->paragraph, // Removed to avoid conflict with
         ];
         
         // Only set these if not already set (allows tests to override)

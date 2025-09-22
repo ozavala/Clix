@@ -12,11 +12,12 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('campaign_recipients', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('campaign_id')->constrained('marketing_campaigns', 'marketing_campaign_id')->onDelete('cascade');
-            $table->unsignedBigInteger('customer_id')->nullable();
-            $table->unsignedBigInteger('lead_id')->nullable();
-            $table->string('email');
+            $table->id('recipients_id');
+            $table->foreignId('campaign_id')->constrained('marketing_campaigns', 'campaign_id')->onDelete('cascade');
+            $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
+            $table->foreignId('customer_id')->constrained('customers', 'customer_id')->nullable();
+            $table->foreignId('lead_id')->constrained('leads', 'lead_id')->nullable();
+            $table->string('email')->unique();
             $table->string('name')->nullable();
             $table->enum('status', ['pending', 'sent', 'delivered', 'opened', 'clicked', 'bounced', 'unsubscribed', 'failed'])->default('pending');
             $table->timestamp('sent_at')->nullable();
@@ -27,6 +28,7 @@ return new class extends Migration
             $table->text('error_message')->nullable();
             $table->json('tracking_data')->nullable(); // Datos de tracking
             $table->timestamps();
+
             
             $table->unique(['campaign_id', 'email']);
             $table->index(['campaign_id', 'status']);

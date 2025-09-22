@@ -5,14 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use \App\Models\Traits\HasTenantScope;
 
 class GoodsReceiptItem extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenantScope;
 
     protected $primaryKey = 'goods_receipt_item_id';
 
     protected $fillable = [
+        'tenant_id',
         'goods_receipt_id',
         'purchase_order_item_id',
         'product_id',

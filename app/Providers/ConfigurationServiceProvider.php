@@ -12,7 +12,7 @@ class ConfigurationServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->singleton(ConfigurationService::class, function ($app) {
+        $this->app->bind(ConfigurationService::class, function ($app) {
             $tenantId = null;
             
             // Try to get tenant ID from tenant helper if available

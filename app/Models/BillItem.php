@@ -6,14 +6,16 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use \App\Models\Traits\HasTenantScope;
 
 class BillItem extends Model
 {
-    use HasFactory,SoftDeletes;
+    use HasFactory,SoftDeletes, HasTenantScope;
 
     protected $primaryKey = 'bill_item_id';
 
     protected $fillable = [
+        'tenant_id',
         'bill_id',
         'purchase_order_item_id',
         'product_id',

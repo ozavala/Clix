@@ -28,7 +28,7 @@ return new class extends Migration
             $table->string('email')->nullable();
             $table->string('slogan')->nullable();
             $table->string('industry')->nullable();
-            $table->softDeletes();
+            
             $table->timestamps();
             // Add index - we'll use a try-catch to handle the case where it already exists
             try {

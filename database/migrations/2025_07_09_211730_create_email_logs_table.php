@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('email_logs', function (Blueprint $table) {
             $table->id('email_logs_id');
-            $table->foreignId('campaign_id')->nullable()->constrained('marketing_campaigns', 'marketing_campaign_id')->onDelete('cascade');
-            $table->foreignId('recipient_id')->nullable()->constrained('campaign_recipients')->onDelete('cascade');
+            $table->foreignId('campaign_id')->nullable()->constrained('marketing_campaigns', 'campaign_id')->onDelete('cascade');
+            $table->foreignId('recipient_id')->nullable()->constrained('campaign_recipients', 'recipients_id')->onDelete('cascade');
             $table->string('email');
             $table->string('subject');
             $table->enum('type', ['campaign', 'notification', 'system'])->default('campaign');

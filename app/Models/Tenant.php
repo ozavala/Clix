@@ -122,9 +122,8 @@ class Tenant extends Model
      */
     public function initializeConfiguration()
     {
-        $configService = app(ConfigurationService::class);
-        $configService->setTenantId($this->id);
-        $configService->initializeCoreSettings($this->id);
+        $configService = new \App\Services\ConfigurationService($this->id);
+        $configService->initializeCoreSettings();
         
         // Map tenant attributes to settings
         $settings = [

@@ -9,11 +9,12 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Notifications\Notifiable;
 use App\Models\UserRole; // Ensure you have the correct namespace for UserRole
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use \App\Models\Traits\HasTenantScope;
 
  
 class CrmUser extends Authenticatable implements MustVerifyEmail
 {
-    use HasFactory, Notifiable;
+    use HasFactory, Notifiable, HasTenantScope;
 
     protected $primaryKey = 'user_id';
 

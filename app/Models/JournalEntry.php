@@ -7,11 +7,12 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use \App\Models\Traits\HasTenantScope;
 
 
 class JournalEntry extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenantScope;
 
     protected $primaryKey = 'journal_entry_id';
 

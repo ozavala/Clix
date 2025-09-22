@@ -12,13 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('crm_user_tenant', function (Blueprint $table) {
-            $table->id();
-            $table->foreignId('crm_user_id')->constrained('crm_users', 'user_id')->onDelete('cascade');
+           
+            $table->foreignId('user_id')->constrained('crm_users', 'user_id')->onDelete('cascade');
             $table->foreignId('tenant_id')->constrained('tenants','tenant_id')->onDelete('cascade');
             $table->boolean('is_primary')->default(false);
             $table->timestamps();
-            $table->unique(['crm_user_id', 'tenant_id']);
-            $table->index(['crm_user_id', 'tenant_id']);
+            
+            $table->primary(['user_id', 'tenant_id']);
+            $table->unique(['user_id', 'tenant_id']);
+            $table->index(['user_id', 'tenant_id']);
         });
     }
 

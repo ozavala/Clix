@@ -5,14 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use \App\Models\Traits\HasTenantScope;
 
 class OrderItem extends Model
 {
-    use HasFactory;
+    use HasFactory, hasTenantScope;
 
     protected $primaryKey = 'order_item_id';
 
     protected $fillable = [
+        'tenant_id',
         'order_id',
         'product_id',
         'item_name',

@@ -2,17 +2,20 @@
 
 namespace App\Models;
 
+use App\Models\Traits\HasTenantScope;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
+
 class QuotationItem extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenantScope;
 
     protected $primaryKey = 'quotation_item_id';
 
     protected $fillable = [
+        'tenant_id',
         'quotation_id',
         'product_id',
         'item_name',

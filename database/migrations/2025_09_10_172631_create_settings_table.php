@@ -15,8 +15,6 @@ return new class extends Migration
             $table->id('setting_id');
             // Add tenant_id column with foreign key
             $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
-            
-            
             // Modify columns for better configuration management
             $table->string('group')->default('general');
             $table->text('description')->nullable();

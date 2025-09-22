@@ -5,14 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use \App\Models\Traits\HasTenantScope;
 
 class Address extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenantScope;
 
     protected $primaryKey = 'address_id';
 
     protected $fillable = [
+        'tenant_id',
         'addressable_id',
         'addressable_type',
         'address_type',

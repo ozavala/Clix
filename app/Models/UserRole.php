@@ -4,10 +4,11 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use \App\Models\Traits\HasTenantScope;
 
 class UserRole extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenantScope;
 
     protected $primaryKey = 'role_id';
 
@@ -27,6 +28,8 @@ class UserRole extends Model
     // Will be defined fully after pivot table migration
     public function permissions()
     {
-        return $this->belongsToMany(Permission::class, 'permission_user_role', 'role_id', 'permission_id')->withTimestamps();
+        return $this->belongsToMany(Permission::class, 'permission_user_role', 'role_id', 'permission_id')
+               ->withPivot('tenant_id')
+               ->wherePivot('tenant_id', app('currentTenant')->id);
     }
 }

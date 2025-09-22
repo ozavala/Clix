@@ -5,14 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphTo;
+use \App\Models\Traits\HasTenantScope;
 
 class LandedCost extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenantScope;
 
     protected $primaryKey = 'landed_cost_id';
 
     protected $fillable = [
+        'tenant_id',
         'costable_id',
         'costable_type',
         'description',

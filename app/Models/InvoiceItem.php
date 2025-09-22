@@ -5,14 +5,16 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use \App\Models\Traits\HasTenantScope;
 
 class InvoiceItem extends Model
 {
-    use HasFactory;
+    use HasFactory, HasTenantScope;
 
     protected $primaryKey = 'invoice_item_id';
 
     protected $fillable = [
+        'tenant_id',
         'invoice_id',
         'product_id',
         'item_name',

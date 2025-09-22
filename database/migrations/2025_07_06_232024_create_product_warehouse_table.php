@@ -12,13 +12,15 @@ return new class extends Migration
     public function up(): void
     {
         Schema::create('product_warehouse', function (Blueprint $table) {
-            $table->id();
+            $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
             $table->foreignId('product_id')->constrained('products', 'product_id')->onDelete('cascade');
             $table->foreignId('warehouse_id')->constrained('warehouses', 'warehouse_id')->onDelete('cascade');
             $table->integer('quantity')->default(0);
             $table->timestamps();
             
+            $table->primary(['tenant_id', 'product_id', 'warehouse_id']);
             $table->unique(['product_id', 'warehouse_id']);
+            $table->index(['tenant_id', 'product_id', 'warehouse_id']);
         });
     }
 
