@@ -47,7 +47,7 @@ class TenantController extends Controller
         }
         
         // For non-superadmin users, they can only switch to their primary tenant
-        if (!$user->isSuperAdmin() && $tenant->id !== $user->primaryTenant()?->id) {
+        if (!$user->isSuperAdmin() && $tenant->getKey() !== $user->primaryTenant()?->getKey()) {
             return redirect()->back()->with('error', 'You can only access your primary tenant.');
         }
         
@@ -55,7 +55,7 @@ class TenantController extends Controller
         $user->setPrimaryTenant($tenant);
         
         // Store the current tenant ID in the session
-        Session::put('current_tenant_id', $tenant->id);
+        Session::put('current_tenant_id', $tenant->getKey());
         
         return redirect()->back()->with('success', __('Switched to :tenant', ['tenant' => $tenant->name]));
     }

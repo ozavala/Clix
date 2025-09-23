@@ -75,9 +75,9 @@ class User extends Authenticatable
      */
     public function tenants(): BelongsToMany
     {
-        return $this->belongsToMany(Tenant::class, 'crm_user_tenat')
+        return $this->belongsToMany(Tenant::class, 'crm_user_tenant', 'user_id', 'tenant_id')
             ->withTimestamps()
-            ->withPivot('is_owner');
+            ->withPivot('is_primary');
     }
 
     /**
@@ -98,8 +98,8 @@ class User extends Authenticatable
         }
 
         return $this->tenants()
-            ->where('tenant_id', $tenant->id)
-            ->wherePivot('is_owner', true)
+            ->where('tenant_id', $tenant->getKey())
+            ->wherePivot('is_primary', true)
             ->exists();
     }
 
@@ -112,8 +112,8 @@ class User extends Authenticatable
             return true;
         }
 
-        return $this->tenants()->where('tenant_id', $tenant->id)->exists() || 
-               $this->tenant_id === $tenant->id;
+        return $this->tenants()->where('tenant_id', $tenant->getKey())->exists() || 
+               $this->tenant_id === $tenant->getKey();
     }
 
     /**

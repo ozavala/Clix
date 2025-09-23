@@ -80,8 +80,8 @@ class Tenant extends Model
      */
     public function users(): BelongsToMany
     {
-        return $this->belongsToMany(User::class, 'crm_user_tenat')
-            ->withPivot('is_owner')
+        return $this->belongsToMany(User::class, 'crm_user_tenant')
+            ->withPivot('is_primary')
             ->withTimestamps();
     }
 
@@ -174,7 +174,7 @@ class Tenant extends Model
     public function syncSettingsWithTenant()
     {
         $configService = app(ConfigurationService::class);
-        $configService->setTenantId($this->id);
+        $configService->setTenantId($this->getKey());
         $companySettings = $configService->getByGroup('company');
         
         $this->update([
@@ -195,7 +195,7 @@ class Tenant extends Model
     public function config()
     {
         $configService = app(ConfigurationService::class);
-        $configService->setTenantId($this->id);
+        $configService->setTenantId($this->getKey());
         return $configService;
     }
     
@@ -230,6 +230,14 @@ class Tenant extends Model
     public function getLogoUrlAttribute(): ?string
     {
         $logoPath = $this->getSetting('logo_path');
-        return $logoPath ? asset("storage/tenants/{$this->id}/" . $logoPath) : null;
+        return $logoPath ? asset("storage/tenants/{$this->getKey()}/" . $logoPath) : null;
+    }
+
+    /**
+     * Accessor alias so that $tenant->id returns the primary key 'tenant_id'.
+     */
+    public function getIdAttribute(): int|null
+    {
+        return $this->getKey();
     }
 }

@@ -139,7 +139,7 @@ class CrmUser extends Authenticatable implements MustVerifyEmail
      */
     public function tenants()
     {
-        return $this->belongsToMany(Tenant::class, 'crm_user_tenant', 'crm_user_id', 'tenant_id')
+        return $this->belongsToMany(Tenant::class, 'crm_user_tenant', 'user_id', 'tenant_id')
             ->withPivot('is_primary')
             ->withTimestamps();
     }
@@ -182,7 +182,7 @@ class CrmUser extends Authenticatable implements MustVerifyEmail
 
         // Reset primary status for all other tenants
         \DB::table('crm_user_tenant')
-            ->where('crm_user_id', $this->user_id)
+            ->where('user_id', $this->user_id)
             ->update(['is_primary' => false]);
 
         // Set the new primary tenant

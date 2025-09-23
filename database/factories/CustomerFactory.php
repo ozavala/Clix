@@ -77,31 +77,9 @@ class CustomerFactory extends Factory
     public function forTenant(\App\Models\Tenant $tenant): static
     {
         return $this->state(fn (array $attributes) => [
-            'tenant_id' => $tenant->id,
+            'tenant_id' => $tenant->getKey(),
             'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
         ]);
     }
-
-    /**
-     * Configure the model factory.
-     *
-     * @return $this
-     */
-    public function configure()
-    {
-        return $this->afterCreating(function (Customer $customer) {
-            $customer->contacts()->create([
-                'tenant_id' => $customer->tenant_id,
-                'contactable_id' => $customer->customer_id,
-                'contactable_type' => 'customer',
-                'first_name' => $this->faker->firstName(),
-                'last_name' => $this->faker->lastName(),
-                'email' => $this->faker->unique()->safeEmail(),
-                'phone' => $this->faker->phoneNumber(),
-                'title' => $this->faker->jobTitle(),
-                
-                'created_by_user_id' => $customer->created_by_user_id,
-            ]);
-        });
-    }
+    
 }

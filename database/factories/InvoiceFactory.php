@@ -33,7 +33,7 @@ class InvoiceFactory extends Factory
             : CrmUser::factory()->forTenant($tenant)->create();
 
         return [
-            'tenant_id' => $tenant->id,
+            'tenant_id' => $tenant->getKey(),
             'order_id' => $order->order_id,
             'invoice_number' => 'INV-' . fake()->unique()->numberBetween(1000, 9999),
             'customer_id' => $customer->customer_id,
@@ -52,7 +52,7 @@ class InvoiceFactory extends Factory
     public function forTenant(\App\Models\Tenant $tenant, ?\App\Models\Customer $customer = null): static
     {
         return $this->state(fn (array $attributes) => [
-            'tenant_id' => $tenant->id,
+            'tenant_id' => $tenant->getKey(),
             'order_id' => Order::factory()->forTenant($tenant),
             'customer_id' => $customer ? $customer->customer_id : Customer::factory()->forTenant($tenant),
             'created_by_user_id' => CrmUser::factory()->forTenant($tenant),

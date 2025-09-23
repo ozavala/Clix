@@ -45,7 +45,7 @@ abstract class TestCase extends BaseTestCase
 
         // Create admin role
         $this->adminRole = UserRole::firstOrCreate(
-            ['name' => 'Admin'],
+            ['name' => 'Admin', 'tenant_id' => $this->tenant->id],
             [
                 'description' => 'Administrator with full access',
                 'created_at' => now(),
@@ -54,7 +54,7 @@ abstract class TestCase extends BaseTestCase
         );
 
         $this->salesRole = UserRole::firstOrCreate(
-            ['name' => 'Sales'],
+            ['name' => 'Sales', 'tenant_id' => $this->tenant->id],
             [
                 'description' => 'Sales representative',
                 'created_at' => now(),
@@ -137,6 +137,7 @@ abstract class TestCase extends BaseTestCase
             $role = \App\Models\UserRole::create([
                 'name' => 'TestRole_' . uniqid(),
                 'description' => 'Rol temporal para testing',
+                'tenant_id' => $this->tenant->id,
             ]);
             $user->roles()->attach($role);
         }
