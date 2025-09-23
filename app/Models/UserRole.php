@@ -13,6 +13,7 @@ class UserRole extends Model
     protected $primaryKey = 'role_id';
 
     protected $fillable = [
+        'tenant_id',
         'name', // Roles should have a name, e.g., 'Admin', 'Sales'
         'description',
     ];
@@ -28,8 +29,18 @@ class UserRole extends Model
     // Will be defined fully after pivot table migration
     public function permissions()
     {
-        return $this->belongsToMany(Permission::class, 'permission_user_role', 'role_id', 'permission_id')
-               ->withPivot('tenant_id')
-               ->wherePivot('tenant_id', app('currentTenant')->id);
+        $query = $this->belongsToMany(
+            Permission::class, 
+            'permission_user_role', 
+            'role_id', 
+            'permission_id'
+        )->withPivot('tenant_id');
+    
+        // Only add the tenant scope if we have a current tenant
+        if ($tenant = app('currentTenant')) {
+            $query->wherePivot('tenant_id', $tenant->tenant_id);
+        }
+    
+        return $query;
     }
 }

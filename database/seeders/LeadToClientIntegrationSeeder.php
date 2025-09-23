@@ -17,8 +17,11 @@ class LeadToClientIntegrationSeeder extends Seeder
 {
     public function run(): void
     {
-        // 1. Crear un usuario CRM para asignaciones
-        $user = CrmUser::factory()->create();
+        // Get or create a tenant
+        $tenant = Tenant::first() ?? Tenant::factory()->create();
+        
+        // Create a user for the tenant
+        $user = CrmUser::factory()->forTenant($tenant)->create();
 
         // 2. Crear un lead
         $lead = Lead::factory()->create([

@@ -26,29 +26,61 @@ class DatabaseSeeder extends Seeder
         // \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         // CrmUser::truncate(); // etc.
         // \Illuminate\Support\Facades\DB::statement('SET FOREIGN_KEY_CHECKS=1;');
+        // Create a tenant if none exists
+        // Disable foreign key checks
+        \DB::statement('SET FOREIGN_KEY_CHECKS=0;');
+        
+        // Truncate tables
+        \App\Models\Tenant::truncate();
+        \App\Models\CrmUser::truncate();
+        \App\Models\UserRole::truncate();
+        
+        \DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
+        // Create a tenant
+        $tenant = \App\Models\Tenant::factory()->create([
+            'name' => 'Default Tenant',
+            'email' => 'admin@example.com',
+        ]);
+
+        // Create an admin user
+        $admin = \App\Models\CrmUser::factory()->forTenant($tenant)->create([
+            'email' => 'admin@example.com',
+        ]);
+
+        // Assign admin role
+        $adminRole = \App\Models\UserRole::firstOrCreate([
+            'tenant_id' => $tenant->tenant_id,
+            'name' => 'admin',
+            'description' => 'Administrator',
+        ]);
+
+        $admin->roles()->attach($adminRole);
         // 1. Seed foundational data that is mostly static
         $this->call([
-            // Core system seeders
-            AdminUserAndTenantSeeder::class,
-            PermissionSeeder::class,
-            TaxRateSeeder::class,
+            // 
+            TenantSeeder::class,
+            CrmUserSeeder::class,
             UserRoleSeeder::class,
+            //AdminUserAndTenantSeeder::class,
+            //PermissionSeeder::class,
+            //TaxRateSeeder::class,
+            //UserRoleSeeder::class,
             
             // Basic data seeders
-            CrmUserSeeder::class,
-            ProductCategorySeeder::class,
-            ProductFeatureSeeder::class,
-            WarehouseSeeder::class,
-            SupplierSeeder::class,
-            ProductSeeder::class,
+            //CrmUserSeeder::class,
+            //ProductCategorySeeder::class,
+            //ProductFeatureSeeder::class,
+            //WarehouseSeeder::class,
+            //SupplierSeeder::class,
+            //ProductSeeder::class,
             
             // Transactional data seeders
-            OrderSeeder::class,
-            QuotationSeeder::class,
-            PaymentSeeder::class,
-            AccountSeeder::class,
-            TransactionSeeder::class,
+            //OrderSeeder::class,
+            //QuotationSeeder::class,
+            //PaymentSeeder::class,
+            //AccountSeeder::class,
+            //TransactionSeeder::class,
         ]);
 
         // 2. Use factories to create a rich, dynamic dataset for testing

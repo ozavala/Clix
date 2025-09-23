@@ -14,18 +14,24 @@ class UserRoleSeeder extends Seeder
      */
     public function run(): void
     {
-        // Create Roles
+        // Get the first tenant or create one if none exists
+    $tenant = \App\Models\Tenant::first() ?? \App\Models\Tenant::factory()->create();
+        
+    // Create Roles
         $adminRole = UserRole::create([
+            'tenant_id' => $tenant->tenant_id,
             'name' => 'Admin',
             'description' => 'Administrator with full access',
         ]);
 
         $salesRole = UserRole::create([
+            'tenant_id' => 1,
             'name' => 'Sales',
             'description' => 'Sales team member with access to customer and sales modules',
         ]);
 
         $supportRole = UserRole::create([
+            'tenant_id' => 1,
             'name' => 'Support',
             'description' => 'Support team member with access to customer and support related modules',
         ]);

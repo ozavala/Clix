@@ -30,20 +30,20 @@ class CustomerFactory extends Factory
 
         $data = [
             'tenant_id' => $this->tenant_id ?? Tenant::factory(),
-            'created_by_user_id' => $this->created_by_user_id ?? CrmUser::inRandomOrder()->first()->user_id ?? CrmUser::factory(),
             'type' => $type,
-            'legal_id' => $this->faker->unique()->bothify('??-#######-#'), // e.g., AB-1234567-8
-            'email' => $this->faker->unique()->safeEmail,
-            'phone_number' => $this->faker->phoneNumber,
-            'status' => $this->faker->randomElement(['Active', 'Inactive', 'Lead', 'Prospect']),
             'first_name' => $type === 'Person' ? $this->faker->firstName : null,
             'last_name' => $type === 'Person' ? $this->faker->lastName : null,
+            'email' => $this->faker->unique()->safeEmail,
+            'phone_number' => $this->faker->phoneNumber,
             'company_name' => $type === 'Company' ? $this->faker->company : null,
+            'legal_id' => $this->faker->unique()->bothify('??-#######-#'), // e.g., AB-1234567-8
             'address_street' => $this->faker->streetAddress,
             'address_city' => $this->faker->city,
             'address_state' => $this->faker->state,
             'address_postal_code' => $this->faker->postcode,
             'address_country' => $this->faker->country,
+            'status' => $this->faker->randomElement(['Active', 'Inactive', 'Lead', 'Prospect']),
+            'created_by_user_id' => $this->created_by_user_id ?? CrmUser::inRandomOrder()->first()->user_id ?? CrmUser::factory(),
             // 'notes' => $this->faker->paragraph, // Removed to avoid conflict with
         ];
         

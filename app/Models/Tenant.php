@@ -14,26 +14,48 @@ class Tenant extends Model
 {
     use HasFactory;
 
+      /**
+     * The primary key for the model.
+     *
+     * @var string
+     */
+    protected $primaryKey = 'tenant_id';
+
+    /**
+     * The "type" of the primary key ID.
+     *
+     * @var string
+     */
+    protected $keyType = 'int';
+
+    /**
+     * Indicates if the IDs are auto-incrementing.
+     *
+     * @var bool
+     */
+    public $incrementing = true;
+
     protected $fillable = [
         'name',
         'legal_id',
-        'address',
-        'phone',
-        'website',
-        'industry',
         'is_active',
         'subscription_plan',
         'subscription_ends_at',
-        'settings',
+        'address',
+        'phone',
+        'website',
         'logo',
         'email',
         'slogan',
+        'industry',
+        'settings',
         
     ];
 
     protected $casts = [
         'is_active' => 'boolean',
         'subscription_ends_at' => 'datetime',
+        'address' => 'array',
         'settings' => 'array',
     ];
     
@@ -43,7 +65,9 @@ class Tenant extends Model
     protected static function booted()
     {
         static::created(function ($tenant) {
-            $tenant->initializeConfiguration();
+            if ($tenant->tenant_id) {
+                $tenant->initializeConfiguration();
+            }
         });
         
         static::updated(function ($tenant) {
@@ -64,12 +88,12 @@ class Tenant extends Model
     /**
      * Get the owners of the tenant.
      */
-    public function owners(): BelongsToMany
+    /*public function owners(): BelongsToMany
     {
         return $this->belongsToMany(User::class, 'tenant_user')
             ->wherePivot('is_owner', true)
             ->withTimestamps();
-    }
+    }*/
 
     /**
      * Get all of the transactions for the tenant.
@@ -122,7 +146,7 @@ class Tenant extends Model
      */
     public function initializeConfiguration()
     {
-        $configService = new \App\Services\ConfigurationService($this->id);
+        $configService = new \App\Services\ConfigurationService($this->tenant_id);
         $configService->initializeCoreSettings();
         
         // Map tenant attributes to settings

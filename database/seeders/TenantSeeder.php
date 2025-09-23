@@ -7,9 +7,17 @@ use App\Models\Tenant;
 
 class TenantSeeder extends Seeder
 {
-    public function run()
+    public function run(): void
     {
-        // Crea 3 tenants de ejemplo
-        Tenant::factory()->count(3)->create();
+        // Create a default tenant if none exists
+        $tenant = \App\Models\Tenant::first() ?? \App\Models\Tenant::factory()->create([
+            'name' => 'Default Tenant',
+            'email' => 'admin@example.com',
+        ]);
+
+        // Create additional tenants if needed
+        /*if (\App\Models\Tenant::count() < 5) {
+            \App\Models\Tenant::factory()->count(5 - \App\Models\Tenant::count())->create();
+        }*/
     }
 }

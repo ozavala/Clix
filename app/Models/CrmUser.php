@@ -93,11 +93,18 @@ class CrmUser extends Authenticatable implements MustVerifyEmail
         
         parent::sendEmailVerificationNotification();
     }
+    /**
+     * The user that the CRM user belongs to.
+     */
+    public function user(): BelongsTo
+    {
+        return $this->belongsTo(User::class);
+    }
 
     /**
      * The roles that belong to the CRM user.
      */
-    public function roles()
+    public function roles(): BelongsToMany
     {
         return $this->belongsToMany(UserRole::class, 'crm_user_user_role', 'crm_user_id', 'role_id')->withTimestamps();
     }

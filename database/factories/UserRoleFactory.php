@@ -17,7 +17,9 @@ class UserRoleFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'tenant_id' => Tenant::factory(),
+            'name' => $this->faker()->name(),
+            'description'=> $this->faker()->sentence(),
         ];
     }
 }

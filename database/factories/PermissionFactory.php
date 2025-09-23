@@ -17,7 +17,8 @@ class PermissionFactory extends Factory
     public function definition(): array
     {
         return [
-            //
+            'tenant_id' => Tenant::factory(),
+            'name' => $this->faker()->randomElement(['admin_user','marketing_user, sales_usr'])
         ];
     }
 }

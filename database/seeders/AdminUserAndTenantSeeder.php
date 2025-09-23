@@ -9,6 +9,7 @@ use Illuminate\Database\Seeder;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
+
 class AdminUserAndTenantSeeder extends Seeder
 {
     /**
@@ -18,15 +19,25 @@ class AdminUserAndTenantSeeder extends Seeder
     {
         // Create default tenant
         $tenant = Tenant::firstOrCreate(
-            ['name' => 'Default Tenant'],
+            ['name' => 'Default-2 Tenant'],
             [
                 'legal_id' => '123456789',
-                'address' => '123 Main St, Anytown, USA',
-                'phone' => '+1 234 567 8900',
-                'website' => 'https://example.com',
-                'industry' => 'Technology',
                 'is_active' => true,
                 'subscription_plan' => 'enterprise',
+                'subscription_ends_at' => now()->addYear(),
+                'address' => [
+                    'street' => '123 Main St, Anytown, USA',
+                    'city' => 'Anytown',
+                    'state' => 'CA',
+                    'postal_code' => '12345',
+                    'country' => 'EC'
+                    ],
+                'phone' => '+1 234 567 8900',
+                'website' => 'https://example.com',
+                'logo' => 'https://example.com/logo.png',
+                'email' => 'admin@example.com',
+                'slogan' => 'Your Business Partner',
+                'industry' => 'Technology',
                 'settings' => [
                     'timezone' => 'America/New_York',
                     'date_format' => 'm/d/Y',
@@ -34,6 +45,12 @@ class AdminUserAndTenantSeeder extends Seeder
                     'currency' => 'USD',
                     'features' => ['advanced_reporting', 'api_access'],
                 ],
+                                
+                
+                
+                
+                
+                
             ]
         );
 

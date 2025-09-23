@@ -87,8 +87,8 @@ class ConfigurationService
 
     public function __construct($tenantId = null)
     {
-        if ($tenantId === null && function_exists('tenant')) {
-            $tenantId = tenant('id');
+        if ($tenantId === null) {
+            throw new \InvalidArgumentException('Tenant ID is required');
         }
         $this->tenantId = $tenantId;
     }

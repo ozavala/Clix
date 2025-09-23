@@ -7,6 +7,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use \App\Models\Traits\HasTenantScope;
@@ -26,7 +27,7 @@ class User extends Authenticatable
         'email',
         'password',
         'tenant_id',
-        'is_super_admin',
+        'crm_user_id'
     ];
 
     /**
@@ -52,6 +53,13 @@ class User extends Authenticatable
             'is_super_admin' => 'boolean',
             'tenant_id' => 'integer',
         ];
+    }
+    /**
+     * Get the CRM user that the user belongs to.
+     */
+    public function crmProfile(): HasOne
+    {
+        return $this->hasOne(CrmUser::class);
     }
 
     /**
