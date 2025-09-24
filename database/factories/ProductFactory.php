@@ -20,15 +20,28 @@ class ProductFactory extends Factory
         $taxCategories = ['goods', 'services', 'transport', 'insurance', 'storage', 'transport_public'];
         $taxRates = [0, 15, 22];
         
-        // Get or create a tenant
-        $tenant = Tenant::first() ?? Tenant::factory()->create();
+        // Prefer authenticated user's tenant (crm or default guard), then currentTenant, then first/new tenant
+        $authCrm = auth('crm')->user();
+        $authWeb = auth()->user();
+        $tenant = null;
+        if ($authCrm && $authCrm->tenant_id) {
+            $tenant = Tenant::find($authCrm->tenant_id);
+        } elseif ($authWeb && method_exists($authWeb, 'tenant_id') && $authWeb->tenant_id) {
+            $tenant = Tenant::find($authWeb->tenant_id);
+        }
+        if (!$tenant) {
+            $tenant = (app()->bound('currentTenant') && app('currentTenant'))
+                ? app('currentTenant')
+                : (Tenant::first() ?? Tenant::factory()->create());
+        }
+        $tenantId = $tenant->tenant_id ?? $tenant->id;
         
         // Get or create a user for the tenant
-        $user = CrmUser::where('tenant_id', $tenant->tenant_id)->first() 
+        $user = CrmUser::where('tenant_id', $tenantId)->first() 
             ?: CrmUser::factory()->forTenant($tenant)->create();
 
         return [
-            'tenant_id' => $tenant->tenant_id,
+            'tenant_id' => $tenantId,
             'name' => fake()->words(2, true),
             'description' => fake()->paragraph(),
             'sku' => fake()->unique()->regexify('[A-Z]{2}[0-9]{6}'),

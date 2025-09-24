@@ -14,9 +14,10 @@ return new class extends Migration
         Schema::create('permissions', function (Blueprint $table) {
             $table->id('permission_id');
             $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
-            $table->string('name', 100)->unique();
+            $table->string('name', 100);
             $table->text('description')->nullable();
             $table->timestamps();
+            $table->unique(['tenant_id', 'name']);
         });
     }
 

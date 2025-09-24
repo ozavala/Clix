@@ -169,7 +169,13 @@ class ProductController extends TenantAwareController
         foreach ($featuresData as $feature) {
             if (!empty($feature['feature_id']) && !empty($feature['value'])) {
                 // Ensure feature_id is numeric if it comes from form as string
-                $syncData[ (int) $feature['feature_id']] = ['value' => $feature['value']];
+                $tenantId = app()->bound('currentTenant') && app('currentTenant')
+                    ? app('currentTenant')->getKey()
+                    : ($product->tenant_id ?? null);
+                $syncData[ (int) $feature['feature_id']] = [
+                    'tenant_id' => $tenantId,
+                    'value' => $feature['value']
+                ];
             }
         }
         $product->features()->sync($syncData);

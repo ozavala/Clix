@@ -29,4 +29,20 @@ class LandedCost extends Model
     {
         return $this->morphTo();
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (empty($model->tenant_id)) {
+                if (app()->bound('currentTenant') && app('currentTenant')) {
+                    $model->tenant_id = app('currentTenant')->id ?? app('currentTenant')->tenant_id;
+                } elseif (!empty($model->costable_type) && !empty($model->costable_id) && class_exists($model->costable_type)) {
+                    $parent = $model->costable_type::find($model->costable_id);
+                    if ($parent && isset($parent->tenant_id)) {
+                        $model->tenant_id = $parent->tenant_id;
+                    }
+                }
+            }
+        });
+    }
 }

@@ -15,9 +15,10 @@ class SettingsTableSeeder extends Seeder
      */
     public function run(): void
     {
-        /*global $nTenants;
-        $nTenants = DB::table('tenants')->count();
-        $ntenant = $nTenants + 1;*/
+        // Resolve tenant context
+        $tenant = app()->bound('currentTenant') && app('currentTenant')
+            ? app('currentTenant')
+            : (\App\Models\Tenant::first() ?? \App\Models\Tenant::factory()->create());
                    
         // Core settings
         $coreSettings = [
@@ -39,19 +40,20 @@ class SettingsTableSeeder extends Seeder
                
         foreach ($coreSettings as $setting) {
             \App\Models\Setting::updateOrCreate(
-                ['key' => $setting['key']],
-                $setting
+                ['key' => $setting['key'], 'tenant_id' => $tenant->getKey()],
+                array_merge($setting, ['tenant_id' => $tenant->getKey()])
             );
         }
 
         // Custom settings de ejemplo
         \App\Models\Setting::updateOrCreate(
-            ['key' => 'custom_message'],
+            ['key' => 'custom_message', 'tenant_id' => $tenant->getKey()],
             [
                 'key' => 'custom_message',
                 'value' => 'Bienvenido a Clix',
                 'type' => 'custom',
                 'is_editable' => true,
+                'tenant_id' => $tenant->getKey(),
             ]
         );
     }

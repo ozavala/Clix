@@ -45,7 +45,7 @@ class RegisteredUserController extends Controller
             'full_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.CrmUser::class],
             'password' => ['required', 'confirmed', Rules\Password::min(8)],
-            'tenant_id' => ['required', 'integer', 'exists:tenants,id'],
+            'tenant_id' => ['required', 'integer', 'exists:tenants,tenant_id'],
         ]);
 
         // Start a database transaction

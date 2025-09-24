@@ -19,7 +19,17 @@ class LandedCostService
         \Log::info('Starting apportionCosts', ['purchase_order_id' => $purchaseOrder->purchase_order_id]);
 
         $totalLandedCosts = $purchaseOrder->landedCosts()->sum('amount');
-        $poSubtotal = $purchaseOrder->items()->sum('item_total');
+        // Compute subtotal based on quantity * unit_price (ignore any stale item_total)
+        $items = $purchaseOrder->items;
+        $poSubtotal = $items->sum(function ($it) {
+            $qty = (string)($it->quantity ?? 0);
+            $price = (string)($it->unit_price ?? 0);
+            return (float) bcmul($qty, $price, 4);
+        });
+
+        // Prepare string representations for BCMath
+        $totalLandedCostsStr = (string) $totalLandedCosts;
+        $poSubtotalStr = (string) $poSubtotal;
 
         \Log::info('Initial values', [
             'total_landed_costs' => $totalLandedCosts,
@@ -55,7 +65,8 @@ class LandedCostService
                 continue;
             }
 
-            $itemValue = (string) $item->item_total;
+            // Always compute item value from quantity * unit_price
+            $itemValue = bcmul((string)($item->quantity ?? 0), (string)($item->unit_price ?? 0), 4);
             $itemQuantityStr = (string) $item->quantity;
 
             $valueProportion = bcdiv($itemValue, $poSubtotalStr, 10);

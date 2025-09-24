@@ -52,4 +52,23 @@ class Contact extends Model
     {
         return "{$this->first_name} {$this->last_name}";
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (empty($model->tenant_id)) {
+                if (app()->bound('currentTenant') && app('currentTenant')) {
+                    $model->tenant_id = app('currentTenant')->id ?? app('currentTenant')->tenant_id;
+                } else {
+                    // Try to infer from contactable parent
+                    if (!empty($model->contactable_type) && !empty($model->contactable_id) && class_exists($model->contactable_type)) {
+                        $parent = $model->contactable_type::find($model->contactable_id);
+                        if ($parent && isset($parent->tenant_id)) {
+                            $model->tenant_id = $parent->tenant_id;
+                        }
+                    }
+                }
+            }
+        });
+    }
 }

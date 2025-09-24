@@ -15,9 +15,16 @@ class SettingsController extends Controller
      */
     public function edit()
     {
-        Gate::authorize('edit-settings');
-        $coreSettings = Setting::where('type', 'core')->get();
-        $customSettings = Setting::where('type', 'custom')->get();
+        Gate::forUser(auth('crm')->user())->authorize('edit-settings');
+        $tenantId = auth('crm')->check() && auth('crm')->user()->tenant_id
+            ? auth('crm')->user()->tenant_id
+            : ((app()->bound('currentTenant') && app('currentTenant')) ? (app('currentTenant')->id ?? app('currentTenant')->tenant_id) : null);
+        $coreSettings = Setting::where('type', 'core')
+            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->get();
+        $customSettings = Setting::where('type', 'custom')
+            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->get();
         return view('settings.edit', compact('coreSettings', 'customSettings'));
     }
 
@@ -26,39 +33,51 @@ class SettingsController extends Controller
      */
     public function update(Request $request)
     {
-        Gate::authorize('edit-settings');
+        Gate::forUser(auth('crm')->user())->authorize('edit-settings');
+        $tenantId = auth('crm')->check() && auth('crm')->user()->tenant_id
+            ? auth('crm')->user()->tenant_id
+            : ((app()->bound('currentTenant') && app('currentTenant')) ? (app('currentTenant')->id ?? app('currentTenant')->tenant_id) : null);
         // Validar solo los core settings
-        $coreKeys = Setting::where('type', 'core')->pluck('key');
+        $coreKeys = Setting::where('type', 'core')
+            ->when($tenantId, fn($q) => $q->where('tenant_id', $tenantId))
+            ->pluck('key');
         $rules = [];
         foreach ($coreKeys as $key) {
             $rules[$key] = 'nullable|string|max:255';
         }
         $validated = $request->validate($rules);
         foreach ($validated as $key => $value) {
-            Setting::where('key', $key)->update(['value' => $value]);
+            Setting::withoutGlobalScopes()->updateOrCreate(
+                ['key' => $key, 'tenant_id' => $tenantId],
+                ['value' => $value, 'type' => 'core', 'is_editable' => true]
+            );
         }
         return redirect()->route('settings.edit')->with('success', __('settings.Updated successfully'));
     }
 
     public function storeCustom(Request $request)
     {
-        Gate::authorize('edit-settings');
+        Gate::forUser(auth('crm')->user())->authorize('edit-settings');
+        $tenantId = auth('crm')->check() && auth('crm')->user()->tenant_id
+            ? auth('crm')->user()->tenant_id
+            : ((app()->bound('currentTenant') && app('currentTenant')) ? (app('currentTenant')->id ?? app('currentTenant')->tenant_id) : null);
         $validated = $request->validate([
-            'key' => 'required|string|max:255|unique:settings,key',
+            'key' => ['required','string','max:255',
+                \Illuminate\Validation\Rule::unique('settings','key')
+                    ->where(fn($q) => $q->where('tenant_id', $tenantId))
+            ],
             'value' => 'nullable|string',
         ]);
-        Setting::create([
-            'key' => $validated['key'],
-            'value' => $validated['value'],
-            'type' => 'custom',
-            'is_editable' => true,
-        ]);
+        Setting::withoutGlobalScopes()->updateOrCreate(
+            ['key' => $validated['key'], 'tenant_id' => $tenantId],
+            ['value' => $validated['value'], 'type' => 'custom', 'is_editable' => true]
+        );
         return redirect()->route('settings.edit')->with('success', __('settings.Custom setting added'));
     }
 
     public function destroyCustom(Setting $setting)
     {
-        Gate::authorize('edit-settings');
+        Gate::forUser(auth('crm')->user())->authorize('edit-settings');
         if ($setting->type === 'custom' && $setting->is_editable) {
             $setting->delete();
             return redirect()->route('settings.edit')->with('success', __('settings.Custom setting deleted'));

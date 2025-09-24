@@ -28,12 +28,15 @@ class EnforceTenantAccess
      */
     public function handle(Request $request, Closure $next): Response
     {
+        // Determine authenticated user via CRM guard
+        $guard = Auth::guard('crm');
+        $user = $guard->user();
+
         // Skip for non-authenticated users or excluded routes
-        if (!Auth::check() || $this->inExceptArray($request)) {
+        if (!$user || $this->inExceptArray($request)) {
             return $next($request);
         }
 
-        $user = Auth::user();
         
         // Get tenant from route parameter, request query, or session
         $currentTenant = $request->route('tenant');
@@ -51,14 +54,25 @@ class EnforceTenantAccess
         
         // Get the tenant model
         $tenant = is_object($currentTenant) ? $currentTenant : Tenant::find($currentTenantId);
+        if (!$tenant) {
+            abort(404, 'Tenant not found');
+        }
+
+        // Bind current tenant into container for downstream usage
+        app()->instance('currentTenant', $tenant);
 
         // Super admins can access all tenants
         if ($user->isSuperAdmin()) {
             return $next($request);
         }
 
-        // For non-superadmin users, check if they have access to the current tenant
-        if ($tenant && !$user->hasTenantAccess($tenant)) {
+        // For non-superadmin users, check if they have access to the current tenant via pivot table
+        $hasAccess = \DB::table('crm_user_tenant')
+            ->where('user_id', $user->user_id)
+            ->where('tenant_id', $tenant->id)
+            ->exists();
+
+        if (!$hasAccess) {
             abort(403, 'You do not have access to this tenant.');
         }
 

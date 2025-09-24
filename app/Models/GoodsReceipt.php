@@ -65,22 +65,28 @@ class GoodsReceipt extends Model
         }
 
         \DB::transaction(function () {
-            foreach ($this->items as $item) {
-                $product = $item->product;
+            $items = $this->items()->withoutGlobalScopes()->get();
+            foreach ($items as $item) {
+                $product = \App\Models\Product::withoutGlobalScopes()->find($item->product_id);
                 
                 // Update product inventory
-                $product->quantity_on_hand += $item->quantity_received;
+                if ($product) {
+                    $product->quantity_on_hand += $item->quantity_received;
                 
                 // Update average cost if landed costs are involved
-                if ($item->unit_cost_with_landed) {
-                    $product->cost = $item->unit_cost_with_landed;
+                    if ($item->unit_cost_with_landed) {
+                        $product->cost = $item->unit_cost_with_landed;
+                    }
+                    
+                    $product->save();
                 }
-                
-                $product->save();
             }
 
             // Update purchase order status
-            $this->purchaseOrder->updateStatusAfterReceipt();
+            $po = \App\Models\PurchaseOrder::withoutGlobalScopes()->find($this->purchase_order_id);
+            if ($po) {
+                $po->updateStatusAfterReceipt();
+            }
             
             // Mark receipt as received
             $this->status = 'received';

@@ -39,4 +39,25 @@ class OrderItem extends Model
     {
         return $this->belongsTo(Product::class, 'product_id', 'product_id');
     }
+
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (empty($model->tenant_id)) {
+                if (app()->bound('currentTenant') && app('currentTenant')) {
+                    $model->tenant_id = app('currentTenant')->id ?? app('currentTenant')->tenant_id;
+                } elseif (!empty($model->order_id)) {
+                    $order = \App\Models\Order::find($model->order_id);
+                    if ($order && $order->tenant_id) {
+                        $model->tenant_id = $order->tenant_id;
+                    }
+                } elseif (!empty($model->product_id)) {
+                    $product = \App\Models\Product::find($model->product_id);
+                    if ($product && $product->tenant_id) {
+                        $model->tenant_id = $product->tenant_id;
+                    }
+                }
+            }
+        });
+    }
 }

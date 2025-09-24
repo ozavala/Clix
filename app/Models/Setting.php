@@ -17,6 +17,15 @@ class Setting extends Model
 
     protected $fillable = ['key', 'value', 'type', 'is_editable', 'tenant_id', 'group'];
 
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (empty($model->tenant_id) && app()->bound('currentTenant') && app('currentTenant')) {
+                $model->tenant_id = app('currentTenant')->id ?? app('currentTenant')->tenant_id;
+            }
+        });
+    }
+
     public static function core()
     {
         return static::where('type', 'core');

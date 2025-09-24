@@ -3,6 +3,7 @@
 namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
+use App\Models\Tenant;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\UserRole>
@@ -18,8 +19,8 @@ class UserRoleFactory extends Factory
     {
         return [
             'tenant_id' => Tenant::factory(),
-            'name' => $this->faker()->name(),
-            'description'=> $this->faker()->sentence(),
+            'name' => $this->faker->jobTitle(),
+            'description'=> $this->faker->sentence(),
         ];
     }
 }

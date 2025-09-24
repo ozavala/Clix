@@ -32,6 +32,27 @@ class Payment extends Model
         'amount' => 'decimal:2',
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (empty($model->tenant_id)) {
+                if (app()->bound('currentTenant') && app('currentTenant')) {
+                    $model->tenant_id = app('currentTenant')->id ?? app('currentTenant')->tenant_id;
+                } else if ($model->payable) {
+                    $model->tenant_id = $model->payable->tenant_id ?? null;
+                } else if (!empty($model->payable_type) && !empty($model->payable_id)) {
+                    $class = $model->payable_type;
+                    if (class_exists($class)) {
+                        $parent = $class::find($model->payable_id);
+                        if ($parent && isset($parent->tenant_id)) {
+                            $model->tenant_id = $parent->tenant_id;
+                        }
+                    }
+                }
+            }
+        });
+    }
+
     public function payable(): MorphTo
     {
         return $this->morphTo();

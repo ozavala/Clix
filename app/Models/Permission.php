@@ -18,12 +18,27 @@ class Permission extends Model
         'description',
     ];
 
+    protected static function booted()
+    {
+        static::creating(function (Permission $permission) {
+            if (empty($permission->tenant_id) && app()->bound('currentTenant')) {
+                $tenant = app('currentTenant');
+                if ($tenant) {
+                    $permission->tenant_id = $tenant->getKey();
+                }
+            }
+        });
+    }
+
     // Relationship with UserRole (many-to-many)
     // Will be defined fully after pivot table migration
     public function roles()
     {
-        return $this->belongsToMany(UserRole::class, 'permission_user_role', 'permission_id', 'role_id')
-               ->withPivot('tenant_id')
-               ->wherePivot('tenant_id', app('currentTenant')->id);
+        $query = $this->belongsToMany(UserRole::class, 'permission_user_role', 'permission_id', 'role_id')
+               ->withPivot('tenant_id');
+        if (app()->bound('currentTenant') && app('currentTenant')) {
+            $query->wherePivot('tenant_id', app('currentTenant')->id);
+        }
+        return $query;
     }
 }

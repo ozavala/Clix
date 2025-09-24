@@ -36,7 +36,7 @@
                 </div>
             </div>
             <div class="text-center mt-4 text-muted small">
-                &copy; {{ date('Y') }} CRM-ERP. All rights reserved.
+                &copy; {{ date('Y') }} Clix. All rights reserved.
             </div>
         </div>
     </div>

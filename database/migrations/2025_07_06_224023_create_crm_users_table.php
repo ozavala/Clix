@@ -14,6 +14,7 @@ return new class extends Migration
         Schema::create('crm_users', function (Blueprint $table) {
             $table->id('crm_user_id');
             $table->foreignId('user_id')->constrained('users', 'user_id')->onDelete('cascade');
+            $table->unique('user_id');
             $table->foreignId('tenant_id')->constrained('tenants', 'tenant_id')->onDelete('cascade');
             $table->string('username', 100)->unique();
             $table->string('full_name');

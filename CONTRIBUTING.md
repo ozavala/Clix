@@ -1,6 +1,6 @@
-# Contributing to CRM-ERP
+# Contributing to Clix
 
-Thank you for your interest in contributing to the CRM-ERP project! We welcome contributions from everyone, whether you are reporting bugs, suggesting features, improving documentation, or submitting code.
+Thank you for your interest in contributing to the Clix project! We welcome contributions from everyone, whether you are reporting bugs, suggesting features, improving documentation, or submitting code.
 
 By participating in this project, you agree to abide by our [Code of Conduct](CODE_OF_CONDUCT.md).
 
@@ -47,5 +47,5 @@ By participating in this project, you agree to abide by our [Code of Conduct](CO
 - [Laravel Documentation](https://laravel.com/docs)
 - [GitHub Pull Request Guide](https://docs.github.com/en/pull-requests)
 
-Thank you for helping make CRM-ERP better!
+Thank you for helping make Clix better!
 

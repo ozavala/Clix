@@ -175,18 +175,18 @@ class Tenant extends Model
     {
         $configService = app(ConfigurationService::class);
         $configService->setTenantId($this->getKey());
-        $companySettings = $configService->getByGroup('company');
         
-        $this->update([
-            'name' => $companySettings['name'] ?? $this->name,
-            'legal_id' => $companySettings['legal_id'] ?? $this->legal_id,
-            'address' => $companySettings['address'] ?? $this->address,
-            'phone' => $companySettings['phone'] ?? $this->phone,
-            'email' => $companySettings['email'] ?? $this->email,
-            'website' => $companySettings['website'] ?? $this->website,
-            'logo' => $companySettings['logo'] ?? $this->logo,
-            'slogan' => $companySettings['slogan'] ?? $this->slogan,
-        ]);
+        // Push current tenant attributes into the configuration settings
+        $configService->setMany([
+            'name' => $this->name,
+            'legal_id' => $this->legal_id,
+            'address' => $this->address,
+            'phone' => $this->phone,
+            'email' => $this->email,
+            'website' => $this->website,
+            'logo' => $this->logo,
+            'slogan' => $this->slogan,
+        ], 'company');
     }
     
     /**

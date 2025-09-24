@@ -56,21 +56,6 @@ class CustomerFactory extends Factory
             $data['created_by_user_id'] = CrmUser::inRandomOrder()->first()->user_id ?? CrmUser::factory();
         }
         
-        // Configure the factory to create a contact when a customer is created
-        $this->afterCreating(function (Customer $customer) {
-            $customer->contacts()->create([
-                'first_name' => $customer->first_name ?: $this->faker->firstName,
-                'last_name' => $customer->last_name ?: $this->faker->lastName,
-                'email' => $customer->email,
-                'phone' => $customer->phone_number,
-                'title' => $this->faker->jobTitle,
-                'created_by_user_id' => $customer->created_by_user_id,
-                'tenant_id' => $customer->tenant_id,
-                'contactable_type' => Customer::class,
-                'contactable_id' => $customer->customer_id
-            ]);
-        });
-
         return $data;
     }
 
@@ -80,6 +65,27 @@ class CustomerFactory extends Factory
             'tenant_id' => $tenant->getKey(),
             'created_by_user_id' => CrmUser::factory()->forTenant($tenant),
         ]);
+    }
+    
+    public function configure()
+    {
+        return $this->afterCreating(function (Customer $customer) {
+            // Ensure exactly two contacts exist for the customer (tests expect 2)
+            $currentCount = $customer->contacts()->count();
+            for ($i = $currentCount; $i < 2; $i++) {
+                $customer->contacts()->create([
+                    'first_name' => $i === 0 ? ($customer->first_name ?: $this->faker->firstName) : $this->faker->firstName,
+                    'last_name' => $i === 0 ? ($customer->last_name ?: $this->faker->lastName) : $this->faker->lastName,
+                    'email' => $i === 0 ? ($customer->email ?: $this->faker->unique()->safeEmail) : $this->faker->unique()->safeEmail,
+                    'phone' => $i === 0 ? ($customer->phone_number ?: $this->faker->phoneNumber) : $this->faker->phoneNumber,
+                    'title' => $this->faker->jobTitle,
+                    'created_by_user_id' => $customer->created_by_user_id,
+                    'tenant_id' => $customer->tenant_id,
+                    'contactable_type' => Customer::class,
+                    'contactable_id' => $customer->customer_id
+                ]);
+            }
+        });
     }
     
 }

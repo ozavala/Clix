@@ -27,12 +27,7 @@ class ContactFactory extends Factory
             'email' => $this->faker->unique()->safeEmail(),
             'phone' => $this->faker->phoneNumber(),
             'title' => $this->faker->jobTitle(),
-            'contactable_type' => Customer::class,
-            'contactable_id' => function (array $attributes) {
-                return Customer::factory()->create([
-                    'tenant_id' => $attributes['tenant_id']
-                ])->customer_id;
-            },
+            // contactable_id/type will be filled by relationship factory (hasContacts)
             'created_by_user_id' => CrmUser::factory(),
         ];
     }

@@ -3,6 +3,7 @@
 namespace Tests\Concerns;
 
 use App\Models\CrmUser;
+use App\Models\User;
 use App\Models\Tenant;
 use App\Models\UserRole;
 use Illuminate\Support\Facades\Auth;
@@ -48,11 +49,19 @@ trait HandlesTenantAuthentication
         
         // Try to find existing admin user first
         $this->adminUser = CrmUser::where('email', 'admin@test-tenant.example.com')->first();
-        
-        // If user doesn't exist, create a new one with a unique username
+
+        // If user doesn't exist, create a new base user and crm user with a unique username
         if (!$this->adminUser) {
+            $baseUser = User::firstOrCreate(
+                ['email' => 'admin@test-tenant.example.com'],
+                [
+                    'password' => bcrypt('password'),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]
+            );
             $this->adminUser = CrmUser::create([
-                'user_id' => 1,
+                'user_id' => $baseUser->user_id,
                 'username' => 'testadmin' . now()->timestamp, // Ensure unique username
                 'email' => 'admin@test-tenant.example.com',
                 'full_name' => 'Test Admin',
@@ -66,13 +75,15 @@ trait HandlesTenantAuthentication
         
         // Assign admin role to user using direct insert to avoid model events
         $pivotExists = DB::table('crm_user_user_role')
-            ->where('crm_user_id', $this->adminUser->user_id)
+            ->where('tenant_id', $this->tenant->id)
+            ->where('user_id', $this->adminUser->user_id)
             ->where('role_id', $this->adminRole->role_id)
             ->exists();
-            
+        
         if (!$pivotExists) {
             DB::table('crm_user_user_role')->insert([
-                'crm_user_id' => $this->adminUser->user_id,
+                'tenant_id' => $this->tenant->id,
+                'user_id' => $this->adminUser->user_id,
                 'role_id' => $this->adminRole->role_id,
                 'created_at' => now(),
                 'updated_at' => now(),

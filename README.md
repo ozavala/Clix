@@ -1,6 +1,6 @@
-# CRM-ERP
+# Clix
 
-CRM-ERP is an open-source, integrated Customer Relationship Management and Enterprise Resource Planning system built on the Laravel framework. It is designed to help medium-sized businesses unify their customer data, streamline operations, and improve sales and marketing effectiveness through a scalable and customizable platform.
+Clix is an open-source, integrated Customer Relationship Management and Enterprise Resource Planning system built on the Laravel framework. It is designed to help medium-sized businesses unify their customer data, streamline operations, and improve sales and marketing effectiveness through a scalable and customizable platform.
 
 ## Features
 
@@ -17,7 +17,7 @@ CRM-ERP is an open-source, integrated Customer Relationship Management and Enter
 
 ## Getting Started
 
-To get started with CRM-ERP, please refer to the documentation and installation instructions in the repository.
+To get started with Clix, please refer to the documentation and installation instructions in the repository.
 
 ## Installation
 
@@ -39,7 +39,7 @@ For detailed steps, see the [Installation Guide](docs/INSTALLATION.md) (if appli
 
 ## Documentation
 
-Comprehensive documentation is available to help you use and extend CRM-ERP effectively. Check the `docs/` folder or visit our project wiki. 
+Comprehensive documentation is available to help you use and extend Clix effectively. Check the `docs/` folder or visit our project wiki. 
 
 
 ## Contributing

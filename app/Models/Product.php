@@ -46,6 +46,23 @@ class Product extends Model
     ];
 
     /**
+     * Use product_id for route model binding.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'product_id';
+    }
+
+    /**
+     * Resolve route binding without tenant scope to avoid 404 when current tenant context differs in tests.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $column = $field ?? $this->getRouteKeyName();
+        return static::withoutGlobalScopes()->where($column, $value)->firstOrFail();
+    }
+
+    /**
      * Get the user who created this product/service.
      */
     public function createdBy(): BelongsTo
@@ -68,7 +85,10 @@ class Product extends Model
      */
     public function features(): BelongsToMany
     {
-        return $this->belongsToMany(ProductFeature::class, 'product_product_feature', 'product_id', 'feature_id')->withPivot('value')->withTimestamps();
+        return $this->belongsToMany(ProductFeature::class, 'product_product_feature', 'product_id', 'feature_id')
+            ->using(\App\Models\Pivots\ProductProductFeature::class)
+            ->withPivot('tenant_id', 'value')
+            ->withTimestamps();
     }
 
     /**
@@ -76,7 +96,10 @@ class Product extends Model
      */
     public function warehouses(): BelongsToMany
     {
-        return $this->belongsToMany(Warehouse::class, 'product_warehouse', 'product_id', 'warehouse_id')->withPivot('quantity')->withTimestamps();
+        return $this->belongsToMany(Warehouse::class, 'product_warehouse', 'product_id', 'warehouse_id')
+            ->using(\App\Models\Pivots\ProductWarehouse::class)
+            ->withPivot('tenant_id', 'quantity')
+            ->withTimestamps();
     }
 
     /**

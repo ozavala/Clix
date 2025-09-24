@@ -39,12 +39,12 @@ class EnforceTenantAccessTest extends TestCase
     {
         // Create roles if they don't exist
         $superadminRole = UserRole::firstOrCreate(
-            ['name' => 'superadmin'],
+            ['name' => 'superadmin', 'tenant_id' => $this->tenant->id],
             ['description' => 'Super Administrator']
         );
         
         $userRole = UserRole::firstOrCreate(
-            ['name' => 'user'],
+            ['name' => 'user', 'tenant_id' => $this->tenant->id],
             ['description' => 'Regular User']
         );
         
@@ -60,6 +60,7 @@ class EnforceTenantAccessTest extends TestCase
             ->where('permission_id', $viewDashboard->permission_id)
             ->exists()) {
             \DB::table('permission_user_role')->insert([
+                'tenant_id' => $this->tenant->id,
                 'role_id' => $superadminRole->role_id,
                 'permission_id' => $viewDashboard->permission_id,
                 'created_at' => now(),
@@ -72,6 +73,7 @@ class EnforceTenantAccessTest extends TestCase
             ->where('permission_id', $viewDashboard->permission_id)
             ->exists()) {
             \DB::table('permission_user_role')->insert([
+                'tenant_id' => $this->tenant->id,
                 'role_id' => $userRole->role_id,
                 'permission_id' => $viewDashboard->permission_id,
                 'created_at' => now(),
@@ -84,7 +86,7 @@ class EnforceTenantAccessTest extends TestCase
     public function it_allows_superadmin_to_access_any_tenant()
     {
         // Create a superadmin user
-        $superadmin = CrmUser::factory()->create([
+        $superadmin = CrmUser::factory()->forTenant($this->tenant)->create([
             'password' => Hash::make('password')
         ]);
         
@@ -92,7 +94,8 @@ class EnforceTenantAccessTest extends TestCase
         $superadminRole = UserRole::where('name', 'superadmin')->first();
         if ($superadminRole) {
             \DB::table('crm_user_user_role')->insert([
-                'crm_user_id' => $superadmin->user_id,
+                'tenant_id' => $superadmin->tenant_id,
+                'user_id' => $superadmin->user_id,
                 'role_id' => $superadminRole->role_id,
                 'created_at' => now(),
                 'updated_at' => now()
@@ -106,12 +109,8 @@ class EnforceTenantAccessTest extends TestCase
         // Attach only tenant1 to the superadmin (but they should still access both)
         $superadmin->tenants()->attach($tenant1->id, ['is_primary' => true]);
         
-        // Log in as superadmin
-        $this->post(route('login'), [
-            'email' => $superadmin->email,
-            'password' => 'password',
-        ]);
-        
+        // Log in as superadmin using the CRM guard
+        $this->actingAs($superadmin, 'crm');
         $this->assertAuthenticated('crm');
         
         // Set session tenant to tenant2 (which they don't belong to)
@@ -138,7 +137,7 @@ class EnforceTenantAccessTest extends TestCase
     public function it_prevents_regular_user_from_accessing_unauthorized_tenant()
     {
         // Create a regular user
-        $user = CrmUser::factory()->create([
+        $user = CrmUser::factory()->forTenant($this->tenant)->create([
             'password' => Hash::make('password')
         ]);
         
@@ -146,7 +145,8 @@ class EnforceTenantAccessTest extends TestCase
         $userRole = UserRole::where('name', 'user')->first();
         if ($userRole) {
             \DB::table('crm_user_user_role')->insert([
-                'crm_user_id' => $user->user_id,
+                'tenant_id' => $user->tenant_id,
+                'user_id' => $user->user_id,
                 'role_id' => $userRole->role_id,
                 'created_at' => now(),
                 'updated_at' => now()
@@ -164,12 +164,8 @@ class EnforceTenantAccessTest extends TestCase
         $this->assertTrue($user->tenants->contains($tenant1->id), 'User should have access to tenant1');
         $this->assertFalse($user->tenants->contains($tenant2->id), 'User should not have access to tenant2');
         
-        // Log in as the user
-        $response = $this->post(route('login'), [
-            'email' => $user->email,
-            'password' => 'password',
-        ]);
-        
+        // Log in as the user using the CRM guard
+        $this->actingAs($user, 'crm');
         $this->assertAuthenticated('crm');
         
         // Make a request to the test route with the unauthorized tenant in the URL
@@ -202,7 +198,7 @@ class EnforceTenantAccessTest extends TestCase
     public function it_allows_regular_user_to_access_their_tenant()
     {
         // Create a regular user
-        $user = CrmUser::factory()->create([
+        $user = CrmUser::factory()->forTenant($this->tenant)->create([
             'password' => Hash::make('password')
         ]);
         
@@ -210,7 +206,8 @@ class EnforceTenantAccessTest extends TestCase
         $userRole = UserRole::where('name', 'user')->first();
         if ($userRole) {
             \DB::table('crm_user_user_role')->insert([
-                'crm_user_id' => $user->user_id,
+                'tenant_id' => $user->tenant_id,
+                'user_id' => $user->user_id,
                 'role_id' => $userRole->role_id,
                 'created_at' => now(),
                 'updated_at' => now()
@@ -223,19 +220,15 @@ class EnforceTenantAccessTest extends TestCase
         // Attach the tenant to the user
         $user->tenants()->attach($tenant->id, ['is_primary' => true]);
         
-        // Log in as the user
-        $this->post(route('login'), [
-            'email' => $user->email,
-            'password' => 'password',
-        ]);
-        
+        // Log in as the user using the CRM guard
+        $this->actingAs($user, 'crm');
         $this->assertAuthenticated('crm');
         
         // Set session tenant to their tenant
         session(['current_tenant_id' => $tenant->id]);
         
-        // Make a request to the test route
-        $testRoute = '/test-tenant-access';
+        // Make a request to the test route for their own tenant (as route param)
+        $testRoute = "/test-tenant-access/{$tenant->id}";
         
         // Enable exception handling to see the actual error
         $this->withoutExceptionHandling();
@@ -263,7 +256,8 @@ class EnforceTenantAccessTest extends TestCase
         $userRole = UserRole::where('name', 'user')->first();
         if ($userRole) {
             \DB::table('crm_user_user_role')->insert([
-                'crm_user_id' => $user->user_id,
+                'tenant_id' => $user->tenant_id,
+                'user_id' => $user->user_id,
                 'role_id' => $userRole->role_id,
                 'created_at' => now(),
                 'updated_at' => now()

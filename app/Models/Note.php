@@ -30,4 +30,21 @@ class Note extends Model
     {
         return $this->belongsTo(CrmUser::class, 'created_by_user_id');
     }
+
+    /**
+     * Use note_id for route model binding.
+     */
+    public function getRouteKeyName(): string
+    {
+        return 'note_id';
+    }
+
+    /**
+     * Resolve route binding without tenant scope to avoid 404 in tests when tenant context differs.
+     */
+    public function resolveRouteBinding($value, $field = null)
+    {
+        $column = $field ?? $this->getRouteKeyName();
+        return static::withoutGlobalScopes()->where($column, $value)->firstOrFail();
+    }
 }

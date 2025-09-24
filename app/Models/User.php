@@ -10,12 +10,13 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
-use \App\Models\Traits\HasTenantScope;
 
 class User extends Authenticatable
 {
     /** @use HasFactory<\Database\Factories\UserFactory> */
-    use HasFactory, Notifiable, HasApiTokens, HasTenantScope;
+    use HasFactory, Notifiable, HasApiTokens;
+
+    protected $primaryKey = 'user_id';
 
     /**
      * The attributes that are mass assignable.
@@ -26,8 +27,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'tenant_id',
-        'crm_user_id'
+        // no tenant-specific columns in users table
     ];
 
     /**
@@ -51,7 +51,6 @@ class User extends Authenticatable
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'is_super_admin' => 'boolean',
-            'tenant_id' => 'integer',
         ];
     }
     /**

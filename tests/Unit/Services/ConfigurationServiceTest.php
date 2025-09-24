@@ -20,9 +20,6 @@ class ConfigurationServiceTest extends TestCase
     {
         parent::setUp();
         
-        // Begin a database transaction
-        DB::beginTransaction();
-        
         // Create a test tenant with all required fields
         $this->tenant = Tenant::factory()->create([
             'name' => 'Test Tenant',
@@ -45,14 +42,6 @@ class ConfigurationServiceTest extends TestCase
         
         // Initialize configuration service for the tenant
         $this->configService = app(ConfigurationService::class);
-    }
-    
-    protected function tearDown(): void
-    {
-        // Roll back the transaction to clean up the database
-        DB::rollBack();
-        
-        parent::tearDown();
     }
 
     /** @test */

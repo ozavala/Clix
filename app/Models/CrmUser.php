@@ -24,6 +24,7 @@ class CrmUser extends Authenticatable implements MustVerifyEmail
      * @var array<int, string>
      */
     protected $fillable = [
+        'user_id',
         'tenant_id',
         'username',
         'full_name',
@@ -106,7 +107,10 @@ class CrmUser extends Authenticatable implements MustVerifyEmail
      */
     public function roles(): BelongsToMany
     {
-        return $this->belongsToMany(UserRole::class, 'crm_user_user_role', 'crm_user_id', 'role_id')->withTimestamps();
+        return $this->belongsToMany(UserRole::class, 'crm_user_user_role', 'user_id', 'role_id')
+            ->using(\App\Models\Pivots\CrmUserUserRole::class)
+            ->withPivot('tenant_id')
+            ->withTimestamps();
     }
     public function hasPermissionTo(string $permissionName): bool
     {
@@ -168,7 +172,7 @@ class CrmUser extends Authenticatable implements MustVerifyEmail
         if ($this->isSuperAdmin()) {
             return true;
         }
-        return $this->tenants()->where('tenant_id', $tenant->id)->exists();
+        return $this->tenants()->where('tenants.tenant_id', $tenant->id)->exists();
     }
 
     /**

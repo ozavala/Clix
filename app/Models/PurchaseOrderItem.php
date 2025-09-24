@@ -32,6 +32,27 @@ class PurchaseOrderItem extends Model
         'landed_cost_per_unit' => 'decimal:4',
     ];
 
+    protected static function booted()
+    {
+        static::creating(function ($model) {
+            if (empty($model->tenant_id)) {
+                if (app()->bound('currentTenant') && app('currentTenant')) {
+                    $model->tenant_id = app('currentTenant')->id ?? app('currentTenant')->tenant_id;
+                } else if (!empty($model->purchase_order_id)) {
+                    $po = \App\Models\PurchaseOrder::find($model->purchase_order_id);
+                    if ($po && $po->tenant_id) {
+                        $model->tenant_id = $po->tenant_id;
+                    }
+                } else if (!empty($model->product_id)) {
+                    $product = \App\Models\Product::find($model->product_id);
+                    if ($product && $product->tenant_id) {
+                        $model->tenant_id = $product->tenant_id;
+                    }
+                }
+            }
+        });
+    }
+
     public function purchaseOrder(): BelongsTo
     {
         return $this->belongsTo(PurchaseOrder::class, 'purchase_order_id', 'purchase_order_id');

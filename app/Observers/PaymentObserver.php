@@ -14,7 +14,7 @@ class PaymentObserver
      */
     public function created(Payment $payment): void
     {
-        if (method_exists($payment->payable, 'updateStatusAfterPayment')) {
+        if ($payment->payable && method_exists($payment->payable, 'updateStatusAfterPayment')) {
             $payment->payable->updateStatusAfterPayment();
         }
 

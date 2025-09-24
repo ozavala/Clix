@@ -21,7 +21,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Foundation\Testing\WithFaker;
 
 /**
- * Prueba Integral del Sistema CRM-ERP
+ * Prueba Integral del Sistema 
  * 
  * Esta prueba verifica el flujo completo del sistema, incluyendo:
  * 
@@ -71,7 +71,7 @@ use Illuminate\Foundation\Testing\WithFaker;
  * - Referencia para desarrolladores
  * 
  * @package Tests\Feature
- * @author Sistema CRM-ERP
+ * @author Sistema Clix
  * @version 1.0
  */
 class IntegralFlowTest extends TestCase

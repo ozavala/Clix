@@ -69,8 +69,11 @@ class QuotationController extends Controller
     {
         $validatedData = $request->validated();
         
-        // Add tenant_id from the authenticated user
-        $validatedData['tenant_id'] = Auth::user()->tenant_id;
+        // Resolve tenant_id preferring CRM guard tenant, then currentTenant
+        $crmUser = Auth::guard('crm')->user();
+        $validatedData['tenant_id'] = ($crmUser && $crmUser->tenant_id)
+            ? $crmUser->tenant_id
+            : ((app()->bound('currentTenant') && app('currentTenant')) ? (app('currentTenant')->id ?? app('currentTenant')->tenant_id) : null);
 
         // Obtener parámetros de settings
         $quotationPrefix = Setting::where('key', 'quotation_prefix')
@@ -82,29 +85,22 @@ class QuotationController extends Controller
         $defaultTerms = Setting::where('key', 'default_payment_terms')
             ->where('tenant_id', $validatedData['tenant_id'])
             ->value('value') ?? 'Contado';
-        $defaultDueDays = Setting::where('key', 'default_due_days')
+        $defaultDueDays = (int) (Setting::where('key', 'default_due_days')
             ->where('tenant_id', $validatedData['tenant_id'])
-            ->value('value') ?? 30;
+            ->value('value') ?? 30);
 
         return DB::transaction(function () use ($validatedData, $quotationPrefix, $quotationStart, $defaultTerms, $defaultDueDays) {
             $quotationData = collect($validatedData)->except(['items'])->all();
-            $quotationData['created_by_user_id'] = Auth::id();
+            $quotationData['created_by_user_id'] = optional(Auth::guard('crm')->user())->user_id;
 
             // Generar número de cotización correlativo
             $lastQuotation = Quotation::where('tenant_id', $validatedData['tenant_id'])
-                ->orderByDesc('id')
+                ->orderByDesc('quotation_id')
                 ->first();
-            $nextNumber = $lastQuotation ? ($lastQuotation->number ?? $lastQuotation->id) + 1 : (int)$quotationStart;
-            $quotationData['number'] = $nextNumber;
+            $nextNumber = $lastQuotation ? ($lastQuotation->quotation_id ?? $lastQuotation->id) + 1 : (int)$quotationStart;
             $quotationData['quotation_number'] = $quotationPrefix . str_pad($nextNumber, 6, '0', STR_PAD_LEFT);
 
-            // Condiciones de pago por defecto
-            if (empty($quotationData['payment_terms'])) {
-                $quotationData['payment_terms'] = $defaultTerms;
-            }
-            if (empty($quotationData['due_date'])) {
-                $quotationData['due_date'] = now()->addDays($defaultDueDays);
-            }
+            // Nota: columnas payment_terms y due_date no existen en la tabla, no las seteamos
 
             // Calculate totals before creating quotation
             $totals = $this->calculateTotals(

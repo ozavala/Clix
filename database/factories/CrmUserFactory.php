@@ -4,6 +4,7 @@ namespace Database\Factories;
 
 use Illuminate\Database\Eloquent\Factories\Factory;
 use App\Models\Tenant;
+use App\Models\User;
 
 /**
  * @extends \Illuminate\Database\Eloquent\Factories\Factory<\App\Models\CrmUser>
@@ -24,8 +25,8 @@ class CrmUserFactory extends Factory
         return [
             'user_id' => User::factory(),
             'tenant_id' => function () {
-            return Tenant::factory()->create()->tenant_id;
-        },
+                return Tenant::factory()->create()->getKey();
+            },
         'username' => $this->faker->unique()->userName,
         'full_name' => $this->faker->name,
         'email' => $this->faker->unique()->safeEmail,
@@ -36,10 +37,10 @@ class CrmUserFactory extends Factory
     }
 
     public function forTenant(Tenant $tenant)
-{
-    return $this->state(fn (array $attributes) => [
-        'tenant_id' => $tenant->tenant_id,
-    ]);
+    {
+        return $this->state(fn (array $attributes) => [
+            'tenant_id' => $tenant->getKey(),
+        ]);
     }
 
     public function inactive(): static

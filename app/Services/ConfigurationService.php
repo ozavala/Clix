@@ -150,7 +150,7 @@ class ConfigurationService
     /**
      * Set a setting value
      */
-    protected function set($key, $value, $group = 'general')
+    public function set($key, $value, $group = 'general')
     {
         // Skip if value is null and the field is required
         if ($value === null) {
@@ -195,20 +195,13 @@ class ConfigurationService
      */
     public function setMany(array $settings, $group = 'general')
     {
-        DB::beginTransaction();
-        
-        try {
+        return DB::transaction(function () use ($settings, $group) {
             foreach ($settings as $key => $value) {
                 $this->set($key, $value, $group);
             }
-            
-            DB::commit();
             $this->clearCache();
             return true;
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
+        });
     }
 
     /**
@@ -228,33 +221,55 @@ class ConfigurationService
             throw new \InvalidArgumentException('Tenant ID is required to initialize settings');
         }
         
-        DB::beginTransaction();
-        
-        try {
+        return DB::transaction(function () {
+            // Use current tenant values for company group defaults
+            $tenant = \App\Models\Tenant::find($this->tenantId);
+            
             foreach ($this->coreGroups as $group => $settings) {
                 foreach ($settings as $key => $config) {
-                    // Skip if no default value is provided and the field is required
-                    if (!array_key_exists('default', $config) && 
-                        str_contains(($config['validation'] ?? ''), 'required')) {
+                    // Determine value to set
+                    $value = $config['default'] ?? null;
+                    if ($group === 'company' && $tenant) {
+                        switch ($key) {
+                            case 'name':
+                                $value = $tenant->name;
+                                break;
+                            case 'legal_id':
+                                $value = $tenant->legal_id;
+                                break;
+                            case 'address':
+                                $value = $tenant->address;
+                                break;
+                            case 'phone':
+                                $value = $tenant->phone;
+                                break;
+                            case 'email':
+                                $value = $tenant->email;
+                                break;
+                            case 'website':
+                                $value = $tenant->website;
+                                break;
+                            case 'logo':
+                                $value = $tenant->logo ?? null;
+                                break;
+                            case 'slogan':
+                                $value = $tenant->slogan ?? null;
+                                break;
+                        }
+                    }
+                    
+                    // If still null and required, skip
+                    if ($value === null && str_contains(($config['validation'] ?? ''), 'required')) {
                         continue;
                     }
                     
-                    $this->set(
-                        $key,
-                        $config['default'] ?? null,
-                        $group
-                    );
+                    $this->set($key, $value, $group);
                 }
             }
             
-            DB::commit();
-        } catch (\Exception $e) {
-            DB::rollBack();
-            throw $e;
-        }
-        
-        $this->clearCache();
-        return true;
+            $this->clearCache();
+            return true;
+        });
     }
 
     /**
