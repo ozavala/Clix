@@ -48,6 +48,16 @@ Route::get('/phpinfo', function () {
     phpinfo();
 });
 
+// Temporal route for debugging
+Route::get('/debug-auth', function () {
+    return response()->json([
+        'user' => auth()->user(),
+        'check' => auth()->check(),
+        'guard' => auth()->getDefaultDriver(),
+        'provider_model' => config('auth.providers.users.model'),
+    ]);
+})->middleware('web');
+
 
 Route::get('/', function () {
     return view('landing');

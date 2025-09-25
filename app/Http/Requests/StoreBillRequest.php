@@ -20,6 +20,7 @@ class StoreBillRequest extends FormRequest
     public function rules(): array
     {
         return [
+            'tenant_id' => 'nullable|exists:tenants,tenant_id',
             'purchase_order_id' => 'nullable|exists:purchase_orders,purchase_order_id',
             'supplier_id' => 'required|exists:suppliers,supplier_id',
             'bill_number' => 'required|string|max:255',

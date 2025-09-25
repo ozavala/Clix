@@ -44,7 +44,7 @@ class ConfigurationServiceTest extends TestCase
         $this->configService = app(ConfigurationService::class);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_initialize_core_settings()
     {
         // Clear cache first
@@ -59,7 +59,7 @@ class ConfigurationServiceTest extends TestCase
         $this->assertEquals('0.00', $this->configService->get('sales_tax_rate', null, 'tax'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_and_set_settings()
     {
         // Set a setting
@@ -71,14 +71,14 @@ class ConfigurationServiceTest extends TestCase
         $this->assertEquals('test_value', $value);
     }
 
-    /** @test */
+    #[Test]
     public function it_returns_default_value_for_nonexistent_setting()
     {
         $value = $this->configService->get('nonexistent_key', 'default_value', 'test_group');
         $this->assertEquals('default_value', $value);
     }
 
-    /** @test */
+    #[Test]
     public function it_can_set_multiple_settings_at_once()
     {
         $settings = [
@@ -92,7 +92,7 @@ class ConfigurationServiceTest extends TestCase
         $this->assertEquals('value2', $this->configService->get('setting2', null, 'test_group'));
     }
 
-    /** @test */
+    #[Test]
     public function it_can_get_all_settings_for_a_tenant()
     {
         // Add some test settings
@@ -107,7 +107,7 @@ class ConfigurationServiceTest extends TestCase
         $this->assertEquals('value1', $allSettings['group1']['setting1']);
     }
 
-    /** @test */
+   #[Test]
     public function it_handles_tenant_configuration_through_model()
     {
         // Make sure we have a tenant ID
@@ -120,7 +120,7 @@ class ConfigurationServiceTest extends TestCase
         $this->assertEquals('test_value', $value);
     }
 
-    /** @test */
+    #[Test]
     public function it_synchronizes_tenant_attributes_with_configuration()
     {
         // Initialize configuration

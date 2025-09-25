@@ -23,6 +23,8 @@ class CrmUserSeeder extends Seeder
                 'email' => 'admin@example.com',
                 'password' => bcrypt('password'), // Use a secure password in production
                 'email_verified_at' => app()->environment('local', 'development') ? now() : null,
+                'locale' => 'en',
+                'is_super_admin' => true,
             ]);
         }
 

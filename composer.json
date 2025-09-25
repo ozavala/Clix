@@ -19,7 +19,7 @@
         "spatie/laravel-permission": "^6.21"
     },
     "require-dev": {
-        "barryvdh/laravel-ide-helper": "^3.5",
+        "barryvdh/laravel-ide-helper": "^3.6",
         "fakerphp/faker": "^1.23",
         "guizoxxv/laravel-breeze-bootstrap": "^1.0",
         "laravel/pail": "^1.2.2",

@@ -82,7 +82,7 @@ class EnforceTenantAccessTest extends TestCase
         }
     }
 
-    /** @test */
+    #[Test]
     public function it_allows_superadmin_to_access_any_tenant()
     {
         // Create a superadmin user
@@ -132,8 +132,8 @@ class EnforceTenantAccessTest extends TestCase
             $this->fail("Exception thrown: " . $e->getMessage() . "\n" . $e->getTraceAsString());
         }
     }
-    
-    /** @test */
+
+    #[Test]
     public function it_prevents_regular_user_from_accessing_unauthorized_tenant()
     {
         // Create a regular user
@@ -194,7 +194,7 @@ class EnforceTenantAccessTest extends TestCase
         }
     }
     
-    /** @test */
+    #[Test]
     public function it_allows_regular_user_to_access_their_tenant()
     {
         // Create a regular user
@@ -243,8 +243,8 @@ class EnforceTenantAccessTest extends TestCase
             $this->fail("Exception thrown: " . $e->getMessage() . "\n" . $e->getTraceAsString());
         }
     }
-    
-    /** @test */
+
+    #[Test]     
     public function it_redirects_to_tenant_selection_if_no_tenant_set()
     {
         // Create a regular user
@@ -294,8 +294,8 @@ class EnforceTenantAccessTest extends TestCase
             $this->fail("Exception thrown: " . $e->getMessage() . "\n" . $e->getTraceAsString());
         }
     }
-    
-    /** @test */
+
+    #[Test]
     public function it_allows_access_to_excluded_routes()
     {
         // Skip this test as it's causing issues with session handling

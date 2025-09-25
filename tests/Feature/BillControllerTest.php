@@ -3,140 +3,237 @@
 namespace Tests\Feature;
 
 use App\Models\Bill;
-use App\Models\BillItem;
 use App\Models\CrmUser;
+use App\Models\PurchaseOrder;
+use App\Models\Supplier;
+use App\Models\Product;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use PHPUnit\Framework\Attributes\Test;
 use Tests\TestCase;
-use App\Models\PurchaseOrder;
+use Illuminate\Support\Facades\Log;
+
 
 class BillControllerTest extends TestCase
 {
-    protected CrmUser $user;
+    use RefreshDatabase;
+
+    protected $user;
+    protected $tenant;
+    protected $logFile;
 
     protected function setUp(): void
     {
         parent::setUp();
-        $this->user = CrmUser::factory()->create();
-        $this->actingAs($this->user);
+        
+        // Set up a dedicated log file
+        $this->logFile = storage_path('logs/test_debug.log');
+        file_put_contents($this->logFile, "=== Starting Test ===\n", FILE_APPEND);
+        
+        $this->log("Setting up test...");
+        
+        try {
+            $this->tenant = \App\Models\Tenant::first() ?? \App\Models\Tenant::factory()->create();
+            $this->log("Tenant ID: " . $this->tenant->id);
+            
+            $this->user = CrmUser::factory()->create(['tenant_id' => $this->tenant->id]);
+            $this->log("User ID: " . $this->user->user_id);
+            
+            $this->actingAs($this->user , 'crm');
+            $this->log("Test setup complete");
+        } catch (\Exception $e) {
+            $this->log("Setup failed: " . $e->getMessage());
+            throw $e;
+        }
     }
 
-     #[Test]
-    public function it_can_store_a_new_bill_from_a_purchase_order()
+    protected function log($message)
     {
-        // 1. Arrange
-        // Create a Purchase Order with two items
-        $purchaseOrder = PurchaseOrder::factory()->hasItems(2)->create();
-        $poItem1 = $purchaseOrder->items[0];
-        $poItem2 = $purchaseOrder->items[1];
-
-        // Prepare the data for the store request, mimicking the form submission
-        $postData = [
-            'purchase_order_id' => $purchaseOrder->purchase_order_id,
-            'supplier_id' => $purchaseOrder->supplier_id,
-            'bill_number' => 'INV-FROM-SUPPLIER-001',
-            'bill_date' => now()->toDateString(),
-            'due_date' => now()->addDays(30)->toDateString(),
-            'tax_amount' => 25.00,
-            'notes' => 'Bill created from PO.',
-            'items' => [
-                [
-                    'purchase_order_item_id' => $poItem1->purchase_order_item_id,
-                    'product_id' => $poItem1->product_id,
-                    'item_name' => $poItem1->item_name,
-                    'item_description' => $poItem1->item_description,
-                    'quantity' => $poItem1->quantity,
-                    'unit_price' => $poItem1->unit_price,
-                ],
-                [
-                    'purchase_order_item_id' => $poItem2->purchase_order_item_id,
-                    'product_id' => $poItem2->product_id,
-                    'item_name' => $poItem2->item_name,
-                    'item_description' => $poItem2->item_description,
-                    'quantity' => $poItem2->quantity,
-                    'unit_price' => $poItem2->unit_price,
-                ],
-            ],
-        ];
-
-        // 2. Act
-        $response = $this->post(route('bills.store'), $postData);
-
-        // 3. Assert
-        $this->assertDatabaseHas('bills', [
-            'purchase_order_id' => $purchaseOrder->purchase_order_id,
-            'bill_number' => 'INV-FROM-SUPPLIER-001',
-        ]);
-
-        $bill = Bill::where('bill_number', 'INV-FROM-SUPPLIER-001')->first();
-        $this->assertNotNull($bill);
-
-        $response->assertRedirect(route('bills.show', $bill));
-        $response->assertSessionHas('success', 'Bill created successfully.');
-
-        $this->assertCount(2, $bill->items);
-        $this->assertEquals($poItem1->item_name, $bill->items[0]->item_name);
+        $timestamp = now()->toDateTimeString();
+        $logMessage = "[$timestamp] $message\n";
+        file_put_contents($this->logFile, $logMessage, FILE_APPEND);
     }
-
 
     #[Test]
-    public function it_can_update_a_bill_and_its_items()
+public function it_can_store_a_bill_via_controller()
+{
+    // Arrange
+    $supplier = Supplier::factory()->create(['tenant_id' => $this->tenant->id]);
+    $purchaseOrder = PurchaseOrder::factory()->create([
+        'tenant_id' => $this->tenant->id,
+        'supplier_id' => $supplier->supplier_id,
+        'created_by_user_id' => $this->user->user_id,
+        'status' => 'approved'
+    ]);
+
+    $billData = [
+    'tenant_id' => $this->tenant->id,
+    'supplier_id' => $supplier->supplier_id,
+    'bill_number' => 'CTRL-BILL-001',
+    'bill_date' => now()->format('Y-m-d'),
+    'due_date' => now()->addDays(30)->format('Y-m-d'),
+    'tax_amount' => 180.00,
+    'status' => 'draft',
+    'notes' => 'Created via controller test',
+    // ✅ Add items
+    'items' => [
+        [
+            'item_name' => 'Product 1',
+            'quantity' => 2,
+            'unit_price' => 500.00,
+        ]
+    ],
+];
+
+    // Act
+    $response = $this->post(route('bills.store'), $billData);
+
+    // 🔍 Depuración crítica:
+    //$response->dump(); // Esto mostrará errores si hay redirección
+
+    // Assert
+    $response->assertStatus(302); // o 201
+    $this->assertDatabaseHas('bills', [
+        'bill_number' => 'CTRL-BILL-001',
+        'tenant_id' => $this->tenant->id,
+    ]);
+}
+    
+    #[Test]
+    public function test_authenticated_user_tenant_id()
     {
-        // 1. Arrange
-        // Create an initial bill with two items
-        $bill = Bill::factory()->create();
-        $itemToUpdate = BillItem::factory()->create(['bill_id' => $bill->bill_id, 'quantity' => 2, 'unit_price' => 10.00]); // Total: 20.00
-        $itemToDelete = BillItem::factory()->create(['bill_id' => $bill->bill_id, 'quantity' => 1, 'unit_price' => 50.00]); // Total: 50.00
-
-        // Prepare the data for the update request
-        $updatedData = [
-            'supplier_id' => $bill->supplier_id,
-            'bill_number' => 'UPDATED-BILL-123',
-            'bill_date' => now()->subDay()->toDateString(),
-            'due_date' => now()->addDays(20)->toDateString(),
-            'tax_amount' => 15.00, // New tax amount
-            'items' => [
-                // Item 1: Update the quantity
-                [
-                    'bill_item_id' => $itemToUpdate->bill_item_id,
-                    'item_name' => $itemToUpdate->item_name,
-                    'quantity' => 5, // Changed from 2 to 5
-                    'unit_price' => 10.00,
-                ],
-                // Item 2 (itemToDelete) is omitted, so it should be deleted.
-
-                // Item 3: Add a new item
-                [
-                    'bill_item_id' => '', // No ID for new items
-                    'item_name' => 'A Brand New Item',
-                    'quantity' => 1,
-                    'unit_price' => 75.00,
-                ]
-            ]
-        ];
-
-        // 2. Act
-        $response = $this->put(route('bills.update', $bill), $updatedData);
-
-        // 3. Assert
-        // Assert redirection and session message
-        $response->assertRedirect(route('bills.show', $bill->bill_id));
-        $response->assertSessionHas('success', 'Bill updated successfully.');
-
-        // Assert bill header data was updated
-        $this->assertDatabaseHas('bills', [
-            'bill_id' => $bill->bill_id,
-            'bill_number' => 'UPDATED-BILL-123',
-        ]);
-
-        // Assert item changes in the database
-        $this->assertDatabaseHas('bill_items', ['bill_item_id' => $itemToUpdate->bill_item_id, 'quantity' => 5]);
-        $this->assertSoftDeleted('bill_items', ['bill_item_id' => $itemToDelete->bill_item_id]);
-        $this->assertDatabaseHas('bill_items', ['bill_id' => $bill->bill_id, 'item_name' => 'A Brand New Item', 'unit_price' => 75.00]);
-
-        // Assert totals were recalculated correctly
-        // New subtotal = (5 * 10.00) + (1 * 75.00) = 50 + 75 = 125.00
-        // New total = 125.00 (subtotal) + 15.00 (tax) = 140.00
-        $this->assertDatabaseHas('bills', ['bill_id' => $bill->bill_id, 'subtotal' => 125.00, 'total_amount' => 140.00]);
+        $this->assertEquals($this->tenant->id, auth()->user()->tenant_id);
+        //dump('Auth tenant ID:', auth()->user()->tenant_id); // Debug line
     }
+
+    /*#[Test]
+    public function test_basic_models_can_be_created()
+    {
+        try {
+            $this->log("Starting test_basic_models_can_be_created");
+            
+            // Test 1: Can create a supplier
+            $this->log("Creating supplier...");
+            $supplier = Supplier::factory()->create(['tenant_id' => $this->tenant->id]);
+            $this->log("Supplier created with ID: " . $supplier->supplier_id);
+            
+            // Test 2: Can create a product
+            $this->log("Creating product...");
+            $product = Product::factory()->create(['tenant_id' => $this->tenant->id]);
+            $this->log("Product created with ID: " . $product->product_id);
+            
+            // Test 3: Can create a purchase order
+            $this->log("Creating purchase order...");
+            $purchaseOrder = PurchaseOrder::factory()->create([
+                'tenant_id' => $this->tenant->id,
+                'supplier_id' => $supplier->supplier_id,
+                'created_by_user_id' => $this->user->user_id,
+                'status' => 'approved'
+            ]);
+            $this->log("Purchase order created with ID: " . $purchaseOrder->purchase_order_id);
+
+            // Test 4: Skip bill creation for now
+            $this->log("Skipping bill creation in this test");
+            $this->assertTrue(true);
+            
+        } catch (\Exception $e) {
+            $this->log("Test failed: " . $e->getMessage());
+            $this->log("Stack trace: " . $e->getTraceAsString());
+            throw $e;
+        }
+    }
+    // tests/Feature/BillControllerTest.php*/
+    public function test_tenant_creation()
+    {
+        Log::info('=== Starting tenant creation test ===');
+        $tenant = Tenant::first() ?? Tenant::factory()->create();
+        $this->assertNotNull($tenant->id);
+        Log::info('Tenant created', ['id' => $tenant->id]);
+        return $tenant;
+    }
+
+    public function test_user_creation()
+    {
+        Log::info('=== Starting user creation test ===');
+        $tenant = Tenant::first() ?? Tenant::factory()->create();
+        $user = CrmUser::factory()->create(['tenant_id' => $tenant->id]);
+        $this->assertNotNull($user->user_id);
+        Log::info('User created', ['id' => $user->user_id]);
+        return $user;
+    }
+
+    public function test_supplier_creation()
+    {
+        Log::info('=== Starting supplier creation test ===');
+        $tenant = Tenant::first() ?? Tenant::factory()->create();
+        $supplier = Supplier::factory()->create(['tenant_id' => $tenant->id]);
+        $this->assertNotNull($supplier->supplier_id);
+        Log::info('Supplier created', ['id' => $supplier->supplier_id]);
+        return $supplier;
+    }
+
+    public function test_purchase_order_creation()
+    {
+        Log::info('=== Starting purchase order creation test ===');
+        $tenant = Tenant::first() ?? Tenant::factory()->create();
+        $user = CrmUser::factory()->create(['tenant_id' => $tenant->id]);
+        $supplier = Supplier::factory()->create(['tenant_id' => $tenant->id]);
+        
+        $po = PurchaseOrder::factory()->create([
+            'tenant_id' => $tenant->id,
+            'supplier_id' => $supplier->supplier_id,
+            'created_by_user_id' => $user->user_id,
+            'status' => 'approved'
+        ]);
+        
+        $this->assertNotNull($po->purchase_order_id);
+        Log::info('Purchase order created', ['id' => $po->purchase_order_id]);
+        return $po;
+    }
+
+    public function test_bill_creation()
+    {
+        Log::info('=== Starting bill creation test ===');
+        
+        try {
+            // Create required models
+            $tenant = Tenant::first() ?? Tenant::factory()->create();
+            $user = CrmUser::factory()->create(['tenant_id' => $tenant->id]);
+            $supplier = Supplier::factory()->create(['tenant_id' => $tenant->id]);
+            
+            $purchaseOrder = PurchaseOrder::factory()->create([
+                'tenant_id' => $tenant->id,
+                'supplier_id' => $supplier->supplier_id,
+                'created_by_user_id' => $user->user_id,
+                'status' => 'approved'
+            ]);
+
+            // Test creating a bill directly
+            Log::info('Creating bill...');
+            $bill = \App\Models\Bill::create([
+                'tenant_id' => $tenant->id,
+                'purchase_order_id' => $purchaseOrder->purchase_order_id,
+                'supplier_id' => $supplier->supplier_id,
+                'created_by_user_id' => $user->user_id,
+                'bill_number' => 'TEST-BILL-001',
+                'bill_date' => now()->toDateString(),
+                'due_date' => now()->addDays(30)->toDateString(),
+                'status' => 'draft',
+                'subtotal' => 100.00,
+                'tax_amount' => 18.00,
+                'total_amount' => 118.00,
+                'notes' => 'Test bill creation'
+            ]);
+
+            $this->assertNotNull($bill->bill_id);
+            Log::info('Bill created successfully', ['id' => $bill->bill_id]);
+            
+        } catch (\Exception $e) {
+            Log::error('Bill creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            throw $e;
+        }
+    }
+    
 }

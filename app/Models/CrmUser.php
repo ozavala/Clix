@@ -31,6 +31,9 @@ class CrmUser extends Authenticatable implements MustVerifyEmail
         'email',
         'password',
         'locale',
+        'is_super_admin',
+        'email_verified_at',
+        'remember_token',
     ];
 
     /**

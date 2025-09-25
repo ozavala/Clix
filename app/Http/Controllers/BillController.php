@@ -55,6 +55,7 @@ class BillController extends TenantAwareController
 
     public function store(StoreBillRequest $request)
     {
+        
         $validatedData = $request->validated();
 
         return DB::transaction(function () use ($validatedData) {
@@ -62,7 +63,8 @@ class BillController extends TenantAwareController
             // Ensure tenant_id is present (DB requires it)
             $billData['tenant_id'] = $billData['tenant_id']
                 ?? (auth()->user()->tenant_id ?? config('tenant_id'));
-            $billData['created_by_user_id'] = Auth::id();
+            // En lugar de Auth::id(), usa el user_id del CrmUser autenticado
+            $billData['created_by_user_id'] = auth()->user()->user_id;
 
             // Calculate totals
             $subtotal = 0;
@@ -84,7 +86,7 @@ class BillController extends TenantAwareController
                 $itemData['item_total'] = ($itemData['quantity'] ?? 0) * ($itemData['unit_price'] ?? 0);
                 $bill->items()->create($itemData);
             }
-
+            \Log::info('Bill data before create:', $billData);
             return redirect()->route('bills.show', $bill->bill_id)
                              ->with('success', 'Bill created successfully.');
         });

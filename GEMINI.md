@@ -28,3 +28,14 @@ This document outlines the changes and decisions made during the development pro
     *   **Seeder Updates:** The `DatabaseSeeder` was updated to call the new `TenantSeeder` to ensure proper data seeding with tenant associations.
 
 This refactoring provides a more robust and semantically correct foundation for multi-tenancy within the application.
+
+### Refactoring: Consolidate User and CrmUser Models
+
+**Objective:** To resolve the duality and confusion between the `User` and `CrmUser` models by consolidating them into a single `User` model.
+
+**Plan:**
+
+1.  **Generate a migration to combine the tables:** Create a new migration that will add the columns from `crm_users` (`tenant_id`, `username`, `full_name`, `locale`, `is_super_admin`) to the `users` table and then drop the `crm_users` table.
+2.  **Update the `User` model:** Move all the logic (relationships, methods, etc.) from `CrmUser` to `User` and then delete the `CrmUser.php` file.
+3.  **Update `config/auth.php`:** Clean up the configuration to use a single `web` guard with the `User` model.
+4.  **Update the codebase:** Replace all usages of `CrmUser` with `User`.
